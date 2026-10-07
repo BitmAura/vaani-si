@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI CRM — Lead Detail & Activity Timeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --card-sub: #161C2C;
+      --border: #1E2638;
+      --accent: #E58525;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --info: #38BDF8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 24px; font-weight: 700; color: #fff; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    
+    .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    
+    .pipeline-bar { display: flex; gap: 8px; margin-bottom: 24px; background: var(--card-bg); padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
+    .stage-item { flex: 1; text-align: center; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; background: var(--card-sub); color: var(--text-muted); }
+    .stage-item.active { background: var(--accent); color: #fff; }
+    .stage-item.completed { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+    .score-badge { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; }
+    
+    .timeline { position: relative; padding-left: 20px; border-left: 2px solid var(--border); margin-left: 8px; }
+    .timeline-item { position: relative; margin-bottom: 24px; }
+    .timeline-item::before { content: ''; position: absolute; left: -26px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+    .timeline-time { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .timeline-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .timeline-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+
+    .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .info-label { color: var(--text-muted); }
+    .info-value { font-weight: 600; color: #fff; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 class="title">Lead: 3BHK Luxury Plot in Whitefield</h1>
+      <p class="subtitle">Contact: <strong>Anand Kulkarni</strong> • +91 98450 12345</p>
+    </div>
+    <div>
+      <span class="score-badge">Qualification Score: 85/100 (QUALIFIED)</span>
+    </div>
+  </div>
+
+  <div class="pipeline-bar">
+    <div class="stage-item completed">1. NEW</div>
+    <div class="stage-item completed">2. QUALIFICATION</div>
+    <div class="stage-item active">3. APPOINTMENT (SITE VISIT)</div>
+    <div class="stage-item">4. PROPOSAL</div>
+    <div class="stage-item">5. CONVERTED</div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Structured Requirement & Qualification</h2>
+        <div class="info-row">
+          <span class="info-label">Requirement</span>
+          <span class="info-value">3BHK East-facing plot around Whitefield</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Budget</span>
+          <span class="info-value">₹1.8 Crore</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Purchase Timeline</span>
+          <span class="info-value">Immediate (within 30 days)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Site Visit Status</span>
+          <span class="info-value" style="color: var(--success);">Scheduled for Tomorrow, 02:30 PM</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Operational Activity Timeline</h2>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">Today, 10:18 AM</div>
+            <div class="timeline-title">Appointment Confirmed</div>
+            <div class="timeline-desc">Site visit slot confirmed for Tomorrow, 2:30 PM with Front Desk Sales Host.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Today, 10:15 AM</div>
+            <div class="timeline-title">Lead Qualified by AI Voice Employee</div>
+            <div class="timeline-desc">Deterministic score: 85/100. Verified budget (₹1.8 Cr), timeline (immediate), and east-facing plot preference.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Today, 10:12 AM</div>
+            <div class="timeline-title">Inbound Phone Call Received</div>
+            <div class="timeline-desc">Call duration 3m 42s. AI assistant Sahana identified caller and resolved contact profile.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Contact Summary</h2>
+        <div class="info-row">
+          <span class="info-label">Name</span>
+          <span class="info-value">Anand Kulkarni</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Phone</span>
+          <span class="info-value" style="color: var(--info);">+91 98450 12345</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Language</span>
+          <span class="info-value">Kanglish</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value" style="color: var(--success);">ACTIVE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Assignment & Ownership</h2>
+        <div class="info-row">
+          <span class="info-label">Assigned Team</span>
+          <span class="info-value">Whitefield Site Sales</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Primary Host</span>
+          <span class="info-value">Ramesh Gowda</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

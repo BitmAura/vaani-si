@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Check for sensitive files
+if git diff --cached --name-only | grep -E '\.env$|\.env\.local$|credentials\.json$|secrets\.json$'; then
+  echo "❌ Commit blocked: Attempting to commit sensitive files"
+  echo "Please remove .env, credentials, or secrets from your commit"
+  exit 1
+fi
+
+# Run type check
+echo "📦 Running TypeScript type check..."
+npm run typecheck || {
+  echo "❌ Type check failed. Please fix TypeScript errors before committing."
+  exit 1
+}
+
+# Run tests for immutable invariants
+echo "🧪 Running invariant tests..."
+npm run test:invariants || {
+  echo "❌ Invariant tests failed. Cannot proceed with commit."
+  echo "These tests verify critical architectural constraints."
+  exit 1
+}
+
+# Run linter
+echo "🎨 Running linter..."
+npm run lint || {
+  echo "❌ Linting failed. Please fix linting errors."
+  exit 1
+}
+
+echo "✅ All pre-commit checks passed!"

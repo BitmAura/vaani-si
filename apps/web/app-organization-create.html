@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create New Organization — VANNI</title>
+  <meta name="description" content="Add another business or practice workspace to your account.">
+  <link rel="canonical" href="https://vanni.ai/login">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/vanni.css">
+  <style>
+    body {
+      margin: 0;
+      background: var(--vanni-bg);
+      color: var(--vanni-text-primary);
+      font-family: var(--vanni-font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--vanni-surface);
+      border: 1px solid var(--vanni-border);
+      border-radius: var(--vanni-radius-lg);
+      padding: 36px;
+      box-shadow: var(--vanni-shadow-md);
+      box-sizing: border-box;
+    }
+    .auth-alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #EF4444;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10B981;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+  
+</head>
+<body>
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+      <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+        V
+      </div>
+      <div>
+        <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+        <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+      </div>
+    </a>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
+      <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
+      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
+    </div>
+  </header>
+  
+  <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+    <div class="auth-card">
+      <div style="margin-bottom: 24px;">
+        <h1 style="font-size: 20px; font-weight: 700; margin: 0 0 6px 0;">Create New Organization</h1>
+        <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Set up an isolated tenant workspace with its own AI agents and data.</p>
+      </div>
+
+      <div id="create-org-error" class="auth-alert-error"></div>
+
+      <form id="create-org-form" onsubmit="handleCreateOrgSubmit(event)">
+        <div class="vanni-form-group">
+          <label for="org-name" class="vanni-label">Organization Name *</label>
+          <input type="text" id="org-name" name="name" placeholder="e.g. Kaveri Fertility Center" required class="vanni-input" autofocus />
+        </div>
+
+        <div class="vanni-form-group">
+          <label for="org-industry" class="vanni-label">Industry</label>
+          <select id="org-industry" name="industry" class="vanni-select">
+            <option value="DENTAL">Dental / Specialty Clinic</option>
+            <option value="HEALTHCARE_HOSPITAL">Hospital / Multi-Specialty</option>
+            <option value="IVF_FERTILITY">IVF & Fertility Clinic</option>
+            <option value="REAL_ESTATE" selected>Real Estate & Plotted Layouts</option>
+            <option value="HOSPITALITY_RESORT">Hospitality, Resorts & Dining</option>
+            <option value="DIGITAL_AGENCY">Digital Marketing Agency</option>
+            <option value="COMMERCIAL_OTHER">Other Commercial Business</option>
+          </select>
+        </div>
+
+        <div class="vanni-form-group">
+          <label for="org-timezone" class="vanni-label">Operating Timezone</label>
+          <select id="org-timezone" name="timezone" class="vanni-select">
+            <option value="Asia/Kolkata" selected>Asia/Kolkata (IST +5:30)</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <a href="/app/organization/select" class="vanni-button vanni-button-secondary" style="flex: 1; text-align: center; text-decoration: none;">Cancel</a>
+          <button type="submit" id="create-org-btn" class="vanni-button vanni-button-primary" style="flex: 2;">
+            <span>Create Organization</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    async function handleCreateOrgSubmit(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('create-org-error');
+      const btn = document.getElementById('create-org-btn');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+
+      const payload = {
+        name: document.getElementById('org-name').value,
+        industry: document.getElementById('org-industry').value,
+        timezone: document.getElementById('org-timezone').value,
+      };
+
+      try {
+        const res = await fetch('/api/orgs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create organization');
+
+        window.location.href = '/app/onboarding';
+      } catch (err) {
+        errEl.innerText = err.message;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

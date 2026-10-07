@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — Captured Business Leads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --border: #1E2638;
+      --accent: #E58525;
+      --accent-glow: rgba(229, 133, 37, 0.15);
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --warning: #F59E0B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 24px; font-weight: 700; color: #fff; }
+    .badge { background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 14px 20px; background: #0E121C; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .status-pill { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .status-qualified { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-partial { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .phone { font-family: monospace; color: #38BDF8; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 class="title">Lead Intelligence Management</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Verified leads captured across inbound AI phone calls and channels.</p>
+    </div>
+    <div class="badge">Live Action Engine</div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Interest / Requirement</th>
+          <th>Budget / Timeline</th>
+          <th>Qualification</th>
+          <th>Source</th>
+          <th>Captured Time</th>
+        </tr>
+      </thead>
+      <tbody id="leads-body">
+        <tr>
+          <td><strong>Anand Kulkarni</strong></td>
+          <td class="phone">+91 98450 12345</td>
+          <td>3BHK Luxury Plot in Whitefield</td>
+          <td>₹1.8 Cr • Immediate</td>
+          <td><span class="status-pill status-qualified">QUALIFIED</span></td>
+          <td>AI_VOICE (Inbound)</td>
+          <td>Just now</td>
+        </tr>
+        <tr>
+          <td><strong>Pooja Hegde</strong></td>
+          <td class="phone">+91 98860 67890</td>
+          <td>Dental Implants Consultation</td>
+          <td>₹30,000 • Tomorrow</td>
+          <td><span class="status-pill status-qualified">QUALIFIED</span></td>
+          <td>AI_VOICE (Inbound)</td>
+          <td>15 mins ago</td>
+        </tr>
+        <tr>
+          <td><strong>Ramesh Gowda</strong></td>
+          <td class="phone">+91 94480 34567</td>
+          <td>General Inquiry - Clinic Timings</td>
+          <td>— • Next Week</td>
+          <td><span class="status-pill status-partial">PARTIALLY_QUALIFIED</span></td>
+          <td>AI_VOICE (Inbound)</td>
+          <td>1 hour ago</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

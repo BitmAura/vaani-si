@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — VANNI</title>
+  <meta name="description" content="Sign in to your VANNI organization tenant.">
+  <link rel="canonical" href="https://vanni.ai/login">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/vanni.css">
+  <style>
+    body {
+      margin: 0;
+      background: var(--vanni-bg);
+      color: var(--vanni-text-primary);
+      font-family: var(--vanni-font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--vanni-surface);
+      border: 1px solid var(--vanni-border);
+      border-radius: var(--vanni-radius-lg);
+      padding: 36px;
+      box-shadow: var(--vanni-shadow-md);
+      box-sizing: border-box;
+    }
+    .auth-alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #EF4444;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10B981;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+  
+</head>
+<body>
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+      <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+        V
+      </div>
+      <div>
+        <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+        <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+      </div>
+    </a>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
+      <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
+      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
+    </div>
+  </header>
+  
+  <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+    <div class="auth-card">
+      <div style="margin-bottom: 24px;">
+        <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 6px 0;">Sign in to VANNI</h1>
+        <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Access your organization dashboard and AI voice telemetry.</p>
+      </div>
+
+      <!-- Quick 1-Click Demo Logins -->
+      <div style="background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); padding: 12px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 11px; font-weight: 600; color: var(--vanni-accent); font-family: var(--vanni-font-mono);">DEVELOPMENT ACCESS</span>
+          <span style="font-size: 10px; color: var(--vanni-text-muted);">Seed Credentials</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
+            <span>🏢 Ballari Plots</span>
+          </button>
+          <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
+            <span>🏥 Apollo Clinic</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="login-error" class="auth-alert-error"></div>
+
+      <form id="login-form" onsubmit="handleLoginSubmit(event)">
+        <div class="vanni-form-group">
+          <label for="login-email" class="vanni-label">Work Email</label>
+          <input type="email" id="login-email" name="email" placeholder="name@company.com" required class="vanni-input" autofocus />
+        </div>
+
+        <div class="vanni-form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="login-password" class="vanni-label" style="margin-bottom: 0;">Password</label>
+            <a href="/forgot-password" style="font-size: 12px; color: var(--vanni-accent); text-decoration: none;">Forgot password?</a>
+          </div>
+          <input type="password" id="login-password" name="password" placeholder="••••••••••••" required class="vanni-input" />
+        </div>
+
+        <button type="submit" id="login-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 8px;">
+          <span>Sign In to Console</span>
+        </button>
+      </form>
+
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--vanni-border-subdued); text-align: center; font-size: 13px; color: var(--vanni-text-muted);">
+        Don't have an organization? <a href="/signup" style="color: var(--vanni-accent); font-weight: 600; text-decoration: none;">Create an account</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function quickLogin(email, password) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = password;
+      document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('login-error');
+      const btn = document.getElementById('login-submit-btn');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<span>Verifying credentials...</span>';
+
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? 'http://localhost:4100/api/auth/login' 
+          : '/api/auth/login';
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || data.error || 'Invalid email or password.');
+        }
+
+        // Store session in localStorage for console state
+        if (data.session) {
+          localStorage.setItem('vanni_session', JSON.stringify(data.session));
+          localStorage.setItem('vanni_user', JSON.stringify(data.user));
+        }
+
+        // Check redirect param
+        const params = new URLSearchParams(window.location.search);
+        const redirectUrl = params.get('redirect') || '/console.html';
+        window.location.href = redirectUrl;
+      } catch (err) {
+        errEl.innerText = err.message;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<span>Sign In to Console</span>';
+      }
+    }
+  </script>
+</body>
+</html>

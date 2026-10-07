@@ -1,0 +1,22 @@
+{
+  "name": "@vanni/voice-engine",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@vanni/shared": "1.0.0",
+    "@vanni/provider-sdk": "1.0.0",
+    "@vanni/providers": "1.0.0",
+    "@vanni/conversation-engine": "1.0.0",
+    "@vanni/database": "1.0.0",
+    "@vanni/observability": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4"
+  }
+}

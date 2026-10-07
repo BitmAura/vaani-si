@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI CRM — Business Contacts Directory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --border: #1E2638;
+      --accent: #E58525;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --danger: #EF4444;
+      --info: #38BDF8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 24px; font-weight: 700; color: #fff; }
+    .badge { background: rgba(229, 133, 37, 0.15); color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    
+    .filters-bar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+    .search-input { background: var(--card-bg); border: 1px solid var(--border); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 14px; width: 320px; }
+    .filter-select { background: var(--card-bg); border: 1px solid var(--border); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
+    
+    .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 14px 20px; background: #0E121C; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .status-pill { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .status-active { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-dnc { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .phone { font-family: monospace; color: var(--info); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 class="title">Contacts Directory</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Verified customer identities resolved across inbound voice, website, and messaging.</p>
+    </div>
+    <div class="badge">Canonical CRM Layer</div>
+  </div>
+
+  <div class="filters-bar">
+    <input type="text" class="search-input" placeholder="Search by name, phone, or email..." value="" />
+    <select class="filter-select">
+      <option value="">All Statuses</option>
+      <option value="ACTIVE" selected>Active Only</option>
+      <option value="DO_NOT_CONTACT">Do Not Contact (Suppressed)</option>
+    </select>
+    <select class="filter-select">
+      <option value="">All Sources</option>
+      <option value="PHONE">Inbound Phone</option>
+      <option value="WEBSITE">Website Form</option>
+    </select>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Display Name</th>
+          <th>Phone (E.164)</th>
+          <th>Email</th>
+          <th>Location</th>
+          <th>Language</th>
+          <th>Source</th>
+          <th>Status</th>
+          <th>Last Activity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Anand Kulkarni</strong></td>
+          <td class="phone">+91 98450 12345</td>
+          <td>anand.k@example.com</td>
+          <td>Bengaluru (Whitefield)</td>
+          <td>Kanglish</td>
+          <td>Inbound Call</td>
+          <td><span class="status-pill status-active">ACTIVE</span></td>
+          <td>Today, 10:15 AM</td>
+        </tr>
+        <tr>
+          <td><strong>Pooja Hegde</strong></td>
+          <td class="phone">+91 98860 67890</td>
+          <td>—</td>
+          <td>Bengaluru (Jayanagar)</td>
+          <td>Kannada</td>
+          <td>Inbound Call</td>
+          <td><span class="status-pill status-active">ACTIVE</span></td>
+          <td>Yesterday, 4:30 PM</td>
+        </tr>
+        <tr>
+          <td><strong>Suresh Gowda</strong></td>
+          <td class="phone">+91 94480 99887</td>
+          <td>—</td>
+          <td>Ballari</td>
+          <td>Kannada</td>
+          <td>Inbound Call</td>
+          <td><span class="status-pill status-dnc">DO_NOT_CONTACT</span></td>
+          <td>3 days ago</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

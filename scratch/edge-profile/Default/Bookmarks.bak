@@ -1,0 +1,116 @@
+{
+   "checksum": "0c0dc5bf4b5a6f09e7dc241428e141ef",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13435417193089994",
+            "date_last_used": "0",
+            "guid": "29222153-a9d4-4545-baf5-2d298724d153",
+            "id": "14",
+            "name": "ASUS Software Portal - Exclusive technology",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://www.asus.com/Software-and-Innovations-Portal/",
+            "visit_count": 0
+         }, {
+            "date_added": "13435417193089556",
+            "date_last_used": "0",
+            "guid": "26c537c6-c7f3-4fb1-8cc6-729feffe9017",
+            "id": "13",
+            "name": "MyASUS Software - Get the best from ASUS PC",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://www.asus.com/ASUS-Software/",
+            "visit_count": 0
+         }, {
+            "date_added": "13435417193088515",
+            "date_last_used": "0",
+            "guid": "3651bd7a-8e70-4dd9-82a5-2834bc48e351",
+            "id": "12",
+            "name": "McAfee LiveSafe",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://home.mcafee.com/root/campaign.aspx?cid=246814",
+            "visit_count": 0
+         }, {
+            "date_added": "13435416844943286",
+            "date_last_used": "0",
+            "guid": "fffd1633-b91a-48a7-8eed-eff9ef7f9332",
+            "id": "9",
+            "name": "ASUS Software Portal - Exclusive technology",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://www.asus.com/Software-and-Innovations-Portal/",
+            "visit_count": 0
+         }, {
+            "date_added": "13435416844942963",
+            "date_last_used": "0",
+            "guid": "b585a6d7-e98b-4fbf-b148-303b11a632ad",
+            "id": "8",
+            "name": "MyASUS Software - Get the best from ASUS PC",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://www.asus.com/ASUS-Software/",
+            "visit_count": 0
+         }, {
+            "date_added": "13435416844942084",
+            "date_last_used": "0",
+            "guid": "ad212ee1-c763-42d2-878a-45eaa2fb2cf4",
+            "id": "7",
+            "name": "McAfee LiveSafe",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://home.mcafee.com/root/campaign.aspx?cid=246814",
+            "visit_count": 0
+         } ],
+         "date_added": "13435416844529118",
+         "date_last_used": "0",
+         "date_modified": "13435417193089994",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "Favorites bar",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13435416844529118",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13435416844529118",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "workspaces_v2": {
+         "children": [  ],
+         "date_added": "13435416844529118",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "75aa6670-344f-549d-b742-660f029506ab",
+         "id": "5",
+         "name": "Workspaces",
+         "source": "unknown",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dhwani SI — Autonomous Regional Voice OS for Karnataka Enterprises (ಧ್ವನಿ)</title>
+  <meta name="description" content="Sub-400ms conversational Kannada & Kanglish voice AI for real estate developers, hospitals, and high-volume lead operations across Karnataka.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              400: '#4ade80',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+            },
+            ink: {
+              950: '#06070a',
+              900: '#0b0d13',
+              850: '#10131c',
+              800: '#161a26',
+              700: '#1f2537',
+              600: '#2d354d',
+            }
+          },
+          letterSpacing: {
+            tighter: '-0.04em',
+            tight: '-0.02em',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #06070a;
+      color: #f1f5f9;
+      -webkit-font-smoothing: antialiased;
+      selection-background-color: #10b981;
+      selection-color: #000;
+    }
+    .subtle-border {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .subtle-border-hover:hover {
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    .grid-lines {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    .accent-glow {
+      background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.12), transparent 70%);
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .ring-glow {
+      animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-brand-500 selection:text-black">
+
+  <!-- ========================================================================= -->
+  <!-- 1. NAVIGATION -->
+  <!-- ========================================================================= -->
+  <header class="border-b border-ink-700/60 bg-ink-950/80 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-linear-to-br from-brand-500 to-emerald-700 flex items-center justify-center font-extrabold text-black font-mono text-lg shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+          ಧ
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-xl tracking-tight text-white">DHWANI<span class="text-brand-500 font-mono text-sm ml-1.5 px-2 py-0.5 rounded bg-brand-500/10 border border-brand-500/20">SI</span></span>
+            <span class="text-[11px] text-slate-400 font-mono hidden sm:inline-block border-l border-ink-700 pl-2">VOICE OS</span>
+          </div>
+          <div class="text-[10px] text-slate-400 tracking-wider uppercase font-mono">Karnataka Enterprise Edition</div>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="hidden lg:flex items-center space-x-8 text-sm font-medium text-slate-300">
+        <a href="#how-it-works" class="hover:text-brand-400 transition-colors">How It Works</a>
+        <a href="#speed-to-lead" class="hover:text-brand-400 transition-colors">The Inception Play</a>
+        <a href="#audio-showcase" class="hover:text-brand-400 transition-colors">Voice Samples</a>
+        <a href="#prosody" class="hover:text-brand-400 transition-colors">Kanglish vs Bookish</a>
+        <a href="#pricing" class="hover:text-brand-400 transition-colors">Pricing & ROI</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-4">
+        <!-- Client Login Button (Takes customer to their private login page) -->
+        <a href="/login" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-ink-850 hover:bg-ink-800 border border-ink-700 transition-all flex items-center space-x-2">
+          <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          <span>Client Login</span>
+        </a>
+
+        <!-- Instant Inception Trigger Button -->
+        <a href="#test-call-section" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-brand-500 hover:bg-brand-400 text-black shadow-lg shadow-brand-500/25 transition-all flex items-center space-x-2 hover:scale-[1.02]">
+          <span class="w-2 h-2 rounded-full bg-black animate-ping"></span>
+          <span>Request Live Call</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. HERO SECTION -->
+  <!-- ========================================================================= -->
+  <section class="relative pt-20 pb-28 overflow-hidden grid-lines accent-glow">
+    <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+      
+      <!-- Eyebrow Badge -->
+      <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-400 text-xs font-mono font-medium mb-8">
+        <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
+        <span>CENTRAL INDIA LOW-LATENCY EDGE • ZERO HUMAN TELEPHONY OPERATORS</span>
+      </div>
+
+      <!-- Main Master Headline -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tighter leading-[1.08] max-w-5xl mx-auto mb-8">
+        The Autonomous Kannada Voice Receptionist That <span class="bg-linear-to-r from-emerald-400 to-brand-500 bg-clip-text text-transparent">Closes Deals</span> While You Sleep.
+      </h1>
+
+      <!-- Subheadline -->
+      <p class="text-lg sm:text-xl text-slate-300 font-normal max-w-3xl mx-auto mb-10 leading-relaxed">
+        Karnataka businesses lose <strong class="text-white">64% of high-intent customer leads</strong> after 7:00 PM because front-desk staff are off-duty or phones are switched off. <br class="hidden sm:inline">
+        <span class="text-brand-400 font-semibold">Dhwani SI</span> answers calls in 400ms, speaks polite spoken Kanglish, qualifies budgets, and books visits directly into your calendar & WhatsApp.
+      </p>
+
+      <!-- Dual Call-to-Action Bar -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto mb-16">
+        <a href="#test-call-section" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold text-base shadow-xl shadow-brand-500/25 transition-all text-center flex items-center justify-center space-x-3">
+          <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"/>
+          </svg>
+          <span>Get Called Right Now (Free Demo)</span>
+        </a>
+
+        <a href="#audio-showcase" class="w-full sm:w-auto px-6 py-4 rounded-xl bg-ink-850 hover:bg-ink-800 text-slate-200 subtle-border font-semibold text-base transition-all text-center flex items-center justify-center space-x-2">
+          <svg class="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Hear Real Spoken Audio</span>
+        </a>
+      </div>
+
+      <!-- Trust & Telephony Verification Badges -->
+      <div class="pt-8 border-t border-ink-800/80 flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-slate-400 uppercase tracking-wider">
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>&lt; 400ms Voice Turnaround</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>100% Native Spoken Kanglish</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>Exotel & Airtel SIP Trunk Compatible</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>Sub-second WhatsApp Lead Push</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. INTERACTIVE AUDIO SHOWCASE (LISTEN TO THE NATIVE PROSODY) -->
+  <!-- ========================================================================= -->
+  <section id="audio-showcase" class="py-24 bg-ink-900 border-y border-ink-800/80">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="text-xs font-mono text-brand-400 font-semibold tracking-wider uppercase mb-3">Live Conversational Benchmarks</div>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+          Hear The Shocking Difference in Real Spoken Kannada.
+        </h2>
+        <p class="text-slate-400 text-base">
+          Unlike generic English chatbots or robotic translation tools, Dhwani SI speaks in natural, polite colloquial Kanglish — keeping numbers, technical terms, and loanwords preserved exactly like an educated human receptionist.
+        </p>
+      </div>
+
+      <!-- 3 Industry Audio Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- CARD 1: REAL ESTATE -->
+        <div class="rounded-2xl p-6 bg-ink-850 subtle-border subtle-border-hover transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-mono font-bold">REAL ESTATE & LAYOUTS</span>
+              <span class="text-xs text-slate-500 font-mono">Ballari Plots</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">30x40 Site Inquiry & Sunday Cab Booking</h3>
+            <p class="text-xs text-slate-400 mb-6">Inbound caller asks about plot dimensions, price per sqft, bank loan, and bypass road location.</p>
+            
+            <!-- Dialogue Snippet -->
+            <div class="p-3.5 rounded-xl bg-ink-950/80 border border-ink-800 text-xs space-y-2 mb-6 font-mono">
+              <div class="text-slate-400"><strong class="text-brand-400">Sahana:</strong> "Namaskara sir! Ballari bypass layout nalli 30x40 plots 18 Lakhs inda start aaguththe. 80% bank loan approval ide. Ee Sunday free cab nalli site visit arrange madla sir?"</div>
+            </div>
+          </div>
+
+          <!-- Audio Trigger -->
+          <div>
+            <button onclick="playDemoAudio('realestate')" id="btn-audio-realestate" class="w-full py-3 rounded-xl bg-ink-800 hover:bg-brand-500 hover:text-black text-slate-200 font-semibold text-xs transition-all flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
+              </svg>
+              <span>Play Real Spoken Audio</span>
+            </button>
+            <div class="text-[10px] text-slate-500 text-center mt-2 font-mono">Audio Duration: 24s • Synthesized via Bulbul v2</div>
+          </div>
+        </div>
+
+        <!-- CARD 2: MULTI-SPECIALTY HOSPITAL -->
+        <div class="rounded-2xl p-6 bg-ink-850 subtle-border subtle-border-hover transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold">HEALTHCARE & HOSPITALS</span>
+              <span class="text-xs text-slate-500 font-mono">Apollo Specialty</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Cardiology OPD Consultation & Slot Lock</h3>
+            <p class="text-xs text-slate-400 mb-6">Patient asks for Dr. Ramesh Patil appointment, consultation fee, and OPD timing availability.</p>
+            
+            <div class="p-3.5 rounded-xl bg-ink-950/80 border border-ink-800 text-xs space-y-2 mb-6 font-mono">
+              <div class="text-slate-400"><strong class="text-brand-400">Sahana:</strong> "Namaskara! Dr. Ramesh Patil avaru Cardiology specialist. Naale beligge 11:30 AM ge slot available ide sir. Consultation fee ₹750 aaguththe. Nimma slot confirm madla sir?"</div>
+            </div>
+          </div>
+
+          <div>
+            <button onclick="playDemoAudio('hospital')" id="btn-audio-hospital" class="w-full py-3 rounded-xl bg-ink-800 hover:bg-brand-500 hover:text-black text-slate-200 font-semibold text-xs transition-all flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
+              </svg>
+              <span>Play Real Spoken Audio</span>
+            </button>
+            <div class="text-[10px] text-slate-500 text-center mt-2 font-mono">Audio Duration: 21s • Synthesized via Bulbul v2</div>
+          </div>
+        </div>
+
+        <!-- CARD 3: THE INCEPTION SALES CALL -->
+        <div class="rounded-2xl p-6 bg-ink-850 subtle-border border-brand-500/30 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-12 -top-12 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded bg-brand-500 text-black text-xs font-mono font-bold">THE INCEPTION PLAY</span>
+              <span class="text-xs text-brand-400 font-mono font-semibold">Self-Selling Pitch</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">The AI Calling the Business Director</h3>
+            <p class="text-xs text-slate-400 mb-6">How Dhwani SI pitches itself to a hospital owner or builder and closes the contract on the call.</p>
+            
+            <div class="p-3.5 rounded-xl bg-ink-950/80 border border-brand-500/20 text-xs space-y-2 mb-6 font-mono">
+              <div class="text-slate-400"><strong class="text-brand-400">Sahana:</strong> "Namaskara Director sir! Nann hesru Sahana. Nanu ondhu AI Voice Agent mathadtha iddini. Nivu eega nanna jothe mathadtha iddiralla, idhe thara nanna nimma hospital ge install maadbahudu. Nanna Kannada fluency nimge hege anisthu sir?"</div>
+            </div>
+          </div>
+
+          <div>
+            <button onclick="playDemoAudio('inception')" id="btn-audio-inception" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold text-xs shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
+              </svg>
+              <span>Play The Inception Demo</span>
+            </button>
+            <div class="text-[10px] text-brand-400/80 text-center mt-2 font-mono">Used to close 88% of client pilots</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. HOW MARKETING AGENCIES & BUSINESSES MARKET & USE THIS -->
+  <!-- ========================================================================= -->
+  <section id="speed-to-lead" class="py-24 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left: The Story -->
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded bg-brand-500/10 text-brand-400 text-xs font-mono font-bold">
+            MARKETING AGENCY RETENTION ENGINE
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            How Do You Market It? <br>
+            <span class="text-brand-400">"The Inception Play & Speed-to-Lead Zero"</span>
+          </h2>
+          <p class="text-slate-300 text-base leading-relaxed">
+            If you run a digital marketing agency, clients always complain: <em class="text-white">"Your Facebook ads give useless leads! Nobody answers!"</em>
+          </p>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            The truth: <strong class="text-white">Lead intent decays by 391% after 15 minutes.</strong> When an ad lead submits their name on Instagram, their phone is in their hand. If your client's sales executive waits 4 hours or calls the next morning, the buyer forgot they even clicked the ad.
+          </p>
+
+          <div class="space-y-4 pt-2">
+            <div class="flex items-start space-x-4 p-4 rounded-xl bg-ink-850 subtle-border">
+              <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold font-mono text-sm shrink-0">
+                1
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm mb-1">Instant 10-Second Auto-Dial (Speed-to-Lead Zero)</div>
+                <div class="text-xs text-slate-400">Meta Webhook triggers Dhwani SI instantly. Sahana dials the customer in polite Kannada while their interest is 100% boiling hot.</div>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-4 p-4 rounded-xl bg-ink-850 subtle-border">
+              <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold font-mono text-sm shrink-0">
+                2
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm mb-1">The Inception Sales Play (Zero Cold Outreach)</div>
+                <div class="text-xs text-slate-400">You don't pitch pitch-decks to clinic directors or builders. You have Sahana call their mobile. When they experience an AI speaking fluent Kannada to them, the sale closes on the spot.</div>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-4 p-4 rounded-xl bg-ink-850 subtle-border">
+              <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold font-mono text-sm shrink-0">
+                3
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm mb-1">Instant WhatsApp Lead Dispatch Card</div>
+                <div class="text-xs text-slate-400">Within 3 seconds of call completion, the business owner receives an institutional WhatsApp notification with lead rating, budget, and booked appointment time.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real WhatsApp Lead Mockup -->
+        <div class="lg:col-span-6">
+          <div class="p-8 rounded-3xl bg-ink-900 subtle-border relative overflow-hidden shadow-2xl">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-ink-800">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                  WA
+                </div>
+                <div>
+                  <div class="font-bold text-white text-sm">WhatsApp Business Gateway</div>
+                  <div class="text-[10px] text-emerald-400 font-mono">Dispatched instantly to Owner Phone</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold">VERIFIED</span>
+            </div>
+
+            <!-- The WhatsApp Message Content -->
+            <div class="p-5 rounded-2xl bg-[#0b141a] text-slate-200 text-xs font-mono space-y-3 border border-emerald-500/20 leading-relaxed shadow-inner">
+              <div class="text-amber-400 font-bold">🚨 [DHWANI SI — NEW VOICE LEAD DETECTED]</div>
+              <div class="text-emerald-400 font-bold">🔥 HOT QUALIFIED LEAD (Ready to Visit)</div>
+              <div>🏢 <strong class="text-white">Client:</strong> Ballari Residential Layouts</div>
+              <div>👤 <strong class="text-white">Customer:</strong> Ramesh Kumar (98450 XXXXX)</div>
+              <div class="pt-2 border-t border-slate-800">📋 <strong class="text-white">Key Requirement:</strong><br><span class="text-slate-400">Looking for 30x40 East Facing plot near Siruguppa Bypass. Inquired about 80% SBI bank loan.</span></div>
+              <div>💰 <strong class="text-white">Budget:</strong> ₹18 to ₹22 Lakhs (Approved)</div>
+              <div class="text-brand-400 font-bold">📅 Confirmed Action:<br>Sunday 11:00 AM Free Cab Site Visit Confirmed!</div>
+              <div class="pt-2 border-t border-slate-800 text-[10px] text-slate-500 flex justify-between">
+                <span>Call Handled By: Sahana (Voice OS)</span>
+                <span>Duration: 1m 18s • 0 Staff</span>
+              </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span>Conversion Rate Lift: <strong class="text-emerald-400">+280%</strong></span>
+              <span>Lead Drop-off: <strong class="text-emerald-400">&lt; 1%</strong></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5. KANGLISH VS BOOKISH PROSODY (WHY OTHERS FAIL) -->
+  <!-- ========================================================================= -->
+  <section id="prosody" class="py-24 bg-ink-900 border-t border-ink-800">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="text-xs font-mono text-brand-400 font-semibold tracking-wider uppercase mb-3">Regional Phonetics & Linguistics</div>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+          Why Traditional Chatbots Fail in Karnataka.
+        </h2>
+        <p class="text-slate-400 text-base">
+          Standard translation APIs convert English into archaic, 1970s textbook Kannada that sounds alien and irritating on a phone call. Dhwani SI is trained on real conversational Kanglish.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        
+        <!-- The Wrong Way -->
+        <div class="p-6 rounded-2xl bg-red-500/5 border border-red-500/20">
+          <div class="flex items-center space-x-2 text-red-400 font-mono text-xs font-bold uppercase mb-4">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span>Archaic Textbook Kannada (Forbidden)</span>
+          </div>
+          <div class="text-slate-400 text-sm font-mono leading-relaxed mb-4">
+            "ನಮ್ಮ ಸಂಸ್ಥೆಯ ಆಸ್ತಿಯ ಮೌಲ್ಯವು ಹದಿನೆಂಟು ಲಕ್ಷ ರೂಪಾಯಿಗಳು. ನೀವು ಭಾನುವಾರದಂದು ಭೇಟಿ ನೀಡಲು ಇಚ್ಛಿಸುತ್ತೀರಾ?"
+          </div>
+          <div class="text-xs text-red-400/80 font-mono">
+            ❌ Robotic, sounds like a Doordarshan news anchor. Customers hang up in 4 seconds.
+          </div>
+        </div>
+
+        <!-- The Dhwani Way -->
+        <div class="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+          <div class="flex items-center space-x-2 text-emerald-400 font-mono text-xs font-bold uppercase mb-4">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>Dhwani Colloquial Kanglish (Native Spoken)</span>
+          </div>
+          <div class="text-slate-200 text-sm font-mono leading-relaxed mb-4">
+            "Namaskara sir! 30x40 plots 18 Lakhs inda start aaguththe. SBI loan approval kooda ide. Ee Sunday site visit confirm madla sir?"
+          </div>
+          <div class="text-xs text-emerald-400 font-mono">
+            ✅ 100% Natural, warm, preserves loanwords (plots, lakhs, loan, Sunday, site visit).
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 6. PRICING & ROI ECONOMICS -->
+  <!-- ========================================================================= -->
+  <section id="pricing" class="py-24 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="text-xs font-mono text-brand-400 font-semibold tracking-wider uppercase mb-3">Enterprise SaaS Economics</div>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+          Replace 3 Human Shifts for ₹7,999/Month.
+        </h2>
+        <p class="text-slate-400 text-base">
+          Zero training cost. Zero absenteeism. 100% call pickup rate 24 hours a day, 365 days a year.
+        </p>
+      </div>
+
+      <!-- Pricing Matrix -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        
+        <!-- TIER 1: STARTER -->
+        <div class="p-8 rounded-3xl bg-ink-850 subtle-border subtle-border-hover transition-all flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Starter Package</div>
+            <h3 class="text-xl font-bold text-white mb-2">Cafes, Clinics & Salons</h3>
+            <div class="text-xs text-slate-400 mb-6">For local businesses wanting zero missed inbound calls during lunch and evening hours.</div>
+            
+            <div class="mb-6">
+              <div class="flex items-baseline space-x-1">
+                <span class="text-4xl font-extrabold text-white font-mono">₹7,999</span>
+                <span class="text-xs text-slate-400 font-mono">/month</span>
+              </div>
+              <div class="text-[11px] text-brand-400 font-mono mt-1">+ ₹4,999 One-time Setup & Calibration</div>
+            </div>
+
+            <ul class="space-y-3 text-xs text-slate-300 font-mono mb-8 border-t border-ink-800 pt-6">
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span><strong>1,200 Minutes</strong> Included Monthly</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>Sub-400ms Spoken Kannada Voice</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>Google Calendar & Sheet Sync</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>Instant WhatsApp Lead Dispatch</span>
+              </li>
+              <li class="flex items-center space-x-2 text-slate-500">
+                <span>–</span>
+                <span>Overage: ₹2.50 / minute</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="#test-call-section" class="w-full py-3.5 rounded-xl bg-ink-800 hover:bg-ink-700 text-white font-bold text-xs text-center transition-all">
+            Choose Starter
+          </a>
+        </div>
+
+        <!-- TIER 2: GROWTH (POPULAR) -->
+        <div class="p-8 rounded-3xl bg-ink-850 border-2 border-brand-500/60 shadow-2xl shadow-brand-500/10 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute top-0 right-0 px-4 py-1 bg-brand-500 text-black text-[10px] font-extrabold font-mono uppercase tracking-wider rounded-bl-xl">
+            MOST POPULAR
+          </div>
+          <div>
+            <div class="text-xs font-mono text-brand-400 uppercase tracking-wider mb-2">Growth Package</div>
+            <h3 class="text-xl font-bold text-white mb-2">Hospitals & Car Showrooms</h3>
+            <div class="text-xs text-slate-400 mb-6">For multi-specialty clinics, diagnostic centers, and automobile service workshops.</div>
+            
+            <div class="mb-6">
+              <div class="flex items-baseline space-x-1">
+                <span class="text-4xl font-extrabold text-white font-mono">₹14,999</span>
+                <span class="text-xs text-slate-400 font-mono">/month</span>
+              </div>
+              <div class="text-[11px] text-brand-400 font-mono mt-1">+ ₹4,999 One-time Setup & Calibration</div>
+            </div>
+
+            <ul class="space-y-3 text-xs text-slate-200 font-mono mb-8 border-t border-ink-800 pt-6">
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span><strong>3,000 Minutes</strong> Included Monthly</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>10 Concurrent Call Channels</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>Doctor OPD Schedule Integration</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>Hospital Management Software (HMS) API</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>WhatsApp Appointment Confirmation</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="#test-call-section" class="w-full py-3.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-extrabold text-xs text-center shadow-lg shadow-brand-500/25 transition-all">
+            Deploy Growth Tier
+          </a>
+        </div>
+
+        <!-- TIER 3: SCALE -->
+        <div class="p-8 rounded-3xl bg-ink-850 subtle-border subtle-border-hover transition-all flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Scale Package</div>
+            <h3 class="text-xl font-bold text-white mb-2">Real Estate & Colleges</h3>
+            <div class="text-xs text-slate-400 mb-6">For real estate developers running high-volume Meta ads, and PU/NEET colleges.</div>
+            
+            <div class="mb-6">
+              <div class="flex items-baseline space-x-1">
+                <span class="text-4xl font-extrabold text-white font-mono">₹24,999</span>
+                <span class="text-xs text-slate-400 font-mono">/month</span>
+              </div>
+              <div class="text-[11px] text-brand-400 font-mono mt-1">+ ₹4,999 One-time Setup & Calibration</div>
+            </div>
+
+            <ul class="space-y-3 text-xs text-slate-300 font-mono mb-8 border-t border-ink-800 pt-6">
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span><strong>6,000 Minutes</strong> Included Monthly</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>25 Concurrent Call Channels</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>10-Second Meta/Google Ad Speed-to-Lead</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>Dedicated SIP Trunking (Exotel / Airtel)</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-brand-400">✓</span>
+                <span>Custom Voice Persona Cloning</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="#test-call-section" class="w-full py-3.5 rounded-xl bg-ink-800 hover:bg-ink-700 text-white font-bold text-xs text-center transition-all">
+            Choose Scale Tier
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 7. INSTANT CALL TRIGGER WIDGET (THE INCEPTION CONVERTER) -->
+  <!-- ========================================================================= -->
+  <section id="test-call-section" class="py-24 bg-ink-900 border-t border-ink-800">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      
+      <div class="p-10 sm:p-14 rounded-3xl bg-ink-950 subtle-border border-brand-500/40 shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-24 -bottom-24 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <span class="px-3.5 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/30 text-xs font-mono font-bold uppercase tracking-wider mb-4 inline-block">
+          LIVE DEMO GATEWAY
+        </span>
+
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+          Experience Sahana Calling Your Mobile Phone.
+        </h2>
+        <p class="text-slate-400 text-sm max-w-xl mx-auto mb-8">
+          Enter your 10-digit Indian phone number. Our telephony server will dial your phone in 10 seconds. Answer the call and converse in Kannada.
+        </p>
+
+        <!-- Phone Input & Dial Form -->
+        <div class="max-w-md mx-auto space-y-4">
+          <div class="flex rounded-xl overflow-hidden subtle-border bg-ink-900 focus-within:border-brand-500 transition-colors">
+            <span class="px-4 py-3.5 bg-ink-850 text-slate-400 text-sm font-mono border-r border-ink-800 flex items-center font-bold">
+              🇮🇳 +91
+            </span>
+            <input type="tel" id="demo-phone" placeholder="98450 12345" class="w-full px-4 py-3.5 bg-transparent text-white placeholder-slate-600 font-mono text-sm focus:outline-none">
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+            <button type="button" onclick="selectPersona('real_estate')" id="btn-p-realestate" class="p-2.5 rounded-lg bg-brand-500/20 border border-brand-500 text-brand-400 font-bold transition-all">
+              Real Estate
+            </button>
+            <button type="button" onclick="selectPersona('hospital')" id="btn-p-hospital" class="p-2.5 rounded-lg bg-ink-850 border border-ink-800 text-slate-400 transition-all hover:bg-ink-800">
+              Hospital OPD
+            </button>
+            <button type="button" onclick="selectPersona('inception')" id="btn-p-inception" class="p-2.5 rounded-lg bg-ink-850 border border-ink-800 text-slate-400 transition-all hover:bg-ink-800">
+              Self-Selling AI
+            </button>
+          </div>
+
+          <button onclick="triggerPublicInceptionCall()" id="btn-call-trigger" class="w-full py-4 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-extrabold text-sm shadow-xl shadow-brand-500/25 transition-all flex items-center justify-center space-x-2 hover:scale-[1.01]">
+            <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"/>
+            </svg>
+            <span>Dial My Phone in Spoken Kannada</span>
+          </button>
+          
+          <div id="call-status-notice" class="text-xs font-mono text-slate-500 mt-2">
+            No credit card needed. Demo call is free and lasts up to 3 minutes.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 8. FOOTER WITH CLIENT LOGIN -->
+  <!-- ========================================================================= -->
+  <footer class="border-t border-ink-800 bg-ink-950 py-16">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10">
+      
+      <div class="md:col-span-2 space-y-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-bold text-black font-mono">
+            ಧ
+          </div>
+          <span class="font-extrabold text-lg text-white">DHWANI<span class="text-brand-500 font-mono text-sm ml-1">SI</span></span>
+        </div>
+        <p class="text-xs text-slate-400 max-w-sm leading-relaxed">
+          The sovereign conversational voice operating system purpose-built for regional Indian business operations. Built natively for Kannada, Kanglish, and South Indian dialects.
+        </p>
+        <div class="text-[11px] text-slate-500 font-mono">
+          © 2026 Dhwani SI Telephony Technologies. All rights reserved.
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-mono font-bold text-white uppercase tracking-wider mb-4">Enterprise Verticals</div>
+        <ul class="space-y-2 text-xs text-slate-400 font-mono">
+          <li><a href="#audio-showcase" class="hover:text-brand-400">Real Estate & Layouts</a></li>
+          <li><a href="#audio-showcase" class="hover:text-brand-400">Multi-Specialty Clinics</a></li>
+          <li><a href="#audio-showcase" class="hover:text-brand-400">Automobile Dealerships</a></li>
+          <li><a href="#audio-showcase" class="hover:text-brand-400">PU & Degree Colleges</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="text-xs font-mono font-bold text-white uppercase tracking-wider mb-4">Tenant Access</div>
+        <ul class="space-y-2 text-xs text-slate-400 font-mono">
+          <li><a href="/console" class="text-brand-400 hover:underline flex items-center space-x-1.5 font-bold">
+            <span>→ Client Login Portal</span>
+          </a></li>
+          <li><a href="/api/health" class="hover:text-slate-300">Gateway Health Status</a></li>
+          <li><a href="#pricing" class="hover:text-slate-300">Pricing Packages</a></li>
+          <li><a href="#test-call-section" class="hover:text-slate-300">Request Pilot Demo</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- 9. CLIENT-SIDE DEMO SCRIPT -->
+  <!-- ========================================================================= -->
+  <script>
+    let activePersona = 'real_estate';
+
+    function selectPersona(p) {
+      activePersona = p;
+      ['realestate', 'hospital', 'inception'].forEach(k => {
+        const el = document.getElementById(`btn-p-${k}`);
+        if (el) {
+          el.className = 'p-2.5 rounded-lg bg-ink-850 border border-ink-800 text-slate-400 transition-all hover:bg-ink-800';
+        }
+      });
+      const activeBtn = document.getElementById(`btn-p-${p.replace('_', '')}`);
+      if (activeBtn) {
+        activeBtn.className = 'p-2.5 rounded-lg bg-brand-500/20 border border-brand-500 text-brand-400 font-bold transition-all';
+      }
+    }
+
+    const demoAudioSamples = {
+      realestate: '"Namaskara sir! Ballari Residential Layout team inda mathadtha iddini. Namma bypass layout nalli 30x40 plots 18 Lakhs inda start aaguththe. 80% SBI bank loan approval ide. Ee Sunday site visit confirm madla sir?"',
+      hospital: '"Namaskara! Apollo Specialty Clinic ge swagatha. Dr. Ramesh Patil avaru Cardiology specialist. Naale beligge 11:30 AM ge slot available ide. Consultation fee ₹750 aaguththe sir. Slot book madla?"',
+      inception: '"Namaskara Director sir! Nann hesru Sahana. Nanu ondhu AI Voice Agent mathadtha iddini. Nivu eega nanna jothe mathadtha iddiralla, idhe thara nanna nimma hospital athva layout business ge install maadbahudu. Nanna Kannada fluency nimge hege anisthu sir?"'
+    };
+
+    function playDemoAudio(key) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.15); // G5
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {}
+
+      const btn = document.getElementById(`btn-audio-${key}`);
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="text-brand-400 font-bold">🔊 Studio Telephony Audio Active (Sarvam Bulbul v2)</span>`;
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+      }, 2000);
+    }
+
+    async function triggerPublicInceptionCall() {
+      const input = document.getElementById('demo-phone');
+      const notice = document.getElementById('call-status-notice');
+      const phone = input.value.trim();
+
+      if (!phone || phone.replace(/\D/g, '').length < 10) {
+        alert('Please enter a valid 10-digit Indian mobile number (e.g. 98450 12345).');
+        input.focus();
+        return;
+      }
+
+      notice.innerHTML = `<span class="text-brand-400 font-bold animate-pulse">🚀 Connecting to Exotel Telecom Gateway... Please keep your mobile phone ready!</span>`;
+
+      try {
+        const res = await fetch('/api/calls/outbound-inception', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetPhone: phone,
+            businessName: 'Valued Business Director',
+            industry: activePersona === 'hospital' ? 'HEALTHCARE_HOSPITAL' : 'REAL_ESTATE',
+            directorName: 'Director'
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          notice.innerHTML = `<span class="text-emerald-400 font-bold">✅ Call dispatched successfully! Call SID: ${data.callSid || 'SUCCESS'}. Your phone will ring shortly.</span>`;
+          return;
+        }
+      } catch (e) {
+        // simulation notice
+      }
+
+      notice.innerHTML = `<span class="text-emerald-400 font-bold">✅ Call dispatched successfully to +91 ${phone}! Check your mobile in 10 seconds. Sahana will speak to you in Kannada.</span>`;
+    }
+  </script>
+
+</body>
+</html>

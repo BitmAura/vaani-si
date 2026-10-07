@@ -1,0 +1,732 @@
+/**
+ * VANNI Master Enterprise Design System Stylesheet
+ * Strict enterprise B2B aesthetics (Stripe / Linear / Vercel level polish).
+ * Zero AI clichés: No glowing neons, no excessive glassmorphism, no fake equalizers.
+ */
+
+:root {
+  /* Canvas & Surfaces */
+  --vanni-bg: #F8FAFC;
+  --vanni-surface: #FFFFFF;
+  --vanni-surface-elevated: #FFFFFF;
+  --vanni-surface-subdued: #F1F5F9;
+
+  /* Borders */
+  --vanni-border: #E2E8F0;
+  --vanni-border-subdued: #F1F5F9;
+  --vanni-border-strong: #CBD5E1;
+
+  /* Typography Colors */
+  --vanni-text-primary: #0F172A;
+  --vanni-text-secondary: #475569;
+  --vanni-text-muted: #64748B;
+  --vanni-text-disabled: #94A3B8;
+
+  /* Primary Brand (Executive Deep Slate) */
+  --vanni-primary: #0F172A;
+  --vanni-primary-hover: #1E293B;
+  --vanni-primary-fg: #FFFFFF;
+
+  /* Accent (Professional Cobalt) */
+  --vanni-accent: #2563EB;
+  --vanni-accent-subtle: #EFF6FF;
+  --vanni-accent-fg: #1D4ED8;
+
+  /* Status Colors */
+  --vanni-success: #059669;
+  --vanni-success-subtle: #ECFDF5;
+  --vanni-success-fg: #047857;
+
+  --vanni-warning: #D97706;
+  --vanni-warning-subtle: #FFFBEB;
+  --vanni-warning-fg: #B45309;
+
+  --vanni-danger: #DC2626;
+  --vanni-danger-subtle: #FEF2F2;
+  --vanni-danger-fg: #B91C1C;
+
+  --vanni-info: #0284C7;
+  --vanni-info-subtle: #F0F9FF;
+  --vanni-info-fg: #0369A1;
+
+  /* Typography Families */
+  --vanni-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Kannada', 'Kannada Sangam MN', Tunga, sans-serif;
+  --vanni-font-kannada: 'Noto Sans Kannada', 'Kannada Sangam MN', Tunga, sans-serif;
+  --vanni-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Border Radii */
+  --vanni-radius-sm: 4px;
+  --vanni-radius-md: 6px;
+  --vanni-radius-lg: 8px;
+  --vanni-radius-xl: 12px;
+  --vanni-radius-full: 9999px;
+
+  /* Shadows */
+  --vanni-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --vanni-shadow-default: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
+  --vanni-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+  --vanni-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --vanni-shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+
+  /* Layout Constants */
+  --vanni-header-height: 56px;
+  --vanni-sidebar-width: 240px;
+  --vanni-sidebar-collapsed-width: 64px;
+  --vanni-drawer-width: 520px;
+  --vanni-max-content-width: 1280px;
+
+  /* Transitions */
+  --vanni-transition-fast: all 150ms cubic-bezier(0.2, 0.0, 0, 1.0);
+  --vanni-transition-normal: all 200ms cubic-bezier(0.2, 0.0, 0, 1.0);
+  --vanni-transition-slide: transform 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+
+/* Base Reset & Typography */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--vanni-font-sans);
+  background-color: var(--vanni-bg);
+  color: var(--vanni-text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Kannada regional text helper */
+.vanni-kannada {
+  font-family: var(--vanni-font-kannada);
+  line-height: 1.7;
+}
+
+/* Tabular figures for numbers, currency, timestamps */
+.vanni-tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--vanni-font-mono);
+}
+
+/* ==========================================================================
+   LAYOUT COMPONENTS
+   ========================================================================== */
+.vanni-app-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--vanni-bg);
+}
+
+.vanni-dashboard-sidebar {
+  width: var(--vanni-sidebar-width);
+  min-width: var(--vanni-sidebar-width);
+  background: var(--vanni-surface);
+  border-right: 1px solid var(--vanni-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 30;
+}
+
+.vanni-dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.vanni-dashboard-header {
+  height: var(--vanni-header-height);
+  background: var(--vanni-surface);
+  border-bottom: 1px solid var(--vanni-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.vanni-page-header {
+  padding: 24px 32px 16px 32px;
+  border-bottom: 1px solid var(--vanni-border);
+  background: var(--vanni-surface);
+}
+
+.vanni-page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--vanni-text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.vanni-page-subtitle {
+  font-size: 13px;
+  color: var(--vanni-text-muted);
+  margin-top: 4px;
+}
+
+.vanni-page-content {
+  padding: 32px;
+  max-width: var(--vanni-max-content-width);
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Marketing Shell */
+.vanni-marketing-header {
+  height: 64px;
+  border-bottom: 1px solid var(--vanni-border);
+  background: var(--vanni-surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.vanni-marketing-footer {
+  border-top: 1px solid var(--vanni-border);
+  background: var(--vanni-surface);
+  padding: 48px 32px;
+  font-size: 13px;
+  color: var(--vanni-text-secondary);
+}
+
+/* ==========================================================================
+   BUTTONS & ACTIONS
+   ========================================================================== */
+.vanni-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 8px 14px;
+  border-radius: var(--vanni-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--vanni-transition-fast);
+  white-space: nowrap;
+  text-decoration: none;
+  gap: 8px;
+}
+
+.vanni-button:focus-visible {
+  outline: 2px solid var(--vanni-accent);
+  outline-offset: 2px;
+}
+
+.vanni-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary Button */
+.vanni-button-primary {
+  background: var(--vanni-primary);
+  color: var(--vanni-primary-fg);
+  border-color: var(--vanni-primary);
+}
+.vanni-button-primary:hover:not(:disabled) {
+  background: var(--vanni-primary-hover);
+  border-color: var(--vanni-primary-hover);
+}
+
+/* Secondary Button */
+.vanni-button-secondary {
+  background: var(--vanni-surface);
+  color: var(--vanni-text-primary);
+  border-color: var(--vanni-border);
+  box-shadow: var(--vanni-shadow-sm);
+}
+.vanni-button-secondary:hover:not(:disabled) {
+  background: var(--vanni-surface-subdued);
+  border-color: var(--vanni-border-strong);
+}
+
+/* Destructive Button */
+.vanni-button-danger {
+  background: var(--vanni-danger);
+  color: #FFFFFF;
+  border-color: var(--vanni-danger);
+}
+.vanni-button-danger:hover:not(:disabled) {
+  background: #B91C1C;
+}
+
+/* Ghost Button */
+.vanni-button-ghost {
+  background: transparent;
+  color: var(--vanni-text-secondary);
+}
+.vanni-button-ghost:hover:not(:disabled) {
+  background: var(--vanni-surface-subdued);
+  color: var(--vanni-text-primary);
+}
+
+/* Button Sizes */
+.vanni-button-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.vanni-button-lg {
+  padding: 12px 20px;
+  font-size: 15px;
+}
+
+/* Icon Button */
+.vanni-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--vanni-radius-md);
+  border: 1px solid var(--vanni-border);
+  background: var(--vanni-surface);
+  color: var(--vanni-text-secondary);
+  cursor: pointer;
+  transition: var(--vanni-transition-fast);
+}
+.vanni-icon-button:hover {
+  background: var(--vanni-surface-subdued);
+  color: var(--vanni-text-primary);
+}
+
+/* ==========================================================================
+   INPUTS & FORMS
+   ========================================================================== */
+.vanni-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.vanni-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vanni-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.vanni-input,
+.vanni-textarea,
+.vanni-select {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--vanni-text-primary);
+  background: var(--vanni-surface);
+  border: 1px solid var(--vanni-border);
+  border-radius: var(--vanni-radius-md);
+  padding: 8px 12px;
+  transition: var(--vanni-transition-fast);
+  width: 100%;
+}
+
+.vanni-input:focus,
+.vanni-textarea:focus,
+.vanni-select:focus {
+  outline: none;
+  border-color: var(--vanni-accent);
+  box-shadow: 0 0 0 1px var(--vanni-accent);
+}
+
+.vanni-input::placeholder,
+.vanni-textarea::placeholder {
+  color: var(--vanni-text-disabled);
+}
+
+.vanni-form-hint {
+  font-size: 12px;
+  color: var(--vanni-text-muted);
+}
+
+.vanni-form-error {
+  font-size: 12px;
+  color: var(--vanni-danger);
+}
+
+/* Switch / Toggle */
+.vanni-switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vanni-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.vanni-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.vanni-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--vanni-border);
+  transition: var(--vanni-transition-fast);
+  border-radius: var(--vanni-radius-full);
+}
+
+.vanni-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: var(--vanni-transition-fast);
+  border-radius: 50%;
+  box-shadow: var(--vanni-shadow-sm);
+}
+
+.vanni-switch input:checked + .vanni-switch-slider {
+  background-color: var(--vanni-accent);
+}
+
+.vanni-switch input:checked + .vanni-switch-slider:before {
+  transform: translateX(16px);
+}
+
+/* ==========================================================================
+   FEEDBACK & STATUS
+   ========================================================================== */
+.vanni-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--vanni-radius-full);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.vanni-badge-default {
+  background: var(--vanni-surface-subdued);
+  color: var(--vanni-text-secondary);
+  border: 1px solid var(--vanni-border);
+}
+
+.vanni-badge-success {
+  background: var(--vanni-success-subtle);
+  color: var(--vanni-success-fg);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.vanni-badge-warning {
+  background: var(--vanni-warning-subtle);
+  color: var(--vanni-warning-fg);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.vanni-badge-danger {
+  background: var(--vanni-danger-subtle);
+  color: var(--vanni-danger-fg);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.vanni-badge-accent {
+  background: var(--vanni-accent-subtle);
+  color: var(--vanni-accent-fg);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+/* Status Indicator Dot */
+.vanni-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.vanni-status-dot-live { background-color: var(--vanni-success); }
+.vanni-status-dot-idle { background-color: var(--vanni-text-disabled); }
+.vanni-status-dot-busy { background-color: var(--vanni-warning); }
+.vanni-status-dot-error { background-color: var(--vanni-danger); }
+
+/* Alerts */
+.vanni-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--vanni-radius-md);
+  font-size: 13px;
+  border: 1px solid var(--vanni-border);
+  background: var(--vanni-surface);
+}
+
+.vanni-alert-info {
+  background: var(--vanni-info-subtle);
+  border-color: rgba(2, 132, 199, 0.2);
+  color: var(--vanni-info-fg);
+}
+
+.vanni-alert-warning {
+  background: var(--vanni-warning-subtle);
+  border-color: rgba(217, 119, 6, 0.2);
+  color: var(--vanni-warning-fg);
+}
+
+.vanni-alert-danger {
+  background: var(--vanni-danger-subtle);
+  border-color: rgba(220, 38, 38, 0.2);
+  color: var(--vanni-danger-fg);
+}
+
+.vanni-alert-success {
+  background: var(--vanni-success-subtle);
+  border-color: rgba(5, 150, 105, 0.2);
+  color: var(--vanni-success-fg);
+}
+
+/* Skeleton Loading */
+.vanni-skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: vanni-shimmer 1.5s infinite;
+  border-radius: var(--vanni-radius-sm);
+}
+
+@keyframes vanni-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ==========================================================================
+   DATA & ANALYTICS CARDS
+   ========================================================================== */
+.vanni-card {
+  background: var(--vanni-surface);
+  border: 1px solid var(--vanni-border);
+  border-radius: var(--vanni-radius-lg);
+  box-shadow: var(--vanni-shadow-sm);
+  padding: 20px;
+}
+
+.vanni-metric-card {
+  background: var(--vanni-surface);
+  border: 1px solid var(--vanni-border);
+  border-radius: var(--vanni-radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vanni-metric-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vanni-text-muted);
+}
+
+.vanni-metric-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--vanni-text-primary);
+  font-family: var(--vanni-font-mono);
+  letter-spacing: -0.02em;
+}
+
+.vanni-metric-meta {
+  font-size: 12px;
+  color: var(--vanni-text-secondary);
+}
+
+/* Tables */
+.vanni-table-container {
+  background: var(--vanni-surface);
+  border: 1px solid var(--vanni-border);
+  border-radius: var(--vanni-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--vanni-shadow-sm);
+}
+
+.vanni-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.vanni-table th {
+  background: var(--vanni-surface-subdued);
+  color: var(--vanni-text-secondary);
+  font-weight: 600;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--vanni-border);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+.vanni-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--vanni-border-subdued);
+  color: var(--vanni-text-primary);
+}
+
+.vanni-table tr:last-child td {
+  border-bottom: none;
+}
+
+.vanni-table tr:hover td {
+  background-color: #FAFAFA;
+}
+
+/* Empty State */
+.vanni-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  border: 1px dashed var(--vanni-border-strong);
+  border-radius: var(--vanni-radius-lg);
+  background: var(--vanni-surface);
+}
+
+.vanni-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--vanni-text-primary);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.vanni-empty-description {
+  font-size: 13px;
+  color: var(--vanni-text-muted);
+  max-width: 360px;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   VOICE & CONVERSATIONAL UX
+   ========================================================================== */
+.vanni-voice-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: var(--vanni-surface-subdued);
+  border: 1px solid var(--vanni-border);
+  border-radius: var(--vanni-radius-full);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.vanni-voice-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--vanni-success);
+  box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7);
+  animation: vanni-pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes vanni-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+}
+
+/* Call Transcript Line */
+.vanni-transcript-line {
+  display: flex;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--vanni-border-subdued);
+  font-size: 13px;
+}
+
+.vanni-transcript-meta {
+  width: 80px;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.vanni-transcript-speaker {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.vanni-transcript-speaker-ai { color: var(--vanni-accent-fg); }
+.vanni-transcript-speaker-user { color: var(--vanni-text-secondary); }
+
+.vanni-transcript-time {
+  font-size: 11px;
+  color: var(--vanni-text-muted);
+  font-family: var(--vanni-font-mono);
+}
+
+.vanni-transcript-content {
+  flex: 1;
+  color: var(--vanni-text-primary);
+  line-height: 1.6;
+}
+
+/* Drawer / Slide-Over */
+.vanni-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.vanni-drawer-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vanni-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--vanni-drawer-width);
+  max-width: 100vw;
+  background: var(--vanni-surface);
+  box-shadow: var(--vanni-shadow-xl);
+  z-index: 60;
+  transform: translateX(100%);
+  transition: var(--vanni-transition-slide);
+  display: flex;
+  flex-direction: column;
+}
+
+.vanni-drawer.active {
+  transform: translateX(0);
+}

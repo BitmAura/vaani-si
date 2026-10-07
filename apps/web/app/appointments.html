@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — Confirmed Appointments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --border: #1E2638;
+      --accent: #E58525;
+      --accent-glow: rgba(229, 133, 37, 0.15);
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --info: #38BDF8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 24px; font-weight: 700; color: #fff; }
+    .badge { background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 14px 20px; background: #0E121C; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .status-pill { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .status-confirmed { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .slot-badge { font-weight: 600; color: var(--info); font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 class="title">Appointments & Site Visits</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Real-time verified bookings scheduled via the Tool Execution Engine.</p>
+    </div>
+    <div class="badge">Atomic Conflict Guard Active</div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Customer</th>
+          <th>Service / Visit Type</th>
+          <th>Staff / Host</th>
+          <th>Status</th>
+          <th>Channel</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="slot-badge">Tomorrow, 10:00 AM IST</span></td>
+          <td><strong>Pooja Hegde</strong> (+91 98860 67890)</td>
+          <td>Dental Implant Consultation</td>
+          <td>Dr. Roopa Rao</td>
+          <td><span class="status-pill status-confirmed">CONFIRMED</span></td>
+          <td>AI Voice Assistant</td>
+          <td><button style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 4px; cursor: pointer;">Reschedule</button></td>
+        </tr>
+        <tr>
+          <td><span class="slot-badge">Tomorrow, 02:30 PM IST</span></td>
+          <td><strong>Anand Kulkarni</strong> (+91 98450 12345)</td>
+          <td>Site Visit (Villa Plots)</td>
+          <td>Front Office Sales</td>
+          <td><span class="status-pill status-confirmed">CONFIRMED</span></td>
+          <td>AI Voice Assistant</td>
+          <td><button style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 4px; cursor: pointer;">Reschedule</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

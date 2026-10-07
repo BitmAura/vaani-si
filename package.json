@@ -1,0 +1,42 @@
+{
+  "name": "vanni",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VANNI — Autonomous Conversational AI Employee Runtime for Regional Businesses",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "server": "npm run start --prefix apps/server",
+    "server:dev": "npm run dev --prefix apps/server",
+    "api": "npm run start --prefix apps/api",
+    "voice": "npm run start --prefix apps/voice-gateway",
+    "web": "npm run build --prefix apps/web",
+    "build": "tsc --build && npm run build --workspaces",
+    "clean": "tsc --build --clean",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:invariants": "vitest run packages/core/src/__tests__/invariants.test.ts",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky install || true"
+  },
+  "keywords": [
+    "conversational-ai",
+    "kannada-voice-agent",
+    "telephony",
+    "sarvam-ai",
+    "synthetic-intelligence"
+  ],
+  "author": "Antigravity Sovereign Architecture",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "husky": "^9.0.0"
+  }
+}

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — Human Handoff & Escalation Work Queue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --border: #1E2638;
+      --accent: #E58525;
+      --accent-glow: rgba(229, 133, 37, 0.15);
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --urgent: #DC2626;
+      --info: #38BDF8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 24px; font-weight: 700; color: #fff; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    .top-actions { display: flex; gap: 12px; align-items: center; }
+    
+    .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+    .stat-val { font-size: 24px; font-weight: 700; color: #fff; margin-top: 6px; }
+
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .tab { background: transparent; border: none; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .tab.active { background: rgba(229, 133, 37, 0.15); color: var(--accent); }
+
+    .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 14px 20px; background: #0E121C; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .priority-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .priority-urgent { background: rgba(220, 38, 38, 0.2); color: #F87171; border: 1px solid rgba(220, 38, 38, 0.4); }
+    .priority-high { background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .priority-normal { background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .priority-low { background: rgba(148, 163, 184, 0.15); color: #94A3B8; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .status-in_progress { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .status-transferred { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
+
+    .btn { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-claim { background: var(--accent); color: #000; border: none; }
+    .btn-claim:hover { background: #F59E0B; }
+    .btn-view { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-view:hover { color: #fff; border-color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 class="title">Human Escalation & Handoff Queue</h1>
+      <p class="subtitle">Controlled boundary between Autonomous AI Employee and Human Staff</p>
+    </div>
+    <div class="top-actions">
+      <span style="font-size: 13px; color: var(--text-muted);">Tenant: <strong>Indiranagar Clinic & Dental Care</strong></span>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Active Escalations</div>
+      <div class="stat-val" style="color: #F87171;">4</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Live Transfers Today</div>
+      <div class="stat-val" style="color: #38BDF8;">12</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Callbacks Generated</div>
+      <div class="stat-val" style="color: var(--warning);">7</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Response Time</div>
+      <div class="stat-val" style="color: var(--success);">3.2m</div>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab active">All Escalations (4)</button>
+    <button class="tab">My Queue (1)</button>
+    <button class="tab">Unassigned (2)</button>
+    <button class="tab">Urgent / Safety (1)</button>
+    <button class="tab">Resolved (18)</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>Caller / Contact</th>
+          <th>Reason</th>
+          <th>Type</th>
+          <th>Assigned Person / Team</th>
+          <th>Requested Time</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="priority-badge priority-urgent">URGENT</span></td>
+          <td>
+            <strong>Dr. Anand Shenoy</strong><br>
+            <span style="font-family: monospace; font-size: 12px; color: #38BDF8;">+91 98860 12345</span>
+          </td>
+          <td>MEDICAL_SAFETY (Acute Tooth Abscess)</td>
+          <td>LIVE_TRANSFER</td>
+          <td>Dental Duty Doctor (Dr. Rashmi)</td>
+          <td>2 mins ago</td>
+          <td><span class="status-badge status-in_progress">IN_PROGRESS</span></td>
+          <td><a href="/app/handoff-detail.html?id=h_01" class="btn btn-view">View Details</a></td>
+        </tr>
+        <tr>
+          <td><span class="priority-badge priority-high">HIGH</span></td>
+          <td>
+            <strong>Vinay Kumar</strong><br>
+            <span style="font-family: monospace; font-size: 12px; color: #38BDF8;">+91 98450 98765</span>
+          </td>
+          <td>NEGOTIATION_REQUIRED (Implant Package)</td>
+          <td>CALLBACK_REQUEST</td>
+          <td>Sales & Treatment Coordinator</td>
+          <td>8 mins ago</td>
+          <td><span class="status-badge status-pending">PENDING</span></td>
+          <td><button class="btn btn-claim" onclick="alert('Claimed by Priya (Reception)')">Accept</button></td>
+        </tr>
+        <tr>
+          <td><span class="priority-badge priority-normal">NORMAL</span></td>
+          <td>
+            <strong>Kavya Murthy</strong><br>
+            <span style="font-family: monospace; font-size: 12px; color: #38BDF8;">+91 97410 44321</span>
+          </td>
+          <td>USER_REQUEST ("Speak to receptionist")</td>
+          <td>LIVE_TRANSFER</td>
+          <td>Front Desk Reception</td>
+          <td>14 mins ago</td>
+          <td><span class="status-badge status-transferred">TRANSFERRED</span></td>
+          <td><a href="/app/handoff-detail.html?id=h_03" class="btn btn-view">Audit Log</a></td>
+        </tr>
+        <tr>
+          <td><span class="priority-badge priority-normal">NORMAL</span></td>
+          <td>
+            <strong>Santosh Hegde</strong><br>
+            <span style="font-family: monospace; font-size: 12px; color: #38BDF8;">+91 94480 33221</span>
+          </td>
+          <td>KNOWLEDGE_GAP (Insurance TPA Coverage)</td>
+          <td>HUMAN_REVIEW</td>
+          <td>Unassigned</td>
+          <td>22 mins ago</td>
+          <td><span class="status-badge status-pending">PENDING</span></td>
+          <td><button class="btn btn-claim" onclick="alert('Claimed!')">Accept</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

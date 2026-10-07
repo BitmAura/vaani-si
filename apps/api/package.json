@@ -1,0 +1,25 @@
+{
+  "name": "@vanni/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@vanni/auth": "1.0.0",
+    "@vanni/database": "1.0.0",
+    "@vanni/industry-templates": "1.0.0",
+    "@vanni/observability": "1.0.0",
+    "@vanni/shared": "1.0.0",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4"
+  }
+}

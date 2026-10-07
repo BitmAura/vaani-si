@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — Create Outbound Follow-up Campaign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --border: #1E2638;
+      --accent: #E58525;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    .header { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 24px; font-weight: 700; color: #fff; }
+
+    .wizard-steps { display: flex; gap: 8px; margin-bottom: 28px; }
+    .step-tab { flex: 1; padding: 12px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: center; }
+    .step-tab.active { background: rgba(229, 133, 37, 0.15); border-color: var(--accent); color: var(--accent); }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 780px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+    .hint { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+    input, select, textarea { width: 100%; background: #0E121C; border: 1px solid var(--border); padding: 10px 14px; border-radius: 8px; color: #fff; font-size: 14px; }
+    
+    .preflight-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 16px; margin-top: 24px; }
+    .btn-submit { background: var(--accent); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="title">New Outbound Follow-Up Campaign</h1>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Configure a compliant, autonomous calling workflow for verified CRM records.</p>
+  </div>
+
+  <div class="wizard-steps">
+    <div class="step-tab active">1. Purpose & Script</div>
+    <div class="step-tab">2. Audience & Schedule</div>
+    <div class="step-tab">3. Compliance & Limits</div>
+    <div class="step-tab">4. Pre-Flight & Activate</div>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label>Campaign Name</label>
+      <input type="text" value="New Dental Leads 15-Minute Follow-Up" />
+    </div>
+
+    <div class="form-group">
+      <label>Campaign Type</label>
+      <select>
+        <option value="LEAD_FOLLOW_UP" selected>LEAD_FOLLOW_UP (Call newly registered leads)</option>
+        <option value="APPOINTMENT_REMINDER">APPOINTMENT_REMINDER (24h pre-appointment confirmation)</option>
+        <option value="CALLBACK">CALLBACK (Customer requested callbacks)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Assigned AI Employee</label>
+      <select>
+        <option value="agent_sahana" selected>Sahana (Published v1 - Dental Front Desk Assistant)</option>
+        <option value="agent_vikram">Vikram (Published v1 - Real Estate Host)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Mandatory AI Identity Disclosure Statement</label>
+      <div class="hint">The assistant must disclose its AI identity immediately upon call connection.</div>
+      <textarea rows="3">Namaskara, nanu VANNI, an AI assistant calling on behalf of Radiant Dental Clinic regarding your recent appointment inquiry.</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Calling Window (Business Hours)</label>
+      <div style="display: flex; gap: 12px;">
+        <input type="time" value="10:00" style="flex: 1;" />
+        <span style="align-self: center; color: var(--text-muted);">to</span>
+        <input type="time" value="18:00" style="flex: 1;" />
+        <select style="flex: 1;">
+          <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="preflight-box">
+      <strong style="color: var(--success); display: block; margin-bottom: 6px;">✓ Compliance Pre-Flight Ready</strong>
+      <span style="font-size: 13px; color: var(--text-muted);">Suppression active: DNC contacts will be automatically excluded. Concurrency capped at 2 calls.</span>
+    </div>
+
+    <button class="btn-submit">Review & Activate Campaign</button>
+  </div>
+</body>
+</html>

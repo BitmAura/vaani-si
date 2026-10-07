@@ -1,0 +1,14 @@
+{
+  "name": "@vanni/ui",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && node -e \"const fs=require('fs'); fs.mkdirSync('dist/styles', {recursive: true}); fs.copyFileSync('src/styles/vanni.css', 'dist/styles/vanni.css'); fs.copyFileSync('src/styles/vanni.css', 'dist/vanni.css');\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4"
+  }
+}

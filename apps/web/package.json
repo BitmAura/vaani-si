@@ -1,0 +1,16 @@
+{
+  "name": "@vanni/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build-all-pages.mjs",
+    "dev": "node build-all-pages.mjs"
+  },
+  "dependencies": {
+    "@vanni/ui": "1.0.0",
+    "@vanni/shared": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0"
+  }
+}

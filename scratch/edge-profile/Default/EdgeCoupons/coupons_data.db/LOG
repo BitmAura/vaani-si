@@ -1,0 +1,6 @@
+2026/10/04-12:23:09.742 2840 Reusing MANIFEST P:\crazy-ai-stack\vaani-si\scratch\edge-profile\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/10/04-12:23:09.742 2840 Recovering log #4
+2026/10/04-12:23:09.743 2840 Reusing old log P:\crazy-ai-stack\vaani-si\scratch\edge-profile\Default\EdgeCoupons/coupons_data.db/000004.log 
+2026/10/04-12:23:12.810 5478 Level-0 table #8: started
+2026/10/04-12:23:12.813 5478 Level-0 table #8: 683399 bytes OK
+2026/10/04-12:23:12.815 5478 Delete type=0 #4

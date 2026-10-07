@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organization Onboarding — VANNI</title>
+  <meta name="description" content="Complete setup for your AI employee.">
+  <link rel="canonical" href="https://vanni.ai/login">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/vanni.css">
+  <style>
+    body {
+      margin: 0;
+      background: var(--vanni-bg);
+      color: var(--vanni-text-primary);
+      font-family: var(--vanni-font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--vanni-surface);
+      border: 1px solid var(--vanni-border);
+      border-radius: var(--vanni-radius-lg);
+      padding: 36px;
+      box-shadow: var(--vanni-shadow-md);
+      box-sizing: border-box;
+    }
+    .auth-alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #EF4444;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10B981;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+  
+  <style>
+    .step-card {
+      border: 1px solid var(--vanni-border);
+      border-radius: var(--vanni-radius-lg);
+      padding: 24px;
+      background: var(--vanni-surface);
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+      <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+        V
+      </div>
+      <div>
+        <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+        <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+      </div>
+    </a>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
+      <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
+      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
+    </div>
+  </header>
+  
+  <main style="flex: 1; max-width: 720px; margin: 40px auto; padding: 0 24px; width: 100%; box-sizing: border-box;">
+    
+    <div style="margin-bottom: 32px;">
+      <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(37, 99, 235, 0.1); border-radius: var(--vanni-radius-full); color: var(--vanni-accent); font-size: 11px; font-weight: 600; margin-bottom: 12px; font-family: var(--vanni-font-mono);">
+        ORGANIZATION ONBOARDING
+      </div>
+      <h1 style="font-size: 26px; font-weight: 800; margin: 0 0 8px 0;">Configure Your Business Brain</h1>
+      <p style="font-size: 14px; color: var(--vanni-text-muted); margin: 0;">Teach your autonomous AI employee your practice details, services, and call handling rules.</p>
+    </div>
+
+    <!-- Step 1: Business Hours & Phone -->
+    <div class="step-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">1</div>
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Business & Operating Timings</h2>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">When should your AI answer customer queries?</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="vanni-form-group">
+          <label class="vanni-label">Daily Office Timings</label>
+          <input type="text" id="ob-timings" value="9:00 AM - 7:00 PM (Monday - Saturday)" class="vanni-input" />
+        </div>
+        <div class="vanni-form-group">
+          <label class="vanni-label">Escalation WhatsApp Number</label>
+          <input type="tel" id="ob-whatsapp" placeholder="+91 98450 XXXXX" value="+91 98450 12345" class="vanni-input" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: AI Employee Personality -->
+    <div class="step-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">2</div>
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">AI Employee Role & Dialect</h2>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Choose how your AI communicates with callers.</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="vanni-form-group">
+          <label class="vanni-label">AI Employee Name</label>
+          <input type="text" id="ob-agent-name" value="Sahana" class="vanni-input" />
+        </div>
+        <div class="vanni-form-group">
+          <label class="vanni-label">Regional Dialect</label>
+          <select id="ob-dialect" class="vanni-select">
+            <option value="KANGLISH_BUSINESS" selected>Kanglish (Kannada + English Mix)</option>
+            <option value="KANNADA_STANDARD_POLITE">Pure Polite Kannada (Bengaluru/Standard)</option>
+            <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka (Ballari/Hubballi Commercial)</option>
+            <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Corporate Professional)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Test Call Audio Simulator -->
+    <div class="step-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">3</div>
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Verify & Launch Telephony Routing</h2>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Ready to connect calls and sync confirmed leads.</div>
+        </div>
+      </div>
+      <div style="padding: 12px 16px; background: var(--vanni-surface-subdued); border-radius: var(--vanni-radius-md); font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.5;">
+        Your AI employee is provisioned with tenant-isolated Row Level Security. All transcripts, recordings, and lead dossiers remain strictly accessible only to active members of this organization.
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+      <button type="button" onclick="completeOnboarding()" class="vanni-button vanni-button-primary vanni-button-lg" style="padding: 12px 28px;">
+        <span>Complete Setup & Open Dashboard &rarr;</span>
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    async function completeOnboarding() {
+      try {
+        const sessionRes = await fetch('/api/auth/session');
+        const sessionData = await sessionRes.json();
+        if (!sessionData.authenticated) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const orgId = sessionData.session.activeOrganizationId;
+        const res = await fetch(`/api/orgs/${orgId}/onboarding`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'ready' })
+        });
+
+        if (res.ok) {
+          window.location.href = '/app/dashboard';
+        } else {
+          window.location.href = '/app/dashboard';
+        }
+      } catch (err) {
+        window.location.href = '/app/dashboard';
+      }
+    }
+  </script>
+</body>
+</html>

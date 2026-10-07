@@ -1,0 +1,107 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: vanni-postgres
+    environment:
+      POSTGRES_DB: vanni
+      POSTGRES_USER: vanni_user
+      POSTGRES_PASSWORD: vanni_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vanni_user -d vanni"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: vanni-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Server
+  api-server:
+    build:
+      context: ./apps/server
+      dockerfile: Dockerfile
+    container_name: vanni-api
+    ports:
+      - "4100:4100"
+    environment:
+      NODE_ENV: production
+      API_PORT: 4100
+      DATABASE_URL: postgresql://vanni_user:vanni_secure_password_2026@postgres:5432/vanni
+      REDIS_URL: redis://redis:6379
+      SARVAM_API_KEY: ${SARVAM_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Voice Gateway
+  voice-gateway:
+    build:
+      context: ./apps/voice-gateway
+      dockerfile: Dockerfile
+    container_name: vanni-voice
+    ports:
+      - "4200:4200"
+    environment:
+      NODE_ENV: production
+      VOICE_PORT: 4200
+      DATABASE_URL: postgresql://vanni_user:vanni_secure_password_2026@postgres:5432/vanni
+      REDIS_URL: redis://redis:6379
+      SARVAM_API_KEY: ${SARVAM_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      EXOTEL_ACCOUNT_SID: ${EXOTEL_ACCOUNT_SID}
+      EXOTEL_API_KEY: ${EXOTEL_API_KEY}
+      EXOTEL_API_TOKEN: ${EXOTEL_API_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Web Dashboard (Next.js)
+  web:
+    image: node:20-alpine
+    container_name: vanni-web
+    working_dir: /app
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:4100
+      NEXT_PUBLIC_VOICE_URL: ws://localhost:4200
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - api-server
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: vanni-network

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — Plans, Subscriptions & Usage Entitlements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --border: #1E2638;
+      --accent: #E58525;
+      --accent-glow: rgba(229, 133, 37, 0.15);
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --info: #38BDF8;
+      --purple: #A855F7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 26px; font-weight: 700; color: #fff; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    
+    .badge-status { padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px; }
+    .status-active { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-trial { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-past-due { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-cancel { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .banner-warning { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; color: #FCD34D; font-size: 14px; }
+    .banner-danger { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; color: #FCA5A5; font-size: 14px; }
+
+    .grid-overview { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 28px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .card-title { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    .plan-meta { display: flex; align-items: baseline; gap: 12px; margin-top: 8px; }
+    .plan-name { font-size: 32px; font-weight: 700; color: #fff; }
+    .plan-price { font-size: 20px; color: var(--text-muted); }
+    .plan-details { margin-top: 14px; display: flex; gap: 24px; font-size: 13px; color: var(--text-muted); }
+
+    /* Usage Quota Bars */
+    .quota-item { margin-bottom: 18px; }
+    .quota-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+    .quota-name { font-weight: 600; color: #fff; }
+    .quota-val { color: var(--text-muted); }
+    .progress-bar-bg { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+    .fill-normal { background: var(--accent); }
+    .fill-warning { background: var(--warning); }
+    .fill-limit { background: var(--danger); }
+
+    /* Plans Grid */
+    .plans-title-bar { margin: 36px 0 20px; display: flex; justify-content: space-between; align-items: center; }
+    .section-title { font-size: 20px; font-weight: 700; color: #fff; }
+    .plans-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+    .plan-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+    .plan-card.current { border-color: var(--accent); box-shadow: 0 0 20px rgba(229, 133, 37, 0.15); }
+    .current-badge { position: absolute; top: -10px; right: 16px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+    
+    .plan-header { margin-bottom: 16px; }
+    .plan-card-name { font-size: 18px; font-weight: 700; color: #fff; }
+    .plan-card-price { font-size: 24px; font-weight: 700; color: var(--accent); margin: 8px 0; }
+    .plan-card-desc { font-size: 12px; color: var(--text-muted); min-height: 32px; }
+
+    .feature-list { list-style: none; margin: 16px 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-muted); }
+    .feature-item { display: flex; align-items: center; gap: 8px; }
+    .feature-item.check { color: #fff; }
+    .icon-check { color: var(--success); font-weight: bold; }
+    .icon-cross { color: #64748B; }
+
+    .btn { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; border: none; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+    .btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+    /* Payment History Table */
+    .table-container { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .table-container th { text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    .table-container td { padding: 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div class="title">Billing, Subscriptions & Plans</div>
+      <div class="subtitle">Tenant Subscription Management & Realtime Usage Entitlements</div>
+    </div>
+    <div id="subStatusContainer">
+      <span class="badge-status status-trial">Trialing</span>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <!-- Plan & Usage Overview -->
+  <div class="grid-overview">
+    <div class="card">
+      <div class="card-title">
+        <span>Current Subscription</span>
+        <button id="btnCancelSub" class="btn btn-outline" style="font-size:12px; padding: 4px 10px;">Manage Auto-Renew</button>
+      </div>
+      <div class="plan-meta">
+        <div id="currentPlanName" class="plan-name">Starter Plan</div>
+        <div id="currentPlanPrice" class="plan-price">₹4,999 / mo</div>
+      </div>
+      <div class="plan-details">
+        <div>Billing Cycle: <strong id="billingCycle">Monthly</strong></div>
+        <div>Current Period: <strong id="currentPeriod">Oct 05, 2026 - Nov 05, 2026</strong></div>
+        <div>Provider: <strong id="providerName">Razorpay</strong></div>
+      </div>
+    </div>
+
+    <!-- Live Voice Minutes & AI Employees Quota -->
+    <div class="card">
+      <div class="card-title">Active Usage Quotas</div>
+      
+      <div class="quota-item">
+        <div class="quota-header">
+          <span class="quota-name">Voice Call Minutes</span>
+          <span id="voiceMinutesText" class="quota-val">0 / 600 min</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="voiceMinutesBar" class="progress-bar-fill fill-normal" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="quota-item">
+        <div class="quota-header">
+          <span class="quota-name">AI Employees</span>
+          <span id="aiEmployeesText" class="quota-val">1 / 2 allowed</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="aiEmployeesBar" class="progress-bar-fill fill-normal" style="width: 50%"></div>
+        </div>
+      </div>
+
+      <div class="quota-item" style="margin-bottom: 0;">
+        <div class="quota-header">
+          <span class="quota-name">Campaign Inbound/Outbound</span>
+          <span id="campaignCallsText" class="quota-val">0 calls</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plans Comparison Matrix -->
+  <div class="plans-title-bar">
+    <div class="section-title">Upgrade or Switch Subscription</div>
+    <div style="font-size: 13px; color: var(--text-muted);">Instant activation via Razorpay Payment Gateway</div>
+  </div>
+
+  <div id="plansGrid" class="plans-grid">
+    <!-- Populated by JavaScript -->
+  </div>
+
+  <!-- Billing & Payment History -->
+  <div class="card">
+    <div class="card-title">Transaction & Payment History</div>
+    <table class="table-container">
+      <thead>
+        <tr>
+          <th>Payment ID</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Gateway</th>
+          <th>Status</th>
+          <th>Receipt</th>
+        </tr>
+      </thead>
+      <tbody id="paymentHistoryBody">
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">No paid transactions recorded yet.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const orgId = localStorage.getItem('vanni_org_id') || 'a0000000-0000-0000-0000-000000000001';
+
+    async function loadBillingSnapshot() {
+      try {
+        const res = await fetch('/api/billing', {
+          headers: { 'x-organization-id': orgId }
+        });
+        const data = await res.json();
+        if (!data.success) return;
+        renderSnapshot(data.data);
+      } catch (err) {
+        console.error('Failed to load billing snapshot', err);
+      }
+    }
+
+    async function loadPlans() {
+      try {
+        const res = await fetch('/api/billing/plans');
+        const data = await res.json();
+        if (!data.success) return;
+        renderPlans(data.data);
+      } catch (err) {
+        console.error('Failed to load plans', err);
+      }
+    }
+
+    function renderSnapshot(snapshot) {
+      document.getElementById('currentPlanName').innerText = snapshot.plan.name;
+      document.getElementById('currentPlanPrice').innerText = `₹${snapshot.plan.monthlyPrice.toLocaleString('en-IN')} / mo`;
+      document.getElementById('billingCycle').innerText = snapshot.subscription.billingInterval || 'Monthly';
+      document.getElementById('currentPeriod').innerText = `${new Date(snapshot.periodStart).toLocaleDateString()} — ${new Date(snapshot.periodEnd).toLocaleDateString()}`;
+      document.getElementById('providerName').innerText = snapshot.subscription.provider || 'Razorpay';
+
+      // Status Badge
+      const statusContainer = document.getElementById('subStatusContainer');
+      const st = snapshot.subscription.status;
+      if (st === 'ACTIVE') {
+        statusContainer.innerHTML = '<span class="badge-status status-active">● Active Plan</span>';
+      } else if (st === 'TRIALING') {
+        statusContainer.innerHTML = `<span class="badge-status status-trial">★ Trial (${snapshot.daysRemainingInTrial}d left)</span>`;
+      } else if (st === 'PAST_DUE') {
+        statusContainer.innerHTML = '<span class="badge-status status-past-due">▲ Past Due</span>';
+      } else {
+        statusContainer.innerHTML = `<span class="badge-status status-cancel">${st}</span>`;
+      }
+
+      // Over-entitlement Warning
+      const alertContainer = document.getElementById('alertContainer');
+      alertContainer.innerHTML = '';
+      if (snapshot.isEntitlementExceeded) {
+        alertContainer.innerHTML = `
+          <div class="banner-danger">
+            <div>
+              <strong>Over-Entitlement Notice:</strong> Your organization exceeds the current plan limits on: 
+              ${(snapshot.exceededEntities || []).join(', ')}. Existing resources are preserved, but adding new items is restricted.
+            </div>
+          </div>
+        `;
+      } else if (snapshot.subscription.cancelAtPeriodEnd) {
+        alertContainer.innerHTML = `
+          <div class="banner-warning">
+            <div><strong>Notice:</strong> Your subscription will terminate at the end of the billing period on ${new Date(snapshot.periodEnd).toLocaleDateString()}.</div>
+          </div>
+        `;
+      }
+
+      // Voice Minutes Bar
+      const usedMin = snapshot.usageSummary.voiceMinutesUsed;
+      const maxMin = snapshot.entitlements.maxMonthlyVoiceMinutes;
+      const pct = maxMin > 0 ? Math.min(100, Math.round((usedMin / maxMin) * 100)) : 0;
+      document.getElementById('voiceMinutesText').innerText = `${usedMin} / ${maxMin} min (${pct}%)`;
+      const bar = document.getElementById('voiceMinutesBar');
+      bar.style.width = `${pct}%`;
+      bar.className = 'progress-bar-fill ' + (pct >= 100 ? 'fill-limit' : pct >= 80 ? 'fill-warning' : 'fill-normal');
+
+      // AI Employees Bar
+      const agentsUsed = snapshot.usageSummary.aiEmployeesCount;
+      const agentsMax = snapshot.entitlements.maxAiEmployees;
+      const agentPct = agentsMax > 0 ? Math.min(100, Math.round((agentsUsed / agentsMax) * 100)) : 0;
+      document.getElementById('aiEmployeesText').innerText = `${agentsUsed} / ${agentsMax} allowed`;
+      document.getElementById('aiEmployeesBar').style.width = `${agentPct}%`;
+
+      document.getElementById('campaignCallsText').innerText = `${snapshot.usageSummary.campaignCallsUsed} calls performed`;
+
+      // Render Payments
+      if (snapshot.recentPayments && snapshot.recentPayments.length > 0) {
+        const tbody = document.getElementById('paymentHistoryBody');
+        tbody.innerHTML = snapshot.recentPayments.map(p => `
+          <tr>
+            <td><code>${p.providerPaymentId}</code></td>
+            <td>${new Date(p.paidAt || p.createdAt).toLocaleDateString()}</td>
+            <td>₹${p.amount.toLocaleString('en-IN')}</td>
+            <td>${p.provider}</td>
+            <td><span class="badge-status status-active">${p.status}</span></td>
+            <td><a href="#" style="color:var(--accent); text-decoration:none;">Receipt</a></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function renderPlans(plans) {
+      const grid = document.getElementById('plansGrid');
+      grid.innerHTML = plans.map(p => `
+        <div class="plan-card">
+          <div class="plan-header">
+            <div class="plan-card-name">${p.name}</div>
+            <div class="plan-card-price">₹${p.monthlyPrice.toLocaleString('en-IN')} <span style="font-size:12px; color:var(--text-muted); font-weight:normal;">/mo</span></div>
+            <div class="plan-card-desc">${p.description}</div>
+          </div>
+          <ul class="feature-list">
+            <li class="feature-item check"><span class="icon-check">✓</span> ${p.entitlements.maxAiEmployees} AI Employees</li>
+            <li class="feature-item check"><span class="icon-check">✓</span> ${p.entitlements.maxMonthlyVoiceMinutes} Voice Minutes</li>
+            <li class="feature-item check"><span class="icon-check">✓</span> ${p.entitlements.maxLocations} Business Locations</li>
+            <li class="feature-item ${p.entitlements.campaignsEnabled ? 'check' : ''}">
+              <span class="${p.entitlements.campaignsEnabled ? 'icon-check' : 'icon-cross'}">${p.entitlements.campaignsEnabled ? '✓' : '✕'}</span>
+              Outbound Campaigns
+            </li>
+            <li class="feature-item ${p.entitlements.humanHandoffEnabled ? 'check' : ''}">
+              <span class="${p.entitlements.humanHandoffEnabled ? 'icon-check' : 'icon-cross'}">${p.entitlements.humanHandoffEnabled ? '✓' : '✕'}</span>
+              Human Handoff & SLA
+            </li>
+          </ul>
+          <button class="btn btn-primary" onclick="initiateCheckout('${p.id}')">Select Plan</button>
+        </div>
+      `).join('');
+    }
+
+    async function initiateCheckout(planId) {
+      try {
+        const res = await fetch('/api/billing/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-organization-id': orgId,
+            'x-user-role': 'ADMIN'
+          },
+          body: JSON.stringify({ planId, billingInterval: 'MONTHLY' })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert('Checkout initialization failed: ' + (data.message || data.error));
+          return;
+        }
+
+        // Simulating or opening Razorpay Checkout URL
+        if (data.data.shortUrl) {
+          window.open(data.data.shortUrl, '_blank');
+        } else {
+          alert(`Razorpay Checkout initialized for ${data.data.planName} (Amount: ₹${data.data.amount}). Complete payment in test gateway.`);
+        }
+      } catch (err) {
+        alert('Error initiating checkout: ' + err.message);
+      }
+    }
+
+    document.getElementById('btnCancelSub').addEventListener('click', async () => {
+      if (!confirm('Do you want to stop automatic renewal at the end of the current period?')) return;
+      try {
+        const res = await fetch('/api/billing/subscription/cancel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-organization-id': orgId,
+            'x-user-role': 'ADMIN'
+          },
+          body: JSON.stringify({ immediately: false })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message);
+          loadBillingSnapshot();
+        }
+      } catch (err) {
+        alert('Failed to update subscription');
+      }
+    });
+
+    loadBillingSnapshot();
+    loadPlans();
+  </script>
+</body>
+</html>

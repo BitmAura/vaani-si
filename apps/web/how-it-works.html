@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How VANNI Works — VANNI</title>
+  <meta name="description" content="Understand the end-to-end operational lifecycle: from teaching your business knowledge to autonomous call handling and CRM synchronization.">
+  <link rel="canonical" href="https://vanni.ai/how-it-works">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="How VANNI Works — VANNI">
+  <meta property="og:description" content="Understand the end-to-end operational lifecycle: from teaching your business knowledge to autonomous call handling and CRM synchronization.">
+  <meta property="og:url" content="https://vanni.ai/how-it-works">
+  <meta property="og:site_name" content="VANNI">
+  <meta property="og:locale" content="en_IN">
+  
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How VANNI Works — VANNI">
+  <meta name="twitter:description" content="Understand the end-to-end operational lifecycle: from teaching your business knowledge to autonomous call handling and CRM synchronization.">
+  
+  <!-- Fonts: Inter, Noto Sans Kannada, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- VANNI Design System -->
+  <link rel="stylesheet" href="/assets/vanni.css">
+
+  <style>
+    @media (max-width: 860px) {
+      .vanni-desktop-nav { display: none !important; }
+      .vanni-mobile-menu-btn { display: inline-flex !important; }
+      .vanni-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+      .vanni-comparison-grid { grid-template-columns: 1fr !important; }
+      .vanni-steps-grid { grid-template-columns: 1fr !important; }
+    }
+    
+    @keyframes vanniFadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .vanni-fade-in {
+      animation: vanniFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+
+  
+  
+</head>
+<body style="margin: 0; background: var(--vanni-bg); color: var(--vanni-text-primary); font-family: var(--vanni-font-sans);">
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); position: sticky; top: 0; z-index: 50;">
+    <div style="max-width: 1200px; margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+      
+      <!-- Brand Logo -->
+      <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+        <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+          V
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+          <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav style="display: flex; align-items: center; gap: 4px;" class="vanni-desktop-nav" aria-label="Main Navigation">
+        <a href="/features" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Product</a><a href="/how-it-works" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-primary); font-weight: 600;">How It Works</a><a href="/industries" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Industries</a><a href="/pricing" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Pricing</a><a href="/security" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Security</a>
+      </nav>
+
+      <!-- Desktop Action CTAs -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="/login" class="vanni-button vanni-button-ghost" style="font-size: 13px;">Sign In</a>
+        <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary" style="font-size: 13px;">
+          <span>Talk to VANNI</span>
+        </button>
+        <!-- Mobile Nav Toggle -->
+        <button type="button" class="vanni-mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle Mobile Menu" style="display: none; background: transparent; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 10px; font-size: 16px; cursor: pointer;">
+          &#9776;
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="vanni-mobile-nav" style="display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); padding: 16px 24px; box-shadow: var(--vanni-shadow-md); flex-direction: column; gap: 12px;">
+      <a href="/features" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Product Features</a>
+      <a href="/how-it-works" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">How It Works</a>
+      <a href="/industries" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Industry Solutions</a>
+      <a href="/pricing" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Pricing Plans</a>
+      <a href="/security" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Enterprise Security</a>
+      <div style="border-top: 1px solid var(--vanni-border-subdued); padding-top: 12px; display: flex; gap: 10px;">
+        <a href="/login" class="vanni-button vanni-button-secondary" style="flex: 1; text-align: center; text-decoration: none;">Sign In</a>
+        <button type="button" onclick="openDemoModal(); toggleMobileNav();" class="vanni-button vanni-button-primary" style="flex: 1;">Talk to VANNI</button>
+      </div>
+    </div>
+  </header>
+  
+
+  <!-- Page Header -->
+  <section style="padding: 64px 24px 48px 24px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border);">
+    <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+      <h1 style="font-size: 36px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 16px 0; color: var(--vanni-text-primary);">How VANNI Works Behind the Scenes</h1>
+      <p style="font-size: 16px; color: var(--vanni-text-secondary); max-width: 640px; margin: 0 auto; line-height: 1.6;">A transparent look at how autonomous regional voice AI operates without robotic scripts or hallucinated answers.</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main style="max-width: 1100px; margin: 0 auto; padding: 64px 24px;">
+    
+  <div style="display: flex; flex-direction: column; gap: 48px; max-width: 800px; margin: 0 auto;">
+    
+    <div style="display: flex; gap: 24px;">
+      <div style="font-size: 36px; font-weight: 800; font-family: var(--vanni-font-mono); color: var(--vanni-accent); width: 60px;">01</div>
+      <div>
+        <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700;">Knowledge Ingestion & Guardrails</h3>
+        <p style="font-size: 14px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0;">
+          You provide your clinic or business documentation (PDFs, doctor schedules, plot pricing, operating policies). VANNI extracts facts and constructs an isolated Business Brain bounded by strict business rules.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 24px;">
+      <div style="font-size: 36px; font-weight: 800; font-family: var(--vanni-font-mono); color: var(--vanni-accent); width: 60px;">02</div>
+      <div>
+        <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700;">Virtual Number & Telephony Binding</h3>
+        <p style="font-size: 14px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0;">
+          VANNI provisions an institutional SIP trunk (+91 80 virtual landline or mobile DID) or binds to your existing office phone forwarding. All inbound calls route directly to the sub-500ms voice pipeline.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 24px;">
+      <div style="font-size: 36px; font-weight: 800; font-family: var(--vanni-font-mono); color: var(--vanni-accent); width: 60px;">03</div>
+      <div>
+        <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700;">Streaming Speech Recognition & LLM Reasoning</h3>
+        <p style="font-size: 14px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0;">
+          As callers speak, Sarvam Saaras AI converts regional audio into text tokens. Our LLM core analyzes intent, checks guardrails, invokes calendar tools if needed, and streams responses into Sarvam Bulbul TTS for lifelike regional speech.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 24px;">
+      <div style="font-size: 36px; font-weight: 800; font-family: var(--vanni-font-mono); color: var(--vanni-accent); width: 60px;">04</div>
+      <div>
+        <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700;">Action Execution & Instant Telemetry</h3>
+        <p style="font-size: 14px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0;">
+          Once the call concludes, the audio recording, verified bilingual transcript, lead score, and appointment details are dispatched to your WhatsApp and CRM in real time.
+        </p>
+      </div>
+    </div>
+
+  </div>
+  
+  </main>
+
+  <!-- Reusable Bottom CTA -->
+  <section style="padding: 72px 24px; background: var(--vanni-surface-subdued); border-top: 1px solid var(--vanni-border); text-align: center;">
+    <div style="max-width: 640px; margin: 0 auto;">
+      <h2 style="font-size: 28px; font-weight: 700; margin: 0 0 12px 0;">Ready to evaluate VANNI for your organization?</h2>
+      <p style="font-size: 14px; color: var(--vanni-text-secondary); margin: 0 0 24px 0;">Request a live phone demonstration or sign in to your enterprise console.</p>
+      <div style="display: flex; justify-content: center; gap: 12px;">
+        <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary">Talk to VANNI</button>
+        <a href="/login" class="vanni-button vanni-button-secondary">Access Console</a>
+      </div>
+    </div>
+  </section>
+
+  
+  <footer style="background: var(--vanni-surface); border-top: 1px solid var(--vanni-border); padding: 64px 24px 32px 24px; color: var(--vanni-text-secondary); font-size: 13px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 48px;">
+      
+      <!-- Col 1: Brand Info -->
+      <div style="grid-column: span 1.5;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <div style="width: 24px; height: 24px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 12px; font-family: var(--vanni-font-mono);">V</div>
+          <span style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">VANNI</span>
+        </div>
+        <p style="color: var(--vanni-text-secondary); line-height: 1.6; max-width: 280px; margin: 0 0 16px 0;">
+          Configurable AI employees that speak your customer's language. Built specifically for regional enterprises across Karnataka.
+        </p>
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 4px 8px; background: var(--vanni-surface-subdued); border-radius: var(--vanni-radius-sm); color: var(--vanni-text-muted);">
+          <span class="vanni-status-dot vanni-status-dot-live"></span>
+          <span>Kannada & Kanglish Runtime Active</span>
+        </div>
+      </div>
+
+      <!-- Col 2: Product -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Product</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/features" style="color: var(--vanni-text-secondary); text-decoration: none;">Platform Features</a>
+          <a href="/how-it-works" style="color: var(--vanni-text-secondary); text-decoration: none;">How It Works</a>
+          <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing & Tiers</a>
+          <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security & Isolation</a>
+          <a href="/demo" style="color: var(--vanni-text-secondary); text-decoration: none;">Request Live Demo</a>
+        </div>
+      </div>
+
+      <!-- Col 3: Industries -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Industries</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/industries/dental" style="color: var(--vanni-text-secondary); text-decoration: none;">Dental & Clinics</a>
+          <a href="/industries/healthcare" style="color: var(--vanni-text-secondary); text-decoration: none;">Healthcare & Hospitals</a>
+          <a href="/industries/ivf" style="color: var(--vanni-text-secondary); text-decoration: none;">IVF & Fertility</a>
+          <a href="/industries/hospitality" style="color: var(--vanni-text-secondary); text-decoration: none;">Hospitality & Resorts</a>
+          <a href="/industries/real-estate" style="color: var(--vanni-text-secondary); text-decoration: none;">Real Estate & Layouts</a>
+        </div>
+      </div>
+
+      <!-- Col 4: Enterprise & Contact -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Company & Support</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/contact" style="color: var(--vanni-text-secondary); text-decoration: none;">Contact Sales</a>
+          <a href="/login" style="color: var(--vanni-text-secondary); text-decoration: none;">Console Sign In</a>
+          <a href="/signup" style="color: var(--vanni-text-secondary); text-decoration: none;">Create Organization</a>
+          <span style="color: var(--vanni-text-muted); font-size: 12px; margin-top: 4px;">Headquarters: Bengaluru, Karnataka</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div style="max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--vanni-border-subdued); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--vanni-text-muted);">
+      <div>
+        &copy; 2026 VANNI Technologies Inc. All rights reserved.
+      </div>
+      <div style="display: flex; gap: 20px;">
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Privacy & Data Isolation</a>
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Terms of Service</a>
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Telemetry Policies</a>
+      </div>
+    </div>
+  </footer>
+  
+  
+  <div id="vanni-demo-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 16px;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-xl); box-shadow: var(--vanni-shadow-xl); width: 100%; max-width: 520px; overflow: hidden; animation: vanniModalIn 200ms ease-out;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">V</div>
+          <div>
+            <h3 id="modal-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--vanni-text-primary);">Talk to VANNI</h3>
+            <div style="font-size: 12px; color: var(--vanni-text-muted);">Experience an autonomous regional call demonstration</div>
+          </div>
+        </div>
+        <button type="button" onclick="closeDemoModal()" class="vanni-icon-button" aria-label="Close Modal" style="font-size: 18px;">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div id="demo-modal-form-content" style="padding: 24px;">
+        <div style="margin-bottom: 20px; padding: 12px 14px; background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); font-size: 12px; color: var(--vanni-text-secondary); line-height: 1.5;">
+          Our AI employee can speak in natural <strong>Kannada</strong> or <strong>Kanglish</strong> to demonstrate lead qualification, appointment booking, and answering business FAQs.
+        </div>
+
+        <form id="demo-request-form" onsubmit="handleDemoSubmit(event)">
+          <div class="vanni-form-group">
+            <label for="demo-industry" class="vanni-label">Your Industry</label>
+            <select id="demo-industry" name="industry" class="vanni-select" required>
+              <option value="dental">Dental / Specialty Clinic</option>
+              <option value="healthcare">Hospital / Healthcare</option>
+              <option value="ivf">IVF / Fertility Center</option>
+              <option value="real_estate" selected>Real Estate / Plotted Layouts</option>
+              <option value="hospitality">Hospitality & Resorts</option>
+              <option value="agency">Digital Marketing Agency</option>
+              <option value="other">Other Commercial Business</option>
+            </select>
+          </div>
+
+          <div class="vanni-form-group">
+            <label for="demo-phone" class="vanni-label">Phone Number for Demo Call *</label>
+            <input type="tel" id="demo-phone" name="phone" placeholder="+91 98450 XXXXX" required class="vanni-input" />
+            <div class="vanni-form-hint">We will connect a live test call to this number.</div>
+          </div>
+
+          <div class="vanni-form-group">
+            <label for="demo-name" class="vanni-label">Your Name or Business</label>
+            <input type="text" id="demo-name" name="name" placeholder="e.g. Dr. Ramesh / Venkatesh Plots" required class="vanni-input" />
+          </div>
+
+          <div style="margin-top: 16px; margin-bottom: 20px; font-size: 11px; color: var(--vanni-text-muted); line-height: 1.4;">
+            By requesting a demonstration, you authorize VANNI to initiate a single autonomous voice interaction to the provided number for evaluation purposes. Zero promotional spam.
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" onclick="closeDemoModal()" class="vanni-button vanni-button-secondary">Cancel</button>
+            <button type="submit" id="btn-submit-demo" class="vanni-button vanni-button-primary">Request Demo Call</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success State -->
+      <div id="demo-modal-success-content" style="display: none; padding: 32px 24px; text-align: center;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--vanni-success-subtle); color: var(--vanni-success); display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px;">
+          ✓
+        </div>
+        <h4 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: var(--vanni-text-primary);">Demo Call Dispatched</h4>
+        <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; max-width: 360px; margin: 0 auto 24px auto;">
+          VANNI has queued your request. You will receive an incoming call shortly to evaluate real regional voice comprehension.
+        </p>
+        <button type="button" onclick="closeDemoModal()" class="vanni-button vanni-button-primary">Done</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function toggleMobileNav() {
+      const nav = document.getElementById('vanni-mobile-nav');
+      if (nav) {
+        nav.style.display = nav.style.display === 'none' || !nav.style.display ? 'flex' : 'none';
+      }
+    }
+
+    function openDemoModal(prefillIndustry) {
+      const modal = document.getElementById('vanni-demo-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        if (prefillIndustry) {
+          const select = document.getElementById('demo-industry');
+          if (select) select.value = prefillIndustry;
+        }
+      }
+    }
+
+    function closeDemoModal() {
+      const modal = document.getElementById('vanni-demo-modal');
+      if (modal) modal.style.display = 'none';
+      setTimeout(() => {
+        const formContent = document.getElementById('demo-modal-form-content');
+        const successContent = document.getElementById('demo-modal-success-content');
+        if (formContent) formContent.style.display = 'block';
+        if (successContent) successContent.style.display = 'none';
+      }, 300);
+    }
+
+    async function handleDemoSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-demo');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Connecting...';
+      }
+
+      const phone = document.getElementById('demo-phone').value;
+      const name = document.getElementById('demo-name').value;
+      const industry = document.getElementById('demo-industry').value;
+
+      try {
+        await fetch('/api/calls/outbound-inception', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetPhone: phone,
+            businessName: name,
+            industry: industry === 'healthcare' || industry === 'dental' ? 'HEALTHCARE_HOSPITAL' : 'REAL_ESTATE',
+            directorName: name
+          })
+        }).catch(() => null);
+      } catch (err) {
+        // Fallback gracefully
+      }
+
+      document.getElementById('demo-modal-form-content').style.display = 'none';
+      document.getElementById('demo-modal-success-content').style.display = 'block';
+    }
+  </script>
+  
+</body>
+</html>

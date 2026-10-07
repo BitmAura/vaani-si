@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — Executive Analytics & Cost Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0D14;
+      --card-bg: #111520;
+      --border: #1E2638;
+      --accent: #E58525;
+      --accent-glow: rgba(229, 133, 37, 0.15);
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --info: #38BDF8;
+      --purple: #A855F7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 32px; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .title { font-size: 26px; font-weight: 700; color: #fff; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    
+    .period-selector { display: flex; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); padding: 4px; border-radius: 8px; }
+    .period-btn { background: transparent; border: none; color: var(--text-muted); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .period-btn.active { background: rgba(229, 133, 37, 0.15); color: var(--accent); }
+
+    .grid-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+    .kpi-val { font-size: 28px; font-weight: 700; color: #fff; margin-top: 8px; }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+    .grid-2col { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 28px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .card-title { font-size: 15px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 20px; }
+
+    /* Funnel styles */
+    .funnel-container { display: flex; flex-direction: column; gap: 14px; }
+    .funnel-step { display: flex; align-items: center; justify-content: space-between; position: relative; }
+    .funnel-bar-bg { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; z-index: 1; opacity: 0.15; }
+    .funnel-content { position: relative; z-index: 2; width: 100%; display: flex; justify-content: space-between; padding: 12px 16px; font-size: 14px; font-weight: 600; }
+
+    /* Latency & Kannada badges */
+    .metric-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: var(--text-muted); }
+    .metric-val { font-weight: 600; color: #fff; }
+
+    .btn-export { background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-export:hover { background: rgba(255,255,255,0.05); border-color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 class="title">Intelligence, Usage & Cost Analytics</h1>
+      <p class="subtitle">Realtime metrics, conversion funnels, and estimated provider cost metering.</p>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div class="period-selector">
+        <button class="period-btn">Today</button>
+        <button class="period-btn">7 Days</button>
+        <button class="period-btn active">30 Days</button>
+      </div>
+      <a href="/api/analytics/export" class="btn-export">Export CSV</a>
+    </div>
+  </div>
+
+  <div class="grid-kpis">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Calls</div>
+      <div class="kpi-val">142</div>
+      <div class="kpi-sub"><span style="color: var(--success);">88%</span> connection rate</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Voice Minutes</div>
+      <div class="kpi-val" style="color: var(--info);">386.5m</div>
+      <div class="kpi-sub">Avg duration: 2.7 mins</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Qualified Leads</div>
+      <div class="kpi-val" style="color: var(--warning);">38</div>
+      <div class="kpi-sub">34 appointments confirmed</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Estimated Provider Cost</div>
+      <div class="kpi-val" style="color: var(--purple);">₹284.50</div>
+      <div class="kpi-sub">Avg ₹2.00 / completed call</div>
+    </div>
+  </div>
+
+  <div class="grid-2col">
+    <!-- Conversion Funnel -->
+    <div class="card">
+      <div class="card-title">Real Business Conversion Funnel</div>
+      <div class="funnel-container">
+        <div class="funnel-step">
+          <div class="funnel-bar-bg" style="width: 100%; background: var(--info);"></div>
+          <div class="funnel-content">
+            <span>1. Connected Calls</span>
+            <span>142 (100%)</span>
+          </div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar-bg" style="width: 82%; background: var(--info);"></div>
+          <div class="funnel-content">
+            <span>2. Meaningful Conversations (>3 turns)</span>
+            <span>116 (81.7%)</span>
+          </div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar-bg" style="width: 32%; background: var(--warning);"></div>
+          <div class="funnel-content">
+            <span>3. Qualified Leads Captured</span>
+            <span>45 (31.6%)</span>
+          </div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar-bg" style="width: 24%; background: var(--success);"></div>
+          <div class="funnel-content">
+            <span>4. Confirmed Clinic Appointments</span>
+            <span>34 (23.9%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kannada Language & Provider Latency -->
+    <div class="card">
+      <div class="card-title">Kannada Language & Latency</div>
+      <div class="metric-row">
+        <span class="metric-label">Kannada & Kanglish Mode</span>
+        <span class="metric-val" style="color: var(--accent);">78.4%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">English Mode</span>
+        <span class="metric-val">21.6%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Sarvam STT P95 Latency</span>
+        <span class="metric-val">410 ms</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Sarvam TTS P95 Latency</span>
+        <span class="metric-val">320 ms</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Overall First-Response P95</span>
+        <span class="metric-val" style="color: var(--success);">1,380 ms</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Resource Breakdown -->
+  <div class="card">
+    <div class="card-title">AI Employee Utilization & Estimated Cost</div>
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); text-transform: uppercase;">
+          <th style="padding: 12px 16px;">AI Employee</th>
+          <th style="padding: 12px 16px;">Role</th>
+          <th style="padding: 12px 16px;">Calls</th>
+          <th style="padding: 12px 16px;">Voice Minutes</th>
+          <th style="padding: 12px 16px;">Appointments</th>
+          <th style="padding: 12px 16px;">Handoffs</th>
+          <th style="padding: 12px 16px;">Est. Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 14px 16px; font-weight: 700; color: #fff;">Sahana</td>
+          <td style="padding: 14px 16px; color: var(--text-muted);">Front Desk Clinic Receptionist</td>
+          <td style="padding: 14px 16px;">114</td>
+          <td style="padding: 14px 16px; color: var(--info);">312.4m</td>
+          <td style="padding: 14px 16px; color: var(--success); font-weight: 600;">31</td>
+          <td style="padding: 14px 16px; color: var(--warning);">9</td>
+          <td style="padding: 14px 16px; font-weight: 600;">₹228.40</td>
+        </tr>
+        <tr>
+          <td style="padding: 14px 16px; font-weight: 700; color: #fff;">Vikram</td>
+          <td style="padding: 14px 16px; color: var(--text-muted);">Outbound Recall & Follow-Up Specialist</td>
+          <td style="padding: 14px 16px;">28</td>
+          <td style="padding: 14px 16px; color: var(--info);">74.1m</td>
+          <td style="padding: 14px 16px; color: var(--success); font-weight: 600;">3</td>
+          <td style="padding: 14px 16px; color: var(--warning);">2</td>
+          <td style="padding: 14px 16px; font-weight: 600;">₹56.10</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

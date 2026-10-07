@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Organization — VANNI</title>
+  <meta name="description" content="Switch between your active organization workspaces.">
+  <link rel="canonical" href="https://vanni.ai/login">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/vanni.css">
+  <style>
+    body {
+      margin: 0;
+      background: var(--vanni-bg);
+      color: var(--vanni-text-primary);
+      font-family: var(--vanni-font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--vanni-surface);
+      border: 1px solid var(--vanni-border);
+      border-radius: var(--vanni-radius-lg);
+      padding: 36px;
+      box-shadow: var(--vanni-shadow-md);
+      box-sizing: border-box;
+    }
+    .auth-alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #EF4444;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10B981;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+  
+</head>
+<body>
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+      <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+        V
+      </div>
+      <div>
+        <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+        <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+      </div>
+    </a>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
+      <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
+      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
+    </div>
+  </header>
+  
+  <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+    <div class="auth-card" style="max-width: 500px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+        <div>
+          <h1 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">Select Organization</h1>
+          <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Switch workspace context or create a new organization.</p>
+        </div>
+        <a href="/app/organization/create" class="vanni-button vanni-button-secondary" style="font-size: 12px; padding: 6px 12px;">+ New Org</a>
+      </div>
+
+      <div id="org-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <!-- Dynamic Orgs Rendered via JS -->
+      </div>
+
+      <div style="border-top: 1px solid var(--vanni-border-subdued); padding-top: 16px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--vanni-text-muted);">
+        <span>Logged in as <strong id="user-display-email">admin@vanni.ai</strong></span>
+        <button type="button" onclick="logout()" style="background: none; border: none; color: #EF4444; font-size: 12px; cursor: pointer; padding: 0;">Sign out</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function loadOrganizations() {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (!data.authenticated) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const session = data.session;
+        document.getElementById('user-display-email').innerText = session.email;
+
+        const listEl = document.getElementById('org-list');
+        listEl.innerHTML = session.memberships.map(m => {
+          const isActive = m.organizationId === session.activeOrganizationId;
+          const border = isActive ? 'border-color: var(--vanni-primary); background: rgba(37, 99, 235, 0.05);' : '';
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); ${border}">
+              <div>
+                <div style="font-weight: 600; font-size: 14px; color: var(--vanni-text-primary);">${m.organizationName}</div>
+                <div style="font-size: 11px; color: var(--vanni-text-muted); margin-top: 2px;">
+                  Role: <span style="font-family: var(--vanni-font-mono); color: var(--vanni-accent);">${m.role}</span> &bull; Status: ${m.status}
+                </div>
+              </div>
+              <div>
+                ${isActive 
+                  ? '<span class="vanni-badge vanni-badge-success" style="font-size: 11px;">Active</span>' 
+                  : `<button type="button" onclick="switchOrg('${m.organizationId}')" class="vanni-button vanni-button-secondary" style="font-size: 12px; padding: 6px 12px;">Switch</button>`
+                }
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function switchOrg(orgId) {
+      try {
+        const res = await fetch('/api/auth/switch-org', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ organizationId: orgId })
+        });
+        if (res.ok) {
+          window.location.href = '/app/dashboard';
+        }
+      } catch (err) {
+        alert('Failed to switch organization');
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    loadOrganizations();
+  </script>
+</body>
+</html>
