@@ -6,8 +6,6 @@
 import { globalDb } from '@vanni/database';
 import { BillingAccountDTO, SubscriptionDTO, SubscriptionEventDTO } from '@vanni/shared';
 
-export type SubscriptionStatus = 'active' | 'past_due' | 'cancelled' | 'incomplete' | 'trialing';
-
 export interface SubscriptionChangeRequest {
   organizationId: string;
   newPlanId: string;
@@ -33,13 +31,16 @@ export class SubscriptionService {
     const subscription: SubscriptionDTO = {
       id: `sub_${Date.now()}`,
       organizationId: input.organizationId,
+      billingAccountId: `billa_${input.organizationId}`,
       planId: input.planId,
-      status: input.trialDays ? 'trialing' : 'active',
-      billingCycle: input.billingCycle,
+      planVersionId: 'v1',
+      provider: 'RAZORPAY',
+      status: input.trialDays ? 'TRIALING' : 'ACTIVE',
+      billingInterval: input.billingCycle === 'annual' ? 'ANNUAL' : 'MONTHLY',
       currentPeriodStart: now.toISOString(),
       currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      cancelAtPeriodEnd: false,
       trialEnd: trialEnd.toISOString(),
-      canceledAt: null,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
@@ -50,9 +51,10 @@ export class SubscriptionService {
     const event: SubscriptionEventDTO = {
       id: `evt_${Date.now()}`,
       organizationId: input.organizationId,
-      eventType: 'subscription.created',
-      eventData: { planId: input.planId },
-      createdAt: now.toISOString(),
+      subscriptionId: subscription.id,
+      eventType: input.trialDays ? 'TRIAL_STARTED' : 'SUBSCRIPTION_CREATED',
+      newPlanId: input.planId,
+      occurredAt: now.toISOString(),
     };
     await globalDb.saveSubscriptionEvent(event);
 
@@ -80,13 +82,12 @@ export class SubscriptionService {
     const event: SubscriptionEventDTO = {
       id: `evt_${Date.now()}`,
       organizationId: request.organizationId,
-      eventType: 'subscription.plan_changed',
-      eventData: { 
-        previousPlanId: existing.planId, 
-        newPlanId: request.newPlanId,
-        prorated: request.prorate ?? true 
-      },
-      createdAt: new Date().toISOString(),
+      subscriptionId: updated.id,
+      eventType: 'PLAN_CHANGED',
+      previousPlanId: existing.planId,
+      newPlanId: request.newPlanId,
+      reason: request.prorate === false ? 'no-proration' : 'prorated',
+      occurredAt: new Date().toISOString(),
     };
     await globalDb.saveSubscriptionEvent(event);
 
@@ -108,8 +109,9 @@ export class SubscriptionService {
     const now = new Date();
     const canceled: SubscriptionDTO = {
       ...existing,
-      status: 'cancelled',
-      canceledAt: now.toISOString(),
+      status: 'CANCELLED',
+      cancelledAt: now.toISOString(),
+      cancelAtPeriodEnd: true,
       updatedAt: now.toISOString(),
     };
 
@@ -119,9 +121,10 @@ export class SubscriptionService {
     const event: SubscriptionEventDTO = {
       id: `evt_${Date.now()}`,
       organizationId,
-      eventType: 'subscription.cancelled',
-      eventData: { reason },
-      createdAt: now.toISOString(),
+      subscriptionId: canceled.id,
+      eventType: 'CANCELLED',
+      reason,
+      occurredAt: now.toISOString(),
     };
     await globalDb.saveSubscriptionEvent(event);
 
@@ -145,7 +148,7 @@ export class SubscriptionService {
     const subscription = await globalDb.getSubscription(organizationId);
     if (!subscription) return false;
 
-    return ['active', 'trialing'].includes(subscription.status);
+    return ['ACTIVE', 'TRIALING'].includes(subscription.status);
   }
 
   /**

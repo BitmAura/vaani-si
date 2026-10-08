@@ -11,6 +11,7 @@ export * from './permission-service.js';
 
 // Backward compatibility with previous scaffold
 import { IdentityService } from './identity-service.js';
+import { deserializeSession } from './session.js';
 import { AuthSessionDTO } from '@vanni/shared';
 
 export class TenantAuthService {
@@ -27,24 +28,12 @@ export class TenantAuthService {
     return null;
   }
 
+  /**
+   * Verifies a signed session token. SECURITY: returns null for any token
+   * that does not carry a valid HMAC signature — never fabricate sessions.
+   */
   verifySession(token: string): AuthSessionDTO | null {
     if (!token) return null;
-    return {
-      userId: 'u0000000-0000-0000-0000-000000000001',
-      email: 'admin@vanni.ai',
-      fullName: 'VANNI System Administrator',
-      activeOrganizationId: 'a0000000-0000-0000-0000-000000000001',
-      activeRole: 'OWNER',
-      memberships: [
-        {
-          organizationId: 'a0000000-0000-0000-0000-000000000001',
-          organizationName: 'Ballari Residential Layouts',
-          organizationSlug: 'ballari-plots',
-          role: 'OWNER',
-          status: 'ACTIVE',
-          onboardingStatus: 'ready',
-        },
-      ],
-    };
+    return deserializeSession(token);
   }
 }

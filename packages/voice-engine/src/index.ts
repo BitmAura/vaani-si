@@ -7,3 +7,4 @@ export * from './transport/index.js';
 export * from './runtime/index.js';
 export * from './telephony/index.js';
 export * from './mocks/index.js';
+export * from './auth/voice-access-token.js';

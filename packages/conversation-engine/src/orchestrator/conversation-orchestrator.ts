@@ -48,6 +48,12 @@ export interface StartConversationOptions {
   customerContext?: CustomerContextDTO;
   llmProvider: ILLMProvider;
   knowledgeChunks?: Array<{ title: string; content: string; authority: string }>;
+  /**
+   * Optional caller-assigned conversation id. Voice sessions allocate a
+   * conversation id upfront and address turns with it — if the orchestrator
+   * generated its own id, processCustomerMessage lookups would miss.
+   */
+  conversationId?: string;
 }
 
 export interface ConversationSession {
@@ -96,7 +102,7 @@ export class ConversationOrchestrator {
     session: ConversationSession;
     greetingMessage: ConversationMessageDTO;
   }> {
-    const conversationId = `conv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const conversationId = options.conversationId || `conv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
 
     // 1. Initialize State Machine & Memory

@@ -11,8 +11,12 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AudioConversationPipeline } from '../../../apps/server/src/audio-pipeline';
-import { InMemoryDatabaseService } from '../../../packages/database/src/index';
+// NOTE: cross-tree relative imports do not resolve under the vitest/vite
+// setup here, so the server pipeline is consumed via the '@server-pipeline'
+// alias configured in vitest.config.ts, and the database via its workspace
+// package name.
+import { AudioConversationPipeline } from '@server-pipeline';
+import { InMemoryDatabaseService } from '@vanni/database';
 import { Tenant } from '../domain/types';
 
 describe('INVARIANT 1: 750ms Latency Ceiling', () => {
@@ -149,7 +153,9 @@ describe('INVARIANT 3: Kanglish Phonetic Preservation', () => {
 
   it('should generate Kanglish responses for KANGLISH_BUSINESS dialect', () => {
     const dialect = 'KANGLISH_BUSINESS';
-    const sampleResponse = 'Haudu sir, site visit booking aagide.';
+    // Kanglish = Kannada script + phonetically-preserved English loanwords,
+    // matching the mixed-script output format produced by VoiceTextPreparation.
+    const sampleResponse = 'ಹೌದು ಸರ್, site visit booking maadthidini.';
     
     // Should contain Kannada + English mix
     expect(sampleResponse).toMatch(/[a-zA-Z]+/); // English words

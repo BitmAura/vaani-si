@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage",
     "test:invariants": "vitest run packages/core/src/__tests__/invariants.test.ts",
     "lint": "eslint . --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node scripts/typecheck-all.mjs",
     "prepare": "husky install || true"
   },
   "keywords": [

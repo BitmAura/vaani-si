@@ -19,8 +19,10 @@ import {
   InMemoryTelephonyRepository,
   InboundCallRouter,
   TelephonyWebhookController,
+  verifyVoiceAccessToken,
+  VoiceTokenVerification,
 } from '@vanni/voice-engine';
-import { ConversationOrchestrator } from '@vanni/conversation-engine';
+import { ConversationOrchestrator, MockStructuredLLMProvider } from '@vanni/conversation-engine';
 import { InMemoryDatabaseService } from '@vanni/database';
 import {
   MockSTTProvider,
@@ -39,6 +41,30 @@ const db = new InMemoryDatabaseService();
 const orchestrator = new ConversationOrchestrator(db);
 const telephonyRepo = new InMemoryTelephonyRepository();
 const exotelProvider = process.env.EXOTEL_ACCOUNT_SID ? new ExotelTelephonyProvider() : new MockTelephonyProvider();
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+/**
+ * Gate for management REST endpoints: in production a valid voice access
+ * token scoped to the organization is required. In development, requests
+ * are allowed but logged loudly so the gap is visible.
+ */
+function assertVoiceApiAuth(req: { query: Record<string, unknown> }, reply: { status: (code: number) => { send: (body: unknown) => void } }, organizationId: string): boolean {
+  const check: VoiceTokenVerification = verifyVoiceAccessToken(typeof req.query.token === 'string' ? req.query.token : null);
+  if (check.valid && check.claims) {
+    if (check.claims.organizationId !== organizationId) {
+      reply.status(403).send({ error: 'Voice token is not scoped to this organization' });
+      return false;
+    }
+    return true;
+  }
+  if (IS_PRODUCTION) {
+    reply.status(401).send({ error: 'Valid voice access token required', reason: check.reason });
+    return false;
+  }
+  console.warn(`[Voice Gateway] Unauthenticated management API access (dev mode): reason=${check.reason ?? 'no token'}`);
+  return true;
+}
+
 const inboundRouter = new InboundCallRouter({
   repository: telephonyRepo,
   telephonyProvider: exotelProvider,
@@ -100,6 +126,7 @@ export async function buildVoiceGateway() {
   // REST API: List Phone Numbers for Organization
   fastify.get('/api/telephony/phone-numbers', async (req, reply) => {
     const orgId = (req.query as any)?.organizationId || 'org_ballari_layouts';
+    if (!assertVoiceApiAuth(req as any, reply, orgId)) return;
     const numbers = await telephonyRepo.listPhoneNumbersByOrg(orgId);
     return { phoneNumbers: numbers };
   });
@@ -115,6 +142,7 @@ export async function buildVoiceGateway() {
   // REST API: List Call Sessions for Organization
   fastify.get('/api/telephony/calls', async (req, reply) => {
     const orgId = (req.query as any)?.organizationId || 'org_ballari_layouts';
+    if (!assertVoiceApiAuth(req as any, reply, orgId)) return;
     const sessions = await telephonyRepo.listSessionsByOrg(orgId);
     return { calls: sessions };
   });
@@ -135,10 +163,42 @@ export async function buildVoiceGateway() {
   fastify.get('/ws/voice-stream', { websocket: true }, async (socket, req) => {
     // 1. Session & Auth Parameters
     const url = new URL(req.url, 'http://localhost');
-    const orgId = url.searchParams.get('orgId') || 'org_ballari_layouts';
-    const agentId = url.searchParams.get('agentId') || 'agent_voice_assistant';
+
+    // SECURITY: the voice access token (minted by the API server for an
+    // authenticated session) is the only trusted source of org/agent in
+    // production. Query params are honored only in development.
+    const tokenCheck = verifyVoiceAccessToken(url.searchParams.get('token'));
+    let orgId = url.searchParams.get('orgId') || 'org_ballari_layouts';
+    let agentId = url.searchParams.get('agentId') || 'agent_voice_assistant';
+
+    if (tokenCheck.valid && tokenCheck.claims) {
+      orgId = tokenCheck.claims.organizationId;
+      agentId = tokenCheck.claims.agentId;
+    } else if (IS_PRODUCTION) {
+      fastify.log.warn({ reason: tokenCheck.reason }, '[Voice Gateway] Rejected unauthenticated WS connection');
+      socket.send(JSON.stringify(createVoiceEvent('ERROR', 'auth', { code: 'UNAUTHENTICATED', message: `Voice token required (${tokenCheck.reason})` }, 0)));
+      socket.close(1008, 'Unauthorized');
+      return;
+    } else {
+      fastify.log.warn({ orgId, reason: tokenCheck.reason }, '[Voice Gateway] Unauthenticated WS connection allowed in dev mode only');
+    }
+
     const language = url.searchParams.get('language') || 'kn-IN';
-    const isMock = url.searchParams.get('mock') !== 'false';
+    const wantsRealProviders = url.searchParams.get('mock') === 'false';
+
+    // Fail LOUDLY when real providers are requested but credentials are absent.
+    if (wantsRealProviders && !process.env.SARVAM_API_KEY) {
+      socket.send(JSON.stringify(createVoiceEvent('ERROR', 'config', {
+        code: 'PROVIDER_NOT_CONFIGURED',
+        message: 'mock=false requested but SARVAM_API_KEY is not configured. refusing to serve a fake voice session.',
+      }, 0)));
+      socket.close(1011, 'Provider not configured');
+      return;
+    }
+    const isMock = !wantsRealProviders;
+    if (isMock) {
+      fastify.log.info({ voiceSessionIdHint: orgId }, '[Voice Gateway] Mock providers active (pass ?mock=false with SARVAM_API_KEY for real STT/TTS)');
+    }
 
     const voiceSessionId = `vsess_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     fastify.log.info({ voiceSessionId, orgId, agentId, language, isMock }, '[Voice Gateway Connected]');

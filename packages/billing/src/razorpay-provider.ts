@@ -108,10 +108,10 @@ export class RazorpayProvider {
       throw new Error(`Razorpay subscription creation failed: ${error}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as { id?: string; short_url?: string };
     return {
-      subscriptionId: data.id,
-      shortUrl: data.short_url,
+      subscriptionId: data.id ?? '',
+      shortUrl: data.short_url ?? '',
     };
   }
 
@@ -243,10 +243,10 @@ export class RazorpayProvider {
       throw new Error(`Failed to create order: ${error}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as { id?: string; amount?: number };
     return {
-      orderId: data.id,
-      amount: data.amount / 100,
+      orderId: data.id ?? '',
+      amount: (data.amount ?? 0) / 100,
     };
   }
 

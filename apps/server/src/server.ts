@@ -16,6 +16,7 @@ import {
   DEFAULT_COOKIE_OPTIONS,
   serializeSession,
   deserializeSession,
+  getSessionSecret,
   switchActiveOrganization,
   requireUser,
   requireOrganizationMember,
@@ -160,8 +161,10 @@ export async function buildServer() {
     credentials: true,
   });
 
+  // SECURITY: no hardcoded fallback. getSessionSecret() throws in production
+  // when COOKIE_SECRET is missing and uses a random per-process dev secret otherwise.
   await fastify.register(cookie, {
-    secret: process.env.COOKIE_SECRET || 'vanni-secure-cookie-secret-2026-b2b-saas',
+    secret: getSessionSecret(),
     parseOptions: {},
   });
 

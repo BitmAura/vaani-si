@@ -65,16 +65,46 @@ export class IdentityService {
     this.seedDefaultTenants();
   }
 
+  /**
+   * Password hashing via scrypt (Node built-in, memory-hard, salted).
+   * Format: scrypt$<saltHex>$<hashHex>
+   * SECURITY: never use unsalted SHA-256 for passwords (rainbow-table trivial).
+   */
   private hashPassword(password: string): string {
-    return crypto.createHash('sha256').update(password).digest('hex');
+    const salt = crypto.randomBytes(16);
+    const hash = crypto.scryptSync(password, salt, 64);
+    return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`;
+  }
+
+  /**
+   * Constant-time password verification supporting only the current scrypt format.
+   */
+  private verifyPassword(password: string, storedHash: string): boolean {
+    const parts = storedHash.split('$');
+    if (parts.length !== 3 || parts[0] !== 'scrypt') {
+      return false;
+    }
+    const salt = Buffer.from(parts[1], 'hex');
+    const expected = Buffer.from(parts[2], 'hex');
+    const actual = crypto.scryptSync(password, salt, expected.length);
+    return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
   }
 
   private seedDefaultTenants() {
-    // Default system seed user
+    // Demo tenants are seeded ONLY when explicitly requested via SEED_DEMO_DATA.
+    // SECURITY: never ship known credentials in source control.
+    if (process.env.SEED_DEMO_DATA !== 'true') {
+      return;
+    }
+
+    // Default system seed user with a RANDOM password, printed once for the dev session
+    const demoPassword = `Vanni-${crypto.randomBytes(12).toString('base64url')}`;
+    console.warn(`[auth] SEED_DEMO_DATA=true — demo admin admin@vanni.ai created with one-time password: ${demoPassword}`);
+
     const adminUser: StoredUser = {
       id: 'u0000000-0000-0000-0000-000000000001',
       email: 'admin@vanni.ai',
-      passwordHash: this.hashPassword('VanniSecure2026!'),
+      passwordHash: this.hashPassword(demoPassword),
       fullName: 'VANNI System Administrator',
       timezone: 'Asia/Kolkata',
       locale: 'en-IN',
@@ -309,7 +339,7 @@ export class IdentityService {
     }
 
     const storedUser = this.users.get(userId);
-    if (!storedUser || storedUser.passwordHash !== this.hashPassword(password)) {
+    if (!storedUser || !this.verifyPassword(password, storedUser.passwordHash)) {
       throw new UnauthorizedError('Invalid email or password.');
     }
 

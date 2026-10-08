@@ -5,6 +5,8 @@
 
 import { globalDb } from '@vanni/database';
 
+import { UsageEventType } from '@vanni/shared';
+
 export interface Entitlement {
   feature: string;
   included: boolean;
@@ -13,12 +15,23 @@ export interface Entitlement {
   remaining?: number;
 }
 
-export interface PlanEntitlements {
-  [feature: string]: {
-    included: boolean;
-    limit?: number;
-  };
+export type PlanTier = 'STARTER' | 'GROWTH' | 'SCALE' | 'ENTERPRISE';
+
+export interface EntitlementLimit {
+  included: boolean;
+  limit?: number;
 }
+
+export type PlanEntitlements = Record<PlanTier, Record<string, EntitlementLimit>>;
+
+/**
+ * Maps billable features to the usage event types counted against their limits.
+ * Features without a mapping have entity-based limits (no usage events yet).
+ */
+const FEATURE_USAGE_EVENTS: Record<string, UsageEventType[]> = {
+  voice_calls: ['CALL_COMPLETED'],
+  analytics: ['CALL_COMPLETED', 'STT_USAGE', 'TTS_USAGE', 'LLM_USAGE'],
+};
 
 const PLAN_ENTITLEMENTS: PlanEntitlements = {
   STARTER: {
@@ -63,6 +76,17 @@ const PLAN_ENTITLEMENTS: PlanEntitlements = {
 
 export class EntitlementEngine {
   /**
+   * Normalizes a plan id ('plan_starter', 'STARTER', 'starter') to a PlanTier.
+   */
+  private toPlanTier(planId: string | undefined): PlanTier {
+    const normalized = (planId || '').replace(/^plan_/i, '').toUpperCase();
+    if (normalized === 'GROWTH' || normalized === 'SCALE' || normalized === 'ENTERPRISE') {
+      return normalized;
+    }
+    return 'STARTER';
+  }
+
+  /**
    * Check if a feature is accessible for an organization
    */
   async checkEntitlement(
@@ -71,7 +95,7 @@ export class EntitlementEngine {
   ): Promise<Entitlement> {
     const subscription = await globalDb.getSubscription(organizationId);
     
-    if (!subscription || subscription.status !== 'active') {
+    if (!subscription || subscription.status !== 'ACTIVE') {
       return {
         feature,
         included: false,
@@ -81,7 +105,7 @@ export class EntitlementEngine {
       };
     }
 
-    const planEntitlements = PLAN_ENTITLEMENTS[subscription.planId as keyof typeof PLAN_ENTITLEMENTS] || PLAN_ENTITLEMENTS.STARTER;
+    const planEntitlements = PLAN_ENTITLEMENTS[this.toPlanTier(subscription.planId)];
     const entitlement = planEntitlements[feature];
 
     if (!entitlement) {
@@ -93,10 +117,16 @@ export class EntitlementEngine {
 
     // Check usage if there's a limit
     if (entitlement.limit && entitlement.limit > 0) {
-      const usageEvents = await globalDb.getUsageEvents(organizationId, {
-        eventType: feature,
-      });
-      const usage = usageEvents.length;
+      const eventTypes = FEATURE_USAGE_EVENTS[feature];
+      let usage = 0;
+      if (eventTypes && eventTypes.length > 0) {
+        for (const eventType of eventTypes) {
+          const usageEvents = await globalDb.getUsageEvents(organizationId, {
+            eventType,
+          });
+          usage += usageEvents.reduce((sum: number, e: { quantity?: number }) => sum + (e.quantity ?? 1), 0);
+        }
+      }
 
       return {
         feature,
@@ -120,14 +150,14 @@ export class EntitlementEngine {
   async getAllEntitlements(organizationId: string): Promise<Entitlement[]> {
     const subscription = await globalDb.getSubscription(organizationId);
     
-    if (!subscription || subscription.status !== 'active') {
+    if (!subscription || subscription.status !== 'ACTIVE') {
       return Object.keys(PLAN_ENTITLEMENTS.STARTER).map(feature => ({
         feature,
         included: false,
       }));
     }
 
-    const planEntitlements = PLAN_ENTITLEMENTS[subscription.planId as keyof typeof PLAN_ENTITLEMENTS] || PLAN_ENTITLEMENTS.STARTER;
+    const planEntitlements = PLAN_ENTITLEMENTS[this.toPlanTier(subscription.planId)];
     
     const entitlements: Entitlement[] = [];
     for (const [feature, entitlement] of Object.entries(planEntitlements)) {
@@ -168,8 +198,7 @@ export class EntitlementEngine {
 
     // Check usage patterns
     const usageEvents = await globalDb.getUsageEvents(organizationId);
-    const voiceCallCount = usageEvents.filter(e => e.eventType === 'voice_call').length;
-    const aiEmployeeCount = usageEvents.filter(e => e.eventType === 'ai_employee').length;
+    const voiceCallCount = usageEvents.filter(e => e.eventType === 'CALL_COMPLETED').length;
 
     // Recommend upgrades
     if (currentPlan === 'STARTER' && voiceCallCount > 80) {

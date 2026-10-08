@@ -15,6 +15,13 @@ export interface PipelineEvents {
 }
 
 export class AudioConversationPipeline {
+  /**
+   * End-of-turn silence window. 300ms is the industry-standard turn-taking
+   * pause for IVR-grade voice bots; a longer window adds directly to every
+   * turn's perceived latency (the 750ms ceiling includes VAD silence).
+   */
+  private static readonly END_OF_TURN_SILENCE_MS = 300;
+
   private sarvam: SarvamVoiceAdapter;
   private llm: LLMConversationalService;
   private tenant: Tenant;
@@ -22,6 +29,7 @@ export class AudioConversationPipeline {
   private audioBuffer: Buffer[] = [];
   private isProcessingTurn = false;
   private silenceTimer: NodeJS.Timeout | null = null;
+  private lastChunkAt = 0;
   private isInceptionMode = false;
 
   constructor(tenant: Tenant, isInceptionMode = false) {
@@ -41,16 +49,17 @@ export class AudioConversationPipeline {
     }
 
     this.audioBuffer.push(chunk);
+    this.lastChunkAt = Date.now();
 
     // Reset silence detector
     if (this.silenceTimer) {
       clearTimeout(this.silenceTimer);
     }
 
-    // After 650ms of audio silence, assume user finished their sentence
+    // After END_OF_TURN_SILENCE_MS of audio silence, assume user finished their sentence
     this.silenceTimer = setTimeout(() => {
       this.processUserUtterance(events);
-    }, 650);
+    }, AudioConversationPipeline.END_OF_TURN_SILENCE_MS);
   }
 
   /**
@@ -61,7 +70,11 @@ export class AudioConversationPipeline {
     this.isProcessingTurn = true;
 
     const tStart = Date.now();
-    let vadMs = 650;
+    // VAD latency = measured end-of-turn wait (0 when invoked with a text
+    // override, where no VAD/silence detection is involved).
+    const vadMs = rawTextOverride || !this.lastChunkAt
+      ? 0
+      : Math.max(0, Date.now() - this.lastChunkAt);
     let sttMs = 0;
     let llmMs = 0;
     let ttsMs = 0;

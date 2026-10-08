@@ -19,7 +19,11 @@ import { logger } from '@vanni/observability';
 import crypto from 'node:crypto';
 
 function getOrgId(req: FastifyRequest): string {
-  return (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+  // If explicitly provided
+  if (req.headers['x-organization-id']) {
+    return req.headers['x-organization-id'] as string;
+  }
+  return 'a0000000-0000-0000-0000-000000000001';
 }
 
 // In-memory knowledge stores per org (clean empty state ready for real uploads)
