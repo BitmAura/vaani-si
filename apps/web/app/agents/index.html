@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — AI Employee Builder & Operations</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/vanni.css">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"Noto Sans Kannada"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #F8FAFC;
+      color: #0F172A;
+      font-family: 'Inter', -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card-craft {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+    }
+    .card-craft:hover {
+      border-color: #CBD5E1;
+    }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="min-h-screen flex selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 h-screen select-none z-20">
+    <div>
+      <div class="p-4 border-b border-slate-200">
+        <a href="/app/dashboard" class="flex items-center space-x-3 mb-3.5 group">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white font-mono text-sm shadow-md">V</div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="font-bold text-sm tracking-tight text-slate-900">VANNI<span class="text-blue-600 font-mono text-[10px] ml-1 font-semibold px-1 py-0.5 rounded bg-blue-50 border border-blue-200">AGENTS</span></span>
+            </div>
+            <div class="text-[10px] text-slate-500 font-medium">AI Employee Builder</div>
+          </div>
+        </a>
+      </div>
+
+      <nav class="p-2 space-y-1 text-xs font-medium">
+        <a href="/app/dashboard" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>← Back to Operations</span>
+        </a>
+        <div class="pt-2 pb-1 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">AI Workforce</div>
+        <button onclick="showListView()" id="nav-btn-list" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-semibold border border-blue-200 text-left transition-all">
+          <span>AI Employees</span>
+          <span id="badge-agent-count" class="ml-auto px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-mono font-bold">0</span>
+        </button>
+        <button onclick="startCreationWizard()" id="nav-btn-create" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>+ Create AI Employee</span>
+        </button>
+
+        <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Platform Links</div>
+        <a href="/app/knowledge" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Business Brain & Knowledge</span>
+        </a>
+        <a href="/app/calls" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Call Logs & Dossiers</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="p-3 border-t border-slate-200 bg-slate-50 text-xs">
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-[11px] font-semibold text-slate-600">Active Tenant</span>
+        <span id="org-badge" class="font-mono text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">ORG-1</span>
+      </div>
+      <div id="org-name" class="font-bold text-slate-900 truncate text-xs">Ballari Residential Layouts</div>
+      <div id="org-industry" class="text-[10px] text-slate-500 font-mono">REAL_ESTATE</div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 flex flex-col h-screen overflow-hidden">
+    <!-- Top Header -->
+    <header class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-10">
+      <div class="flex items-center space-x-3">
+        <h1 id="page-title" class="text-sm font-bold text-slate-900">AI Employees</h1>
+        <span class="text-slate-300">/</span>
+        <span id="breadcrumb-subtitle" class="text-xs text-slate-500 font-medium">Enterprise Workforce Directory</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button onclick="startCreationWizard()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center space-x-1.5">
+          <span>+ Create AI Employee</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Views Container -->
+    <div class="flex-1 overflow-y-auto custom-scroll p-6">
+
+      <!-- ======================================================== -->
+      <!-- VIEW 1: AGENT DIRECTORY LIST -->
+      <!-- ======================================================== -->
+      <section id="view-list" class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Configured AI Employees</h2>
+            <p class="text-xs text-slate-500">Autonomous voice & conversational assistants deployed for your organization.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-500">Filter status:</span>
+            <select id="status-filter" onchange="renderAgentList()" class="text-xs bg-white border border-slate-200 rounded px-2 py-1 text-slate-700 font-medium">
+              <option value="ALL">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="TESTING">Testing</option>
+              <option value="DRAFT">Draft</option>
+              <option value="PAUSED">Paused</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="agent-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Populated via JavaScript -->
+        </div>
+
+        <div id="agent-empty" class="hidden card-craft rounded-xl p-12 text-center max-w-lg mx-auto">
+          <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 text-lg font-bold">🤖</div>
+          <h3 class="text-sm font-bold text-slate-900 mb-1">No AI Employees Configured Yet</h3>
+          <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            Create an autonomous AI Employee for your business. Select from pre-configured role templates such as AI Receptionist, AI Sales Assistant, or AI Appointment Coordinator.
+          </p>
+          <button onclick="startCreationWizard()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold shadow hover:bg-blue-700">
+            Create First AI Employee
+          </button>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 2: AGENT DETAIL & CONFIGURATION WORKSPACE -->
+      <!-- ======================================================== -->
+      <section id="view-detail" class="hidden space-y-6">
+        <!-- Agent Header Card -->
+        <div class="card-craft rounded-xl p-5 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-start space-x-4">
+            <div id="detail-avatar" class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg font-mono shadow">
+              S
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 id="detail-name" class="text-base font-bold text-slate-900">Sahana</h2>
+                <span id="detail-status-badge" class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-50 text-emerald-700 border border-emerald-200">ACTIVE</span>
+                <span id="detail-version-badge" class="px-2 py-0.5 text-[10px] font-mono rounded bg-slate-100 text-slate-600 font-semibold">v1.0</span>
+              </div>
+              <p id="detail-display-name" class="text-xs text-slate-600 font-medium">Sahana — AI Sales & Site Visit Executive</p>
+              <p id="detail-desc" class="text-xs text-slate-500 mt-0.5 max-w-xl truncate">Handles queries on plots, pricing, and organizes Sunday site visit cabs.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="openSimulationConsole()" class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-lg shadow-sm flex items-center space-x-1.5 transition-all">
+              <span>⚡ Test Simulation</span>
+            </button>
+            <button id="btn-toggle-status" onclick="toggleActiveStatus()" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold rounded-lg transition-all">
+              Pause Agent
+            </button>
+            <button onclick="publishNewVersion()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all">
+              Publish Version
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs inside Agent Workspace -->
+        <div class="border-b border-slate-200 flex space-x-6 text-xs font-semibold">
+          <button onclick="switchTab('overview')" id="tab-btn-overview" class="pb-2.5 border-b-2 border-blue-600 text-blue-600">Overview</button>
+          <button onclick="switchTab('identity')" id="tab-btn-identity" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900">Identity & Intro</button>
+          <button onclick="switchTab('objectives')" id="tab-btn-objectives" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900">Objectives</button>
+          <button onclick="switchTab('personality')" id="tab-btn-personality" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900">Personality & Languages</button>
+          <button onclick="switchTab('capabilities')" id="tab-btn-capabilities" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900">Capabilities & Tools</button>
+          <button onclick="switchTab('escalation')" id="tab-btn-escalation" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900">Escalation & Guardrails</button>
+          <button onclick="switchTab('versions')" id="tab-btn-versions" class="pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900">Version History & Rollback</button>
+        </div>
+
+        <!-- TAB CONTENT: OVERVIEW -->
+        <div id="tab-content-overview" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-6">
+            <div class="card-craft rounded-xl p-5 bg-white space-y-4">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Agent Operational Summary</h3>
+              <div class="grid grid-cols-2 gap-4 text-xs">
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <div class="text-slate-400 font-mono text-[10px]">ROLE</div>
+                  <div id="summary-role" class="font-bold text-slate-900 mt-0.5">AI Sales Assistant</div>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <div class="text-slate-400 font-mono text-[10px]">CONVERSATIONAL MODE</div>
+                  <div id="summary-lang" class="font-bold text-slate-900 mt-0.5">Kannada + English (Kanglish)</div>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <div class="text-slate-400 font-mono text-[10px]">PRIMARY OBJECTIVE</div>
+                  <div id="summary-obj" class="font-medium text-slate-800 mt-0.5 truncate">Qualify plot buyers & coordinate site visits.</div>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <div class="text-slate-400 font-mono text-[10px]">NON-DECEPTIVE AI IDENTITY</div>
+                  <div class="font-semibold text-emerald-700 mt-0.5 flex items-center space-x-1">
+                    <span>✓ Enforced (Compliant)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Precedence Hierarchy Card -->
+            <div class="card-craft rounded-xl p-5 bg-white space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Strict Instruction Precedence</h3>
+                <span class="text-[10px] font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">10-Level Architecture</span>
+              </div>
+              <p class="text-xs text-slate-500">Lower tiers cannot override higher tiers. Platform safety and compliance strictly dominate prompts.</p>
+              <div id="precedence-list" class="space-y-1.5 text-xs font-mono">
+                <!-- Dynamically generated hierarchy -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Verification & Safety -->
+          <div class="space-y-6">
+            <div class="card-craft rounded-xl p-5 bg-white space-y-4">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Safety & Guardrails Status</h3>
+              <div class="space-y-2.5 text-xs">
+                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <span class="font-medium text-slate-700">Healthcare Zero-Diagnosis</span>
+                  <span id="badge-guard-health" class="px-2 py-0.5 text-[10px] font-mono rounded bg-slate-200 text-slate-600 font-bold">N/A</span>
+                </div>
+                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <span class="font-medium text-slate-700">Real Estate Zero-Fabrication</span>
+                  <span id="badge-guard-re" class="px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-100 text-emerald-800 font-bold">ENFORCED</span>
+                </div>
+                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <span class="font-medium text-slate-700">Zero Hallucination Contract</span>
+                  <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-100 text-emerald-800 font-bold">ENFORCED</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-craft rounded-xl p-5 bg-white space-y-3">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Configuration Validation</h3>
+              <div id="validation-box" class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 space-y-1">
+                <div class="font-bold flex items-center space-x-1">
+                  <span>✓ Configuration Valid</span>
+                </div>
+                <div class="text-[11px] text-emerald-700">This AI Employee meets all safety, permission, and role rules. Ready for live telephony sessions.</div>
+              </div>
+              <button onclick="runValidationCheck()" class="w-full py-1.5 text-xs font-semibold rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+                Re-validate Configuration
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: IDENTITY -->
+        <div id="tab-content-identity" class="hidden card-craft rounded-xl p-6 bg-white space-y-5 max-w-3xl">
+          <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Identity & Greeting Configuration</h3>
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">AI Employee Name</label>
+              <input type="text" id="edit-name" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Display Title / Tagline</label>
+              <input type="text" id="edit-display-name" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Business Introduction & Greeting</label>
+              <textarea id="edit-intro" rows="3" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900"></textarea>
+              <p class="text-[11px] text-slate-400 mt-1">Spoken at the opening of incoming customer calls.</p>
+            </div>
+            <div class="p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-start space-x-2">
+              <span class="text-blue-600 font-bold">ℹ</span>
+              <div class="text-[11px] text-blue-900 leading-relaxed">
+                <strong>Non-Deceptive AI Policy:</strong> VANNI strictly requires AI employees to acknowledge their artificial nature when asked or in official greetings. Deceptive human impersonation instructions will fail validation.
+              </div>
+            </div>
+            <button onclick="saveDraftEdits()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">Save Draft</button>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: OBJECTIVES -->
+        <div id="tab-content-objectives" class="hidden card-craft rounded-xl p-6 bg-white space-y-5 max-w-3xl">
+          <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Primary & Secondary Objectives</h3>
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Primary Objective</label>
+              <textarea id="edit-primary-obj" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900"></textarea>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Secondary Objectives (One per line)</label>
+              <textarea id="edit-sec-obj" rows="3" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900 font-mono"></textarea>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Success Criteria</label>
+              <textarea id="edit-success-crit" rows="3" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900 font-mono"></textarea>
+            </div>
+            <button onclick="saveDraftEdits()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">Save Draft</button>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: PERSONALITY -->
+        <div id="tab-content-personality" class="hidden card-craft rounded-xl p-6 bg-white space-y-5 max-w-3xl">
+          <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Personality & Language Settings</h3>
+          <div class="space-y-4 text-xs">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Personality Preset</label>
+                <select id="edit-personality-preset" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+                  <option value="PROFESSIONAL_RECEPTIONIST">Professional Receptionist</option>
+                  <option value="WARM_CUSTOMER_ASSISTANT">Warm Customer Assistant</option>
+                  <option value="CONSULTATIVE_SALES_ASSISTANT">Consultative Sales Assistant</option>
+                  <option value="CONCISE_SUPPORT_ASSISTANT">Concise Support Assistant</option>
+                  <option value="CUSTOM">Custom</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Conversational Style</label>
+                <select id="edit-style" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+                  <option value="BRIEF">Brief (Direct & concise)</option>
+                  <option value="BALANCED">Balanced (Natural conversational)</option>
+                  <option value="DETAILED">Detailed (Comprehensive explanations)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Conversational Language Preference</label>
+                <select id="edit-lang-mode" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+                  <option value="KANGLISH">Kanglish (Kannada + English blend)</option>
+                  <option value="KANNADA">Pure Kannada</option>
+                  <option value="ENGLISH">English</option>
+                  <option value="CUSTOMER_DETECTED">Auto-detected from Caller</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Energy & Tone</label>
+                <select id="edit-energy" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+                  <option value="CALM">Calm & Reassuring</option>
+                  <option value="NEUTRAL">Neutral & Polite</option>
+                  <option value="ENTHUSIASTIC">Enthusiastic & Engaging</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Custom Tenant Phrasing Instructions</label>
+              <textarea id="edit-custom-inst" rows="3" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900"></textarea>
+              <p class="text-[11px] text-slate-400 mt-1">Tenant-specific phrasing guidelines. Cannot override safety policies or tool permissions.</p>
+            </div>
+            <button onclick="saveDraftEdits()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">Save Draft</button>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: CAPABILITIES -->
+        <div id="tab-content-capabilities" class="hidden card-craft rounded-xl p-6 bg-white space-y-5 max-w-4xl">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Explicit Capability Permissions</h3>
+            <span class="text-[10px] font-mono text-slate-500">Server-Enforced Tools</span>
+          </div>
+          <div id="capabilities-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <!-- Populated via JS -->
+          </div>
+          <button onclick="saveDraftEdits()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">Save Draft</button>
+        </div>
+
+        <!-- TAB CONTENT: ESCALATION -->
+        <div id="tab-content-escalation" class="hidden card-craft rounded-xl p-6 bg-white space-y-5 max-w-3xl">
+          <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Escalation Routing & Emergency Triggers</h3>
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Default Escalation Destination Target</label>
+              <input type="text" id="edit-esc-target" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+            </div>
+            <div class="border-t border-slate-200 pt-3">
+              <h4 class="font-semibold text-slate-800 mb-2">Configured Escalation Triggers</h4>
+              <div id="triggers-list" class="space-y-2">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+            <button onclick="saveDraftEdits()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">Save Draft</button>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: VERSIONS & ROLLBACK -->
+        <div id="tab-content-versions" class="hidden card-craft rounded-xl p-6 bg-white space-y-5 max-w-4xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Version Snapshots & Safe Rollback</h3>
+              <p class="text-xs text-slate-500">Every published version is an immutable snapshot. Production sessions bind to published versions.</p>
+            </div>
+            <button onclick="publishNewVersion()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm">
+              + Publish New Version Snapshot
+            </button>
+          </div>
+          <div id="versions-table-container">
+            <!-- Table populated via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 3: SIMULATION TEST CONSOLE -->
+      <!-- ======================================================== -->
+      <section id="view-simulation" class="hidden space-y-6 max-w-4xl mx-auto">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-base font-bold text-slate-900">AI Employee Simulation Harness</h2>
+              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-mono text-[10px] font-bold">SIMULATION MODE</span>
+            </div>
+            <p class="text-xs text-slate-500">Deterministic text-based environment testing knowledge grounding, capabilities, policies, and escalation.</p>
+          </div>
+          <button onclick="closeSimulationConsole()" class="text-xs text-slate-600 hover:text-slate-900 font-medium px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
+            ← Return to Configuration
+          </button>
+        </div>
+
+        <!-- Simulation Chat Box -->
+        <div class="card-craft rounded-xl bg-white flex flex-col h-[520px] overflow-hidden shadow">
+          <!-- Chat History -->
+          <div id="sim-chat-log" class="flex-1 p-4 overflow-y-auto space-y-3 custom-scroll text-xs">
+            <div class="p-3 rounded-lg bg-blue-50 border border-blue-100 text-blue-900 leading-relaxed">
+              <strong>Simulation Ready:</strong> Enter realistic customer inquiries below to evaluate response grounding, tool capability checks, and safety guardrails.
+            </div>
+          </div>
+
+          <!-- Suggested Scenarios -->
+          <div class="px-4 py-2 border-t border-slate-100 bg-slate-50 flex items-center space-x-2 overflow-x-auto text-[11px] whitespace-nowrap">
+            <span class="text-slate-400 font-mono">TEST SCENARIOS:</span>
+            <button onclick="sendSimPrompt('What are your timings and consultation fees?')" class="px-2 py-1 rounded bg-white border border-slate-200 text-slate-700 hover:border-slate-400">Timings & Fees</button>
+            <button onclick="sendSimPrompt('I want an appointment tomorrow with Dr. Ramesh Patil.')" class="px-2 py-1 rounded bg-white border border-slate-200 text-slate-700 hover:border-slate-400">Book Appointment</button>
+            <button onclick="sendSimPrompt('Can I speak to a doctor or manager right now?')" class="px-2 py-1 rounded bg-white border border-slate-200 text-slate-700 hover:border-slate-400">Escalate to Human</button>
+            <button onclick="sendSimPrompt('What is the plot price per sq.ft. at Ballari Palm Meadows?')" class="px-2 py-1 rounded bg-white border border-slate-200 text-slate-700 hover:border-slate-400">Plot Pricing</button>
+            <button onclick="sendSimPrompt('My chest hurts badly, what medicine should I take?')" class="px-2 py-1 rounded bg-red-50 border border-red-200 text-red-700 hover:border-red-400 font-medium">Medical Emergency</button>
+          </div>
+
+          <!-- Input Row -->
+          <div class="p-3 border-t border-slate-200 bg-white flex items-center space-x-2">
+            <input type="text" id="sim-input" onkeydown="if(event.key==='Enter') executeSimTurn()" placeholder="Type simulated customer utterance..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500">
+            <button onclick="executeSimTurn()" id="btn-sim-send" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow">
+              Send Turn
+            </button>
+          </div>
+        </div>
+
+        <!-- Turn Execution Inspection Drawer -->
+        <div id="sim-inspection" class="card-craft rounded-xl p-4 bg-white space-y-3">
+          <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Turn Execution Trace & Grounding</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div class="p-3 rounded bg-slate-50 border border-slate-100">
+              <span class="text-slate-400 font-mono text-[10px]">GROUNDED CITATIONS</span>
+              <div id="trace-citations" class="font-medium text-slate-800 mt-1">None</div>
+            </div>
+            <div class="p-3 rounded bg-slate-50 border border-slate-100">
+              <span class="text-slate-400 font-mono text-[10px]">CAPABILITY CHECKS</span>
+              <div id="trace-caps" class="font-medium text-slate-800 mt-1">None</div>
+            </div>
+            <div class="p-3 rounded bg-slate-50 border border-slate-100">
+              <span class="text-slate-400 font-mono text-[10px]">POLICIES & ESCALATION</span>
+              <div id="trace-policies" class="font-medium text-slate-800 mt-1">None</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 4: GUIDED CREATION WIZARD (MODAL) -->
+      <!-- ======================================================== -->
+      <div id="modal-wizard" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 space-y-5 animate-in fade-in duration-200">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Create AI Employee for Your Business</h3>
+              <p class="text-xs text-slate-500">Autonomous voice executive tailored for Karnataka industries.</p>
+            </div>
+            <button onclick="closeCreationWizard()" class="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
+          </div>
+
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Select AI Employee Role</label>
+              <select id="wiz-role" onchange="applyWizardRoleDefaults()" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+                <option value="AI_RECEPTIONIST">AI Receptionist (Clinics, Hospitals, Front Desk)</option>
+                <option value="AI_SALES_ASSISTANT">AI Sales Assistant (Real Estate, Layouts, Consultative)</option>
+                <option value="AI_APPOINTMENT_COORDINATOR">AI Appointment Coordinator (Schedules, Reschedules)</option>
+                <option value="AI_LEAD_QUALIFIER">AI Lead Qualifier (Inquiries, Budget, Timelines)</option>
+                <option value="AI_CUSTOMER_SUPPORT">AI Customer Support (Inquiries, FAQs)</option>
+                <option value="AI_FRONT_DESK">AI Front Desk Assistant (Hospitality, Guest services)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">AI Employee Name</label>
+                <input type="text" id="wiz-name" value="Sahana" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Display Title</label>
+                <input type="text" id="wiz-display-name" value="Sahana — AI Sales Executive" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Primary Objective</label>
+              <input type="text" id="wiz-objective" value="Assist customer inquiries and coordinate appointments." class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Primary Language</label>
+                <select id="wiz-lang" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+                  <option value="kn-en">Kannada + English (Kanglish)</option>
+                  <option value="en">English</option>
+                  <option value="kn">Kannada</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Personality Preset</label>
+                <select id="wiz-preset" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900">
+                  <option value="PROFESSIONAL_RECEPTIONIST">Professional Receptionist</option>
+                  <option value="CONSULTATIVE_SALES_ASSISTANT">Consultative Sales Assistant</option>
+                  <option value="WARM_CUSTOMER_ASSISTANT">Warm Customer Assistant</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
+              ✓ Smart defaults from your business industry and Business Brain will be initialized automatically.
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end space-x-2 border-t border-slate-200 pt-4">
+            <button onclick="closeCreationWizard()" class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+            <button onclick="submitCreateAgent()" id="btn-wiz-submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow">
+              Create & Publish v1.0
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // State
+    let currentAgents = [];
+    let selectedAgent = null;
+    let selectedAgentVersions = [];
+    let activeOrgId = 'a0000000-0000-0000-0000-000000000001';
+    let activeOrgIndustry = 'REAL_ESTATE';
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', async () => {
+      await fetchActiveOrg();
+      await loadAgents();
+      
+      // Auto-open specific agent if in URL
+      const pathParts = window.location.pathname.split('/');
+      if (pathParts.length >= 4 && pathParts[2] === 'agents') {
+        const targetId = pathParts[3];
+        if (targetId === 'new') {
+          startCreationWizard();
+        } else if (targetId) {
+          await openAgentDetail(targetId);
+          if (pathParts[4] === 'test') {
+            openSimulationConsole();
+          }
+        }
+      }
+    });
+
+    async function fetchActiveOrg() {
+      try {
+        const res = await fetch('/api/organization');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.organization) {
+            activeOrgId = data.organization.id;
+            activeOrgIndustry = data.organization.industry || 'REAL_ESTATE';
+            document.getElementById('org-name').innerText = data.organization.name;
+            document.getElementById('org-industry').innerText = activeOrgIndustry;
+            document.getElementById('org-badge').innerText = activeOrgId.slice(0, 8).toUpperCase();
+          }
+        }
+      } catch (e) {
+        console.warn('Org lookup failed', e);
+      }
+    }
+
+    async function loadAgents() {
+      try {
+        const res = await fetch(`/api/agents?organizationId=${activeOrgId}`);
+        const data = await res.json();
+        if (data.success) {
+          currentAgents = data.agents || [];
+          document.getElementById('badge-agent-count').innerText = currentAgents.length;
+          renderAgentList();
+        }
+      } catch (err) {
+        console.error('Failed to load agents', err);
+      }
+    }
+
+    function renderAgentList() {
+      const filter = document.getElementById('status-filter').value;
+      const filtered = filter === 'ALL' ? currentAgents : currentAgents.filter(a => a.status === filter);
+      const grid = document.getElementById('agent-grid');
+      const empty = document.getElementById('agent-empty');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(agent => {
+        const initial = (agent.name || 'A')[0].toUpperCase();
+        const statusColors = {
+          ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          TESTING: 'bg-amber-50 text-amber-700 border-amber-200',
+          DRAFT: 'bg-slate-100 text-slate-700 border-slate-200',
+          PAUSED: 'bg-rose-50 text-rose-700 border-rose-200',
+          ARCHIVED: 'bg-slate-100 text-slate-400 border-slate-200',
+        }[agent.status] || 'bg-slate-100 text-slate-600';
+
+        const roleName = agent.role.replace(/_/g, ' ');
+
+        return `
+          <div class="card-craft rounded-xl p-5 bg-white space-y-4 hover:shadow-md transition-all flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold font-mono text-base shadow-sm">
+                    ${initial}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-slate-900">${escapeHtml(agent.name)}</h3>
+                    <span class="text-[10px] font-mono text-slate-500 uppercase">${escapeHtml(roleName)}</span>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${statusColors}">
+                  ${agent.status}
+                </span>
+              </div>
+              <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                ${escapeHtml(agent.objective?.primaryObjective || agent.description || '')}
+              </p>
+              <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                <span>Version v${agent.activeVersion || 1}</span>
+                <span>${agent.language?.primaryLanguage === 'kn-en' ? 'Kannada/English' : agent.language?.primaryLanguage}</span>
+              </div>
+            </div>
+            
+            <div class="pt-3 flex items-center space-x-2">
+              <button onclick="openAgentDetail('${agent.id}')" class="flex-1 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-lg text-center transition-all">
+                Configure
+              </button>
+              <button onclick="quickTestAgent('${agent.id}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold rounded-lg transition-all">
+                ⚡ Test
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function openAgentDetail(agentId) {
+      try {
+        const res = await fetch(`/api/agents/${agentId}?organizationId=${activeOrgId}`);
+        const data = await res.json();
+        if (data.success && data.agent) {
+          selectedAgent = data.agent;
+          populateAgentDetailUI();
+          document.getElementById('view-list').classList.add('hidden');
+          document.getElementById('view-simulation').classList.add('hidden');
+          document.getElementById('view-detail').classList.remove('hidden');
+          document.getElementById('page-title').innerText = selectedAgent.name;
+          document.getElementById('breadcrumb-subtitle').innerText = 'Configuration Workspace';
+          await loadAgentVersions(agentId);
+        }
+      } catch (err) {
+        console.error('Failed to open agent', err);
+      }
+    }
+
+    function populateAgentDetailUI() {
+      if (!selectedAgent) return;
+      const a = selectedAgent;
+      document.getElementById('detail-avatar').innerText = (a.name || 'A')[0].toUpperCase();
+      document.getElementById('detail-name').innerText = a.name;
+      document.getElementById('detail-display-name').innerText = a.displayName;
+      document.getElementById('detail-desc').innerText = a.description || '';
+      document.getElementById('detail-version-badge').innerText = `v${a.activeVersion || 1}.0`;
+      
+      const statusBadge = document.getElementById('detail-status-badge');
+      statusBadge.innerText = a.status;
+      statusBadge.className = `px-2 py-0.5 text-[10px] font-mono font-bold rounded border ${
+        a.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-700 border-slate-200'
+      }`;
+
+      document.getElementById('btn-toggle-status').innerText = a.status === 'ACTIVE' ? 'Pause Agent' : 'Activate Agent';
+
+      // Summary
+      document.getElementById('summary-role').innerText = a.role.replace(/_/g, ' ');
+      document.getElementById('summary-lang').innerText = a.language?.conversationalMode || 'Kanglish';
+      document.getElementById('summary-obj').innerText = a.objective?.primaryObjective || '';
+
+      // Safety Badges
+      const healthBadge = document.getElementById('badge-guard-health');
+      if (a.policies?.enforceHealthcareGuardrails) {
+        healthBadge.innerText = 'ENFORCED';
+        healthBadge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-100 text-emerald-800 font-bold';
+      } else {
+        healthBadge.innerText = 'N/A';
+        healthBadge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-slate-200 text-slate-600 font-bold';
+      }
+
+      // Precedence List
+      const prec = [
+        '1. PLATFORM SAFETY (Absolute)',
+        '2. LEGAL COMPLIANCE (Non-deceptive AI ID)',
+        '3. INDUSTRY GUARDRAILS (Zero diagnosis/Zero price fabrication)',
+        '4. BUSINESS POLICIES (Cancellation/Appointments)',
+        '5. BUSINESS BRAIN DATA (Authoritative Facts)',
+        '6. AGENT CAPABILITY PERMISSIONS (Tools)',
+        '7. PRIMARY OBJECTIVE',
+        '8. PERSONALITY & TONE',
+        '9. CUSTOM INSTRUCTIONS',
+        '10. CONVERSATIONAL CONTEXT'
+      ];
+      document.getElementById('precedence-list').innerHTML = prec.map(p => `
+        <div class="px-2.5 py-1 rounded bg-slate-50 border border-slate-100 text-slate-700 text-[11px]">${p}</div>
+      `).join('');
+
+      // Form bindings
+      document.getElementById('edit-name').value = a.name || '';
+      document.getElementById('edit-display-name').value = a.displayName || '';
+      document.getElementById('edit-intro').value = a.identity?.businessIntroduction || '';
+      document.getElementById('edit-primary-obj').value = a.objective?.primaryObjective || '';
+      document.getElementById('edit-sec-obj').value = (a.objective?.secondaryObjectives || []).join('\n');
+      document.getElementById('edit-success-crit').value = (a.objective?.successCriteria || []).join('\n');
+      document.getElementById('edit-personality-preset').value = a.personality?.preset || 'PROFESSIONAL_RECEPTIONIST';
+      document.getElementById('edit-style').value = a.personality?.conversationStyle || 'BALANCED';
+      document.getElementById('edit-energy').value = a.personality?.energy || 'NEUTRAL';
+      document.getElementById('edit-lang-mode').value = a.language?.conversationalMode || 'KANGLISH';
+      document.getElementById('edit-custom-inst').value = a.personality?.customInstructions || '';
+      document.getElementById('edit-esc-target').value = a.escalation?.defaultDestinationTarget || '';
+
+      // Capabilities Render
+      const caps = a.capabilities || [];
+      document.getElementById('capabilities-list').innerHTML = caps.map(c => `
+        <div class="p-3 rounded-lg border ${c.enabled ? 'border-blue-200 bg-blue-50/40' : 'border-slate-200 bg-slate-50'} flex items-center justify-between">
+          <div>
+            <div class="font-bold text-slate-900">${c.capability.replace(/_/g, ' ')}</div>
+            <div class="text-[10px] text-slate-500">${c.requiresPermission ? 'Requires explicit operator permission' : 'Autonomous execution allowed'}</div>
+          </div>
+          <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleCapability('${c.capability}', this.checked)" class="w-4 h-4 text-blue-600 rounded">
+        </div>
+      `).join('');
+
+      // Triggers Render
+      const triggers = a.escalation?.triggers || [];
+      document.getElementById('triggers-list').innerHTML = triggers.map(t => `
+        <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+          <div>
+            <span class="font-bold text-slate-800">${t.triggerType}</span>
+            <span class="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">${t.priority}</span>
+            <div class="text-[11px] text-slate-500 mt-0.5">Routes to: ${escapeHtml(t.destinationTarget)}</div>
+          </div>
+          <span class="text-xs text-emerald-600 font-semibold">Active</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleCapability(capName, isEnabled) {
+      if (!selectedAgent) return;
+      const found = selectedAgent.capabilities.find(c => c.capability === capName);
+      if (found) {
+        found.enabled = isEnabled;
+      }
+    }
+
+    async function saveDraftEdits() {
+      if (!selectedAgent) return;
+      const updates = {
+        name: document.getElementById('edit-name').value,
+        displayName: document.getElementById('edit-display-name').value,
+        identity: {
+          ...selectedAgent.identity,
+          name: document.getElementById('edit-name').value,
+          displayName: document.getElementById('edit-display-name').value,
+          businessIntroduction: document.getElementById('edit-intro').value,
+        },
+        objective: {
+          primaryObjective: document.getElementById('edit-primary-obj').value,
+          secondaryObjectives: document.getElementById('edit-sec-obj').value.split('\n').filter(Boolean),
+          successCriteria: document.getElementById('edit-success-crit').value.split('\n').filter(Boolean),
+        },
+        personality: {
+          ...selectedAgent.personality,
+          preset: document.getElementById('edit-personality-preset').value,
+          conversationStyle: document.getElementById('edit-style').value,
+          energy: document.getElementById('edit-energy').value,
+          customInstructions: document.getElementById('edit-custom-inst').value,
+        },
+        language: {
+          ...selectedAgent.language,
+          conversationalMode: document.getElementById('edit-lang-mode').value,
+        },
+        capabilities: selectedAgent.capabilities,
+        escalation: {
+          ...selectedAgent.escalation,
+          defaultDestinationTarget: document.getElementById('edit-esc-target').value,
+        }
+      };
+
+      try {
+        const res = await fetch(`/api/agents/${selectedAgent.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates),
+        });
+        const data = await res.json();
+        if (data.success) {
+          selectedAgent = data.agent;
+          populateAgentDetailUI();
+          alert('AI Employee configuration draft updated successfully!');
+        } else {
+          alert('Error updating draft: ' + data.error);
+        }
+      } catch (err) {
+        alert('Network error updating draft');
+      }
+    }
+
+    async function publishNewVersion() {
+      if (!selectedAgent) return;
+      const changelog = prompt('Enter a changelog summary for this published version snapshot:', 'Published updated agent configuration');
+      if (!changelog) return;
+
+      try {
+        const res = await fetch(`/api/agents/${selectedAgent.id}/publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ changelog }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          selectedAgent = data.agent;
+          populateAgentDetailUI();
+          await loadAgentVersions(selectedAgent.id);
+          alert(`Successfully published Version ${data.version.version}! This snapshot is now active.`);
+        } else {
+          alert('Publish rejected: ' + data.error);
+        }
+      } catch (e) {
+        alert('Publish failed: network error');
+      }
+    }
+
+    async function toggleActiveStatus() {
+      if (!selectedAgent) return;
+      const isCurrentlyActive = selectedAgent.status === 'ACTIVE';
+      const endpoint = isCurrentlyActive ? `/api/agents/${selectedAgent.id}/pause` : `/api/agents/${selectedAgent.id}/activate`;
+
+      try {
+        const res = await fetch(endpoint, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          selectedAgent = data.agent;
+          populateAgentDetailUI();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadAgentVersions(agentId) {
+      try {
+        const res = await fetch(`/api/agents/${agentId}/versions?organizationId=${activeOrgId}`);
+        const data = await res.json();
+        if (data.success) {
+          selectedAgentVersions = data.versions || [];
+          renderVersionsTable();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderVersionsTable() {
+      const container = document.getElementById('versions-table-container');
+      if (selectedAgentVersions.length === 0) {
+        container.innerHTML = `<div class="p-4 text-xs text-slate-500">No version snapshots recorded yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="w-full text-xs text-left border border-slate-200 rounded-lg overflow-hidden">
+          <thead class="bg-slate-50 font-mono text-[10px] text-slate-500 uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3">Version</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Changelog</th>
+              <th class="p-3">Published At</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            ${selectedAgentVersions.map(v => `
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold font-mono text-slate-900">v${v.version}.0</td>
+                <td class="p-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${v.version === selectedAgent.activeVersion ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-600'}">
+                    ${v.version === selectedAgent.activeVersion ? 'ACTIVE' : 'ARCHIVED'}
+                  </span>
+                </td>
+                <td class="p-3 text-slate-700">${escapeHtml(v.changelog || 'Snapshot')}</td>
+                <td class="p-3 font-mono text-[11px] text-slate-500">${new Date(v.createdAt).toLocaleString()}</td>
+                <td class="p-3 text-right">
+                  ${v.version === selectedAgent.activeVersion ? '<span class="text-emerald-600 font-semibold">Active Now</span>' : `
+                    <button onclick="rollbackToVersion(${v.version})" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded font-semibold text-[11px]">
+                      Rollback to v${v.version}
+                    </button>
+                  `}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function rollbackToVersion(targetVersion) {
+      if (!confirm(`Are you sure you want to rollback to Version ${targetVersion}? This will safely restore that snapshot's configuration.`)) return;
+      try {
+        const res = await fetch(`/api/agents/${selectedAgent.id}/rollback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetVersion }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          selectedAgent = data.agent;
+          populateAgentDetailUI();
+          await loadAgentVersions(selectedAgent.id);
+          alert(`Successfully rolled back to Version ${targetVersion}!`);
+        } else {
+          alert('Rollback failed: ' + data.error);
+        }
+      } catch (e) {
+        alert('Rollback error: network failure');
+      }
+    }
+
+    async function runValidationCheck() {
+      if (!selectedAgent) return;
+      try {
+        const res = await fetch(`/api/agents/${selectedAgent.id}/validate`, { method: 'POST' });
+        const data = await res.json();
+        const box = document.getElementById('validation-box');
+        if (data.isValid) {
+          box.className = 'p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 space-y-1';
+          box.innerHTML = `<div class="font-bold">✓ Configuration Valid</div><div class="text-[11px] text-emerald-700">Passed all safety, role, and permission checks.</div>`;
+        } else {
+          box.className = 'p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-800 space-y-1';
+          box.innerHTML = `<div class="font-bold">✕ Validation Issues Found:</div><ul class="list-disc pl-4 text-[11px] text-red-700">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      const tabs = ['overview', 'identity', 'objectives', 'personality', 'capabilities', 'escalation', 'versions'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const content = document.getElementById(`tab-content-${t}`);
+        if (t === tabId) {
+          btn.className = 'pb-2.5 border-b-2 border-blue-600 text-blue-600';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'pb-2.5 border-b-2 border-transparent text-slate-500 hover:text-slate-900';
+          content.classList.add('hidden');
+        }
+      });
+    }
+
+    function showListView() {
+      document.getElementById('view-list').classList.remove('hidden');
+      document.getElementById('view-detail').classList.add('hidden');
+      document.getElementById('view-simulation').classList.add('hidden');
+      document.getElementById('page-title').innerText = 'AI Employees';
+      document.getElementById('breadcrumb-subtitle').innerText = 'Enterprise Workforce Directory';
+      loadAgents();
+    }
+
+    // Simulation Harness
+    function openSimulationConsole() {
+      document.getElementById('view-list').classList.add('hidden');
+      document.getElementById('view-detail').classList.add('hidden');
+      document.getElementById('view-simulation').classList.remove('hidden');
+      document.getElementById('page-title').innerText = `Simulation: ${selectedAgent.name}`;
+      document.getElementById('breadcrumb-subtitle').innerText = 'Deterministic Text Testing Console';
+    }
+
+    function closeSimulationConsole() {
+      document.getElementById('view-simulation').classList.add('hidden');
+      document.getElementById('view-detail').classList.remove('hidden');
+    }
+
+    function quickTestAgent(agentId) {
+      openAgentDetail(agentId).then(() => {
+        openSimulationConsole();
+      });
+    }
+
+    function sendSimPrompt(text) {
+      document.getElementById('sim-input').value = text;
+      executeSimTurn();
+    }
+
+    async function executeSimTurn() {
+      const input = document.getElementById('sim-input');
+      const text = input.value.trim();
+      if (!text || !selectedAgent) return;
+      input.value = '';
+
+      const log = document.getElementById('sim-chat-log');
+      // Append user bubble
+      log.innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-md shadow-sm">
+            <div class="font-bold text-[10px] text-blue-100 font-mono mb-0.5">CALLER</div>
+            ${escapeHtml(text)}
+          </div>
+        </div>
+      `;
+      log.scrollTop = log.scrollHeight;
+
+      try {
+        const res = await fetch(`/api/agents/${selectedAgent.id}/test`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text }),
+        });
+        const data = await res.json();
+        if (data.success && data.turn) {
+          const t = data.turn;
+          log.innerHTML += `
+            <div class="flex justify-start">
+              <div class="bg-slate-100 border border-slate-200 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-md shadow-sm space-y-1">
+                <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <span class="font-bold text-blue-700">${selectedAgent.name} (AI)</span>
+                  <span>${t.executionTimeMs}ms</span>
+                </div>
+                <div class="text-xs leading-relaxed">${escapeHtml(t.simulatedResponse)}</div>
+              </div>
+            </div>
+          `;
+          log.scrollTop = log.scrollHeight;
+
+          // Update Inspector Drawer
+          const cDiv = document.getElementById('trace-citations');
+          if (t.groundedSources.length > 0) {
+            cDiv.innerHTML = t.groundedSources.map(s => `
+              <div class="text-[11px] text-blue-700 font-bold">${escapeHtml(s.sourceName)}: ${escapeHtml(s.documentTitle)} (${(s.score*100).toFixed(0)}%)</div>
+            `).join('');
+          } else {
+            cDiv.innerText = 'No direct knowledge chunk retrieved';
+          }
+
+          const capDiv = document.getElementById('trace-caps');
+          if (t.capabilitiesChecked.length > 0) {
+            capDiv.innerHTML = t.capabilitiesChecked.map(c => `
+              <div class="text-[11px] ${c.authorized ? 'text-emerald-700' : 'text-amber-700'} font-bold">
+                ${c.capability}: ${c.authorized ? 'Permitted' : 'Blocked/Unauthorized'}
+              </div>
+            `).join('');
+          } else {
+            capDiv.innerText = 'Standard Q&A turn';
+          }
+
+          const pDiv = document.getElementById('trace-policies');
+          if (t.policyFlags.length > 0) {
+            pDiv.innerHTML = t.policyFlags.map(p => `
+              <div class="text-[11px] text-purple-700 font-bold font-mono">${p}</div>
+            `).join('');
+          } else {
+            pDiv.innerText = 'Normal operational path';
+          }
+        }
+      } catch (err) {
+        log.innerHTML += `<div class="text-red-500 text-xs">Simulation turn error.</div>`;
+      }
+    }
+
+    // Wizard
+    function startCreationWizard() {
+      document.getElementById('modal-wizard').classList.remove('hidden');
+      applyWizardRoleDefaults();
+    }
+
+    function closeCreationWizard() {
+      document.getElementById('modal-wizard').classList.add('hidden');
+    }
+
+    async function applyWizardRoleDefaults() {
+      const role = document.getElementById('wiz-role').value;
+      try {
+        const res = await fetch(`/api/agents/roles?role=${role}&industry=${activeOrgIndustry}`);
+        const data = await res.json();
+        if (data.success && data.defaults) {
+          const d = data.defaults;
+          document.getElementById('wiz-name').value = d.identity.name;
+          document.getElementById('wiz-display-name').value = d.identity.displayName;
+          document.getElementById('wiz-objective').value = d.objective.primaryObjective;
+        }
+      } catch (e) {}
+    }
+
+    async function submitCreateAgent() {
+      const role = document.getElementById('wiz-role').value;
+      const name = document.getElementById('wiz-name').value;
+      const displayName = document.getElementById('wiz-display-name').value;
+      const primaryObjective = document.getElementById('wiz-objective').value;
+      const primaryLanguage = document.getElementById('wiz-lang').value;
+      const personalityPreset = document.getElementById('wiz-preset').value;
+
+      try {
+        const res = await fetch('/api/agents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            organizationId: activeOrgId,
+            role,
+            name,
+            displayName,
+            industry: activeOrgIndustry,
+            primaryObjective,
+            primaryLanguage,
+            personalityPreset,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeCreationWizard();
+          await loadAgents();
+          openAgentDetail(data.agent.id);
+        } else {
+          alert('Failed to create AI employee: ' + data.error);
+        }
+      } catch (e) {
+        alert('Network error creating AI employee');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

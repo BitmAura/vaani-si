@@ -1622,3 +1622,33 @@ fs.writeFileSync(path.join(WEB_DIR, 'signup.html'), signupHtml.trim(), 'utf-8');
 console.log('✓ Generated apps/web/signup.html');
 
 console.log('All 14 marketing pages generated successfully!');
+
+// Ensure physical directory routes for static hosts (Vercel, S3, Netlify)
+function syncStaticRoutes() {
+  const routeMap = {
+    'app/dashboard': 'app-dashboard.html',
+    'app/agents': 'app-agents.html',
+    'app/knowledge': 'app-knowledge.html',
+    'app/onboarding': 'app-onboarding.html',
+    'console': 'app-dashboard.html',
+    'login': 'login.html',
+    'signup': 'signup.html',
+    'pricing': 'pricing.html',
+    'features': 'features.html',
+    'how-it-works': 'how-it-works.html',
+    'demo': 'demo.html',
+    'contact': 'contact.html',
+    'security': 'security.html'
+  };
+
+  for (const [route, sourceFile] of Object.entries(routeMap)) {
+    const sourcePath = path.join(WEB_DIR, sourceFile);
+    if (!fs.existsSync(sourcePath)) continue;
+    const content = fs.readFileSync(sourcePath, 'utf8');
+    const routeDir = path.join(WEB_DIR, route);
+    fs.mkdirSync(routeDir, { recursive: true });
+    fs.writeFileSync(path.join(routeDir, 'index.html'), content, 'utf8');
+    fs.writeFileSync(path.join(WEB_DIR, route + '.html'), content, 'utf8');
+  }
+}
+syncStaticRoutes();

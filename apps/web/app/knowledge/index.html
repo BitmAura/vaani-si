@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANNI — Business Brain & Knowledge Base</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/vanni.css">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"Noto Sans Kannada"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #F8FAFC;
+      color: #0F172A;
+      font-family: 'Inter', -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card-craft {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+    }
+    .card-craft:hover {
+      border-color: #CBD5E1;
+    }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="min-h-screen flex selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 h-screen select-none z-20">
+    <div>
+      <div class="p-4 border-b border-slate-200">
+        <a href="/app/dashboard" class="flex items-center space-x-3 mb-3.5 group">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white font-mono text-sm shadow-md">V</div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="font-bold text-sm tracking-tight text-slate-900">VANNI<span class="text-blue-600 font-mono text-[10px] ml-1 font-semibold px-1 py-0.5 rounded bg-blue-50 border border-blue-200">BRAIN</span></span>
+            </div>
+            <div class="text-[10px] text-slate-500 font-medium">Business Knowledge Engine</div>
+          </div>
+        </a>
+      </div>
+
+      <nav class="p-2 space-y-1 text-xs font-medium">
+        <a href="/app/dashboard" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>← Back to Call Operations</span>
+        </a>
+        <div class="pt-2 pb-1 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Knowledge Layers</div>
+        <button onclick="switchView('overview')" id="nav-btn-overview" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-semibold border border-blue-200 text-left transition-all">
+          <span>Overview & Snapshot</span>
+        </button>
+        <button onclick="switchView('services')" id="nav-btn-services" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Services & Offerings</span>
+          <span id="badge-services" class="ml-auto px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono font-bold">0</span>
+        </button>
+        <button onclick="switchView('staff')" id="nav-btn-staff" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Staff & Specialists</span>
+          <span id="badge-staff" class="ml-auto px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono font-bold">0</span>
+        </button>
+        <button onclick="switchView('policies')" id="nav-btn-policies" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Policies & Guardrails</span>
+          <span id="badge-policies" class="ml-auto px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono font-bold">0</span>
+        </button>
+        <button onclick="switchView('faqs')" id="nav-btn-faqs" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Bilingual FAQs</span>
+          <span id="badge-faqs" class="ml-auto px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono font-bold">0</span>
+        </button>
+        <button onclick="switchView('sources')" id="nav-btn-sources" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Sources & Documents</span>
+          <span id="badge-sources" class="ml-auto px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-mono font-bold">0</span>
+        </button>
+        <button onclick="switchView('conflicts')" id="nav-btn-conflicts" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all">
+          <span>Conflict Detection</span>
+          <span id="badge-conflicts" class="ml-auto px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-mono font-bold">0</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="p-3 border-t border-slate-200">
+      <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+        <div class="font-bold text-slate-900" id="current-org-name">Loading Business...</div>
+        <div class="text-[10px] text-emerald-600 font-mono mt-0.5 flex items-center space-x-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>Brain Active • Deterministic</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
+    
+    <!-- Header -->
+    <header class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0">
+      <div>
+        <h1 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+          <span>VANNI Business Brain</span>
+          <span id="version-tag" class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-mono font-semibold">Snapshot v1</span>
+        </h1>
+        <p class="text-[11px] text-slate-500">Authoritative facts, pricing, policies, and hours used by conversational AI</p>
+      </div>
+
+      <div class="flex items-center space-x-2.5">
+        <div class="relative w-64">
+          <input type="text" id="query-input" placeholder="Test knowledge lookup..." onkeydown="if(event.key==='Enter') testKnowledgeQuery()" class="w-full pl-3 pr-8 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-500">
+          <button onclick="testKnowledgeQuery()" class="absolute right-2 top-2 text-slate-400 hover:text-blue-600 text-xs font-bold">→</button>
+        </div>
+        <button onclick="triggerCompileSnapshot()" id="btn-compile" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all flex items-center space-x-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Compile Snapshot</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Query Result Dropdown Card -->
+    <div id="query-result-card" class="hidden px-6 pt-3 shrink-0">
+      <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50 text-xs space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-blue-900" id="query-result-status">Search Result</span>
+          <button onclick="document.getElementById('query-result-card').classList.add('hidden')" class="text-blue-500 hover:text-blue-900">✕</button>
+        </div>
+        <div id="query-result-body" class="text-slate-800 leading-relaxed"></div>
+        <div id="query-result-citation" class="text-[10px] font-mono text-blue-700 pt-1 border-t border-blue-200"></div>
+      </div>
+    </div>
+
+    <!-- Content Viewport -->
+    <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6">
+
+      <!-- View 1: Overview -->
+      <div id="view-overview" class="space-y-6">
+        <!-- 6 Metrics Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          <div class="p-3.5 rounded-xl card-craft">
+            <div class="text-[11px] text-slate-500 font-medium">Services Active</div>
+            <div id="stat-services" class="mt-1 text-xl font-extrabold text-slate-900 font-mono">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl card-craft">
+            <div class="text-[11px] text-slate-500 font-medium">Locations</div>
+            <div id="stat-locations" class="mt-1 text-xl font-extrabold text-slate-900 font-mono">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl card-craft">
+            <div class="text-[11px] text-slate-500 font-medium">Staff & Doctors</div>
+            <div id="stat-staff" class="mt-1 text-xl font-extrabold text-slate-900 font-mono">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl card-craft">
+            <div class="text-[11px] text-slate-500 font-medium">Bilingual FAQs</div>
+            <div id="stat-faqs" class="mt-1 text-xl font-extrabold text-slate-900 font-mono">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl card-craft">
+            <div class="text-[11px] text-slate-500 font-medium">Policies Configured</div>
+            <div id="stat-policies" class="mt-1 text-xl font-extrabold text-slate-900 font-mono">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl card-craft">
+            <div class="text-[11px] text-slate-500 font-medium">Open Conflicts</div>
+            <div id="stat-conflicts" class="mt-1 text-xl font-extrabold text-amber-600 font-mono">0</div>
+          </div>
+        </div>
+
+        <!-- Identity & Operational Snapshot -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="p-5 rounded-xl card-craft space-y-3">
+            <div class="font-bold text-xs text-slate-900 uppercase tracking-wider font-mono">Layer 1: Business Identity & Contact</div>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Legal Name:</span>
+                <span class="font-bold text-slate-900" id="biz-legal-name">-</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Industry:</span>
+                <span class="font-mono text-blue-700 font-semibold" id="biz-industry">-</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Official Telephony Line:</span>
+                <span class="font-mono text-slate-900 font-bold" id="biz-phone">-</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Primary Location:</span>
+                <span class="text-slate-900" id="biz-address">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-xl card-craft space-y-3">
+            <div class="font-bold text-xs text-slate-900 uppercase tracking-wider font-mono">Layer 8: AI Employee Contract</div>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Configured Role:</span>
+                <span class="font-bold text-slate-900" id="ai-role">-</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Primary Dialect:</span>
+                <span class="font-mono text-emerald-700 font-semibold" id="ai-dialect">-</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">No-Hallucination Policy:</span>
+                <span class="text-slate-700 italic">Strict (Never invent prices or unlisted stock)</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Last Compiled Snapshot:</span>
+                <span class="font-mono text-slate-900 font-bold" id="snapshot-timestamp">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- View 2: Services -->
+      <div id="view-services" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-900">Services, Offerings & Pricing Catalog</h2>
+          <span class="text-xs text-slate-500">Authoritative data for caller price quotes</span>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-semibold">
+              <tr>
+                <th class="py-2.5 px-4">Offering / Service</th>
+                <th class="py-2.5 px-4">Category</th>
+                <th class="py-2.5 px-4">Starting Price</th>
+                <th class="py-2.5 px-4">Duration</th>
+                <th class="py-2.5 px-4">AI Bookable</th>
+                <th class="py-2.5 px-4 text-right">Authority</th>
+              </tr>
+            </thead>
+            <tbody id="services-table-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- View 3: Staff -->
+      <div id="view-staff" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-900">Staff, Specialists & Consultants</h2>
+          <span class="text-xs text-slate-500">OPD timings, fees, and doctor availability</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="staff-cards-grid"></div>
+      </div>
+
+      <!-- View 4: Policies -->
+      <div id="view-policies" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-900">Business Policies & Operational Guardrails</h2>
+          <span class="text-xs text-slate-500">Strict rules enforced during customer voice conversations</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="policies-cards-grid"></div>
+      </div>
+
+      <!-- View 5: FAQs -->
+      <div id="view-faqs" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-900">Bilingual Frequently Asked Questions</h2>
+          <span class="text-xs text-slate-500">Canonical Kannada and Kanglish responses</span>
+        </div>
+        <div class="space-y-3" id="faqs-list"></div>
+      </div>
+
+      <!-- View 6: Sources & Documents (Prompt 07) -->
+      <div id="view-sources" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Knowledge Sources & Ingested Documents</h2>
+            <p class="text-xs text-slate-500">Traceable websites, uploaded PDFs, articles, and semantic vector chunks</p>
+          </div>
+          <button onclick="openIngestModal()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all flex items-center space-x-1.5">
+            <span>+ Ingest Knowledge</span>
+          </button>
+        </div>
+
+        <div class="space-y-3" id="sources-documents-list"></div>
+      </div>
+
+      <!-- View 7: Conflicts -->
+      <div id="view-conflicts" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Knowledge Conflict Resolution Panel</h2>
+            <p class="text-xs text-slate-500">Contradictions detected between business records and flexible facts</p>
+          </div>
+        </div>
+        <div class="space-y-3" id="conflicts-list"></div>
+      </div>
+
+    </div>
+
+    <!-- INGEST KNOWLEDGE MODAL -->
+    <div id="ingest-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+            <span>Ingest Business Knowledge</span>
+            <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-mono font-semibold">SSRF Protected</span>
+          </h3>
+          <button onclick="closeIngestModal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+        </div>
+
+        <!-- Ingest Tabs -->
+        <div class="flex border-b border-slate-200 text-xs">
+          <button onclick="switchIngestTab('web')" id="tab-btn-web" class="px-3 py-2 font-bold text-blue-600 border-b-2 border-blue-600">Website URL</button>
+          <button onclick="switchIngestTab('doc')" id="tab-btn-doc" class="px-3 py-2 text-slate-500 hover:text-slate-900">Upload PDF/TXT</button>
+          <button onclick="switchIngestTab('art')" id="tab-btn-art" class="px-3 py-2 text-slate-500 hover:text-slate-900">Manual Article</button>
+          <button onclick="switchIngestTab('faq')" id="tab-btn-faq" class="px-3 py-2 text-slate-500 hover:text-slate-900">Add FAQ</button>
+        </div>
+
+        <!-- Tab 1: Website -->
+        <form id="form-ingest-web" onsubmit="handleWebsiteSubmit(event)" class="space-y-3 text-xs">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Target Website URL</label>
+            <input type="url" id="web-url" required placeholder="https://example.com/services" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500">
+            <span class="text-[10px] text-slate-400 mt-1 block">Protects against internal network and cloud metadata access (SSRF defense).</span>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Source Title (Optional)</label>
+            <input type="text" id="web-title" placeholder="Company Website / Services" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Authority Level</label>
+            <select id="web-authority" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 bg-white">
+              <option value="REFERENCE">REFERENCE (Third-party / Crawled)</option>
+              <option value="APPROVED">APPROVED (Reviewed by Management)</option>
+              <option value="AUTHORITATIVE">AUTHORITATIVE (Official Business Source)</option>
+            </select>
+          </div>
+          <button type="submit" id="btn-submit-web" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all">Start Ingestion & Sync</button>
+        </form>
+
+        <!-- Tab 2: Document Upload -->
+        <form id="form-ingest-doc" onsubmit="handleDocumentUploadSubmit(event)" class="hidden space-y-3 text-xs">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Choose PDF or TXT File</label>
+            <input type="file" id="doc-file" accept=".pdf,.txt,.md" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Document Title</label>
+            <input type="text" id="doc-title" placeholder="Clinic Patient Guide / Pricing Brochure" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Authority Level</label>
+            <select id="doc-authority" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 bg-white">
+              <option value="APPROVED">APPROVED</option>
+              <option value="AUTHORITATIVE">AUTHORITATIVE</option>
+              <option value="REFERENCE">REFERENCE</option>
+            </select>
+          </div>
+          <button type="submit" id="btn-submit-doc" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all">Upload & Extract Chunks</button>
+        </form>
+
+        <!-- Tab 3: Manual Article -->
+        <form id="form-ingest-art" onsubmit="handleArticleSubmit(event)" class="hidden space-y-3 text-xs">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Article Title</label>
+            <input type="text" id="art-title" required placeholder="Pre-Operative Instructions" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Content (Markdown / Plain Text)</label>
+            <textarea id="art-content" rows="4" required placeholder="Patients should arrive 15 minutes before the procedure..." class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Language</label>
+              <select id="art-lang" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 bg-white">
+                <option value="EN">English</option>
+                <option value="KN">Kannada</option>
+                <option value="KANGLISH">Kanglish</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Authority</label>
+              <select id="art-authority" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 bg-white">
+                <option value="AUTHORITATIVE">AUTHORITATIVE</option>
+                <option value="APPROVED">APPROVED</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" id="btn-submit-art" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all">Publish Article</button>
+        </form>
+
+        <!-- Tab 4: Add FAQ -->
+        <form id="form-ingest-faq" onsubmit="handleFAQSubmit(event)" class="hidden space-y-3 text-xs">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Question</label>
+            <input type="text" id="faq-q" required placeholder="What are your consultation hours?" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Approved Answer</label>
+            <textarea id="faq-a" rows="3" required placeholder="We are open Monday to Saturday from 9 AM to 7 PM." class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Language</label>
+              <select id="faq-lang" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 bg-white">
+                <option value="KANGLISH">Kanglish</option>
+                <option value="EN">English</option>
+                <option value="KN">Kannada</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Category</label>
+              <input type="text" id="faq-cat" value="General" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+          <button type="submit" id="btn-submit-faq" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all">Save FAQ</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- CHUNKS INSPECTOR MODAL -->
+    <div id="chunks-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900" id="chunks-modal-title">Document Chunks Inspector</h3>
+            <p class="text-[11px] text-slate-500 font-mono" id="chunks-modal-subtitle">Chunks tagged with embeddings and metadata</p>
+          </div>
+          <button onclick="closeChunksModal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+        </div>
+        <div class="overflow-y-auto space-y-2.5 flex-1 pr-1" id="chunks-modal-body"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let activeBrainData = null;
+    let activeSnapshot = null;
+    let activeSources = [];
+    let activeDocuments = [];
+
+    async function loadBusinessBrain() {
+      try {
+        const [brainRes, snapRes, srcRes, docRes] = await Promise.all([
+          fetch('/api/business-brain'),
+          fetch('/api/business-brain/snapshot'),
+          fetch('/api/knowledge/sources'),
+          fetch('/api/knowledge/documents')
+        ]);
+
+        if (brainRes.ok) {
+          const d = await brainRes.json();
+          activeBrainData = d.brain;
+          renderBrainOverview();
+          renderServices();
+          renderStaff();
+          renderPolicies();
+          renderFAQs();
+          renderConflicts();
+        }
+
+        if (snapRes.ok) {
+          const s = await snapRes.json();
+          activeSnapshot = s.snapshot;
+          renderSnapshotDetails();
+        }
+
+        if (srcRes.ok) {
+          const sData = await srcRes.json();
+          activeSources = sData.sources || [];
+        }
+
+        if (docRes.ok) {
+          const dData = await docRes.json();
+          activeDocuments = dData.documents || [];
+          renderSources();
+        }
+      } catch (err) {
+        console.error('Failed to load business brain:', err);
+      }
+    }
+
+    function switchView(viewId) {
+      ['overview', 'services', 'staff', 'policies', 'faqs', 'sources', 'conflicts'].forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const btn = document.getElementById(`nav-btn-${v}`);
+        if (el) el.classList.add('hidden');
+        if (btn) btn.className = 'w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-left transition-all';
+      });
+
+      const targetView = document.getElementById(`view-${viewId}`);
+      const targetBtn = document.getElementById(`nav-btn-${viewId}`);
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetBtn) targetBtn.className = 'w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-semibold border border-blue-200 text-left transition-all';
+    }
+
+    function renderBrainOverview() {
+      if (!activeBrainData) return;
+      const b = activeBrainData;
+      document.getElementById('current-org-name').innerText = b.organization.name;
+      document.getElementById('biz-legal-name').innerText = b.organization.name;
+      document.getElementById('biz-industry').innerText = b.organization.industry;
+      
+      const loc = b.locations[0];
+      if (loc) {
+        document.getElementById('biz-phone').innerText = loc.phone;
+        document.getElementById('biz-address').innerText = `${loc.name} — ${loc.addressLine1}, ${loc.city}`;
+      }
+
+      document.getElementById('stat-services').innerText = b.services.length;
+      document.getElementById('stat-locations').innerText = b.locations.length;
+      document.getElementById('stat-staff').innerText = b.staff.length;
+      document.getElementById('stat-faqs').innerText = b.faqs.length;
+      document.getElementById('stat-policies').innerText = b.policies.length;
+      document.getElementById('stat-conflicts').innerText = b.conflicts.length;
+
+      document.getElementById('badge-services').innerText = b.services.length;
+      document.getElementById('badge-staff').innerText = b.staff.length;
+      document.getElementById('badge-policies').innerText = b.policies.length;
+      document.getElementById('badge-faqs').innerText = b.faqs.length;
+      document.getElementById('badge-conflicts').innerText = b.conflicts.length;
+    }
+
+    function renderSnapshotDetails() {
+      if (!activeSnapshot) return;
+      const s = activeSnapshot;
+      document.getElementById('version-tag').innerText = `Snapshot v${s.version}`;
+      document.getElementById('ai-role').innerText = s.aiConfiguration.roleTitle;
+      document.getElementById('ai-dialect').innerText = s.primaryDialect;
+      document.getElementById('snapshot-timestamp').innerText = new Date(s.compiledAt).toLocaleTimeString();
+    }
+
+    function renderServices() {
+      const tbody = document.getElementById('services-table-body');
+      tbody.innerHTML = '';
+      (activeBrainData?.services || []).forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors';
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="font-bold text-slate-900">${s.name}</div>
+            <div class="text-[11px] text-slate-500 font-sans">${s.kannadaName || s.conversationalAlias || ''}</div>
+          </td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px]">${s.category}</span></td>
+          <td class="py-3 px-4 font-mono font-bold text-slate-900">${s.priceMinimum ? `₹${s.priceMinimum.toLocaleString('en-IN')}` : 'Consultation'}</td>
+          <td class="py-3 px-4 text-slate-600">${s.durationMinutes} mins</td>
+          <td class="py-3 px-4"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${s.isBookableByAI ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${s.isBookableByAI ? 'YES' : 'NO'}</span></td>
+          <td class="py-3 px-4 text-right font-mono text-[10px] text-blue-600 font-semibold">${s.authority}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderStaff() {
+      const grid = document.getElementById('staff-cards-grid');
+      grid.innerHTML = '';
+      (activeBrainData?.staff || []).forEach(st => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl card-craft space-y-2 text-xs';
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="font-bold text-slate-900 text-sm">${st.fullName}</div>
+            <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono text-[10px] font-bold">${st.authority}</span>
+          </div>
+          <div class="text-slate-500">${st.designation} • <span class="text-slate-700">${st.specialization || 'General'}</span></div>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between font-mono text-[11px]">
+            <span class="text-slate-500">Fee: <strong class="text-slate-900 font-bold">${st.consultationFee ? `₹${st.consultationFee}` : 'Standard'}</strong></span>
+            <span class="text-emerald-700">Days: Mon-Sat</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function renderPolicies() {
+      const grid = document.getElementById('policies-cards-grid');
+      grid.innerHTML = '';
+      (activeBrainData?.policies || []).forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl card-craft space-y-2 text-xs';
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-900">${p.title}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${p.enforcementLevel === 'STRICT_BLOCK' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-700'}">${p.enforcementLevel}</span>
+          </div>
+          <p class="text-slate-700 leading-relaxed">${p.policyStatement}</p>
+          ${p.kannadaStatement ? `<div class="p-2 rounded bg-slate-50 border border-slate-100 text-slate-600 text-[11px] font-sans">${p.kannadaStatement}</div>` : ''}
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function renderFAQs() {
+      const list = document.getElementById('faqs-list');
+      list.innerHTML = '';
+      (activeBrainData?.faqs || []).forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'p-4 rounded-xl card-craft space-y-2 text-xs';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-900">${f.question}</span>
+            <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono text-[10px] font-bold">${f.language}</span>
+          </div>
+          <p class="text-slate-700 leading-relaxed">${f.answer}</p>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function renderSources() {
+      const list = document.getElementById('sources-documents-list');
+      if (!list) return;
+      list.innerHTML = '';
+      document.getElementById('badge-sources').innerText = activeDocuments.length;
+
+      if (activeDocuments.length === 0) {
+        list.innerHTML = '<div class="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200 text-xs">No documents uploaded yet. Click "+ Ingest Knowledge" to add a website or PDF.</div>';
+        return;
+      }
+
+      activeDocuments.forEach(doc => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl card-craft space-y-2 text-xs';
+        const statusBadge = doc.contentStatus === 'READY'
+          ? '<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-mono text-[10px] font-bold border border-emerald-200">READY</span>'
+          : doc.contentStatus === 'PROCESSING'
+          ? '<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono text-[10px] font-bold border border-blue-200 animate-pulse">PROCESSING</span>'
+          : doc.contentStatus === 'FAILED'
+          ? '<span class="px-2 py-0.5 rounded bg-red-50 text-red-700 font-mono text-[10px] font-bold border border-red-200">FAILED</span>'
+          : '<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[10px] font-bold">ARCHIVED</span>';
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-slate-900 text-sm">${doc.title}</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">v${doc.version}</span>
+              <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-mono font-bold">${doc.documentType}</span>
+            </div>
+            ${statusBadge}
+          </div>
+          <p class="text-slate-600 text-[11px] line-clamp-2">${doc.normalizedContent || 'Content processing...'}</p>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+            <span>Words: <strong>${doc.wordCount}</strong> • Chunks: <strong>${doc.metadata?.chunkCount || 1}</strong></span>
+            <button onclick="openChunksModal('${doc.id}')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold transition-all">Inspect Chunks →</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function renderConflicts() {
+      const list = document.getElementById('conflicts-list');
+      list.innerHTML = '';
+      const conflicts = activeBrainData?.conflicts || [];
+      if (conflicts.length === 0) {
+        list.innerHTML = '<div class="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200 text-xs">✅ Zero knowledge conflicts detected. All business facts are synchronized.</div>';
+        return;
+      }
+
+      conflicts.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2 text-xs';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-900 flex items-center space-x-1.5">
+              <span>⚠️ Contradiction Detected:</span>
+              <span class="font-mono">${c.entityType} (${c.field})</span>
+            </span>
+            <button onclick="resolveConflict('${c.id}')" class="px-2.5 py-1 rounded bg-amber-600 text-white font-bold text-xs hover:bg-amber-700">Resolve</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3 text-[11px] pt-1">
+            <div class="p-2 rounded bg-white border border-slate-200">
+              <div class="font-bold text-slate-700">${c.sourceA.title} (${c.sourceA.authority})</div>
+              <div class="font-mono text-slate-900 mt-1">${c.sourceA.value}</div>
+            </div>
+            <div class="p-2 rounded bg-white border border-slate-200">
+              <div class="font-bold text-slate-700">${c.sourceB.title} (${c.sourceB.authority})</div>
+              <div class="font-mono text-slate-900 mt-1">${c.sourceB.value}</div>
+            </div>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    async function triggerCompileSnapshot() {
+      const btn = document.getElementById('btn-compile');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-pulse">Compiling...</span>';
+
+      try {
+        const res = await fetch('/api/business-brain/compile', { method: 'POST' });
+        if (res.ok) {
+          const d = await res.json();
+          activeSnapshot = d.snapshot;
+          renderSnapshotDetails();
+          alert(`Successfully compiled Business Brain Snapshot v${d.snapshot.version}!`);
+        }
+      } catch (e) {
+        alert('Failed to compile snapshot');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Compile Snapshot</span>';
+      }
+    }
+
+    async function testKnowledgeQuery() {
+      const input = document.getElementById('query-input');
+      const q = input.value.trim();
+      if (!q) return;
+
+      const card = document.getElementById('query-result-card');
+      const statusEl = document.getElementById('query-result-status');
+      const bodyEl = document.getElementById('query-result-body');
+      const citEl = document.getElementById('query-result-citation');
+
+      try {
+        // Query hybrid retrieval engine
+        const res = await fetch('/api/knowledge/retrieve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: q, topK: 3 })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          card.classList.remove('hidden');
+          const r = data.result;
+
+          if (r.answerability === 'SUPPORTED') {
+            statusEl.innerHTML = `<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-bold">SUPPORTED (Score: ${Math.round(r.topScore * 100)}%)</span>`;
+            bodyEl.innerText = r.results[0]?.content || '';
+            citEl.innerText = `Citations: ${r.citations.map(c => `${c.sourceName} > ${c.documentTitle}${c.section ? ` > ${c.section}` : ''}`).join(' • ')}`;
+          } else if (r.answerability === 'PARTIALLY_SUPPORTED') {
+            statusEl.innerHTML = `<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-mono font-bold">PARTIALLY_SUPPORTED (Score: ${Math.round(r.topScore * 100)}%)</span>`;
+            bodyEl.innerText = r.results[0]?.content || '';
+            citEl.innerText = `Citations: ${r.citations.map(c => `${c.sourceName} > ${c.documentTitle}`).join(' • ')}`;
+          } else {
+            statusEl.innerHTML = `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-bold">UNSUPPORTED (No Hallucination Enforced)</span>`;
+            bodyEl.innerText = 'This information is not present in the verified Business Brain catalog. The AI agent will follow fallback escalation and will NOT invent an answer.';
+            citEl.innerText = 'Citation: None (Hallucination blocked)';
+          }
+        }
+      } catch (err) {
+        console.error('Query test failed:', err);
+      }
+    }
+
+    // --- Ingestion Modals & Submissions ---
+    function openIngestModal() {
+      document.getElementById('ingest-modal').classList.remove('hidden');
+    }
+    function closeIngestModal() {
+      document.getElementById('ingest-modal').classList.add('hidden');
+    }
+    function switchIngestTab(tab) {
+      ['web', 'doc', 'art', 'faq'].forEach(t => {
+        document.getElementById(`form-ingest-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).className = 'px-3 py-2 text-slate-500 hover:text-slate-900';
+      });
+      document.getElementById(`form-ingest-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tab}`).className = 'px-3 py-2 font-bold text-blue-600 border-b-2 border-blue-600';
+    }
+
+    async function handleWebsiteSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-web');
+      btn.disabled = true;
+      btn.innerText = 'Ingesting & Syncing...';
+
+      try {
+        const url = document.getElementById('web-url').value;
+        const title = document.getElementById('web-title').value;
+        const authority = document.getElementById('web-authority').value;
+
+        const res = await fetch('/api/knowledge/website', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, title, authority })
+        });
+        const d = await res.json();
+        if (res.ok) {
+          closeIngestModal();
+          await loadBusinessBrain();
+          alert('Website ingested and indexed successfully!');
+        } else {
+          alert(`Ingestion failed: ${d.error}`);
+        }
+      } catch (err) {
+        alert('Ingestion request failed');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Start Ingestion & Sync';
+      }
+    }
+
+    async function handleDocumentUploadSubmit(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('doc-file');
+      if (!fileInput.files[0]) return;
+      const file = fileInput.files[0];
+      const title = document.getElementById('doc-title').value || file.name;
+      const authority = document.getElementById('doc-authority').value;
+
+      const reader = new FileReader();
+      reader.onload = async function() {
+        const base64 = reader.result.split(',')[1];
+        const res = await fetch('/api/knowledge/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            filename: file.name,
+            documentType: file.name.endsWith('.pdf') ? 'PDF' : 'TXT',
+            contentBase64: base64,
+            authority
+          })
+        });
+        const d = await res.json();
+        if (res.ok) {
+          closeIngestModal();
+          await loadBusinessBrain();
+          alert('Document parsed and chunks indexed successfully!');
+        } else {
+          alert(`Document upload failed: ${d.error}`);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleArticleSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('art-title').value;
+      const content = document.getElementById('art-content').value;
+      const language = document.getElementById('art-lang').value;
+      const authority = document.getElementById('art-authority').value;
+
+      const res = await fetch('/api/knowledge/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, language, authority })
+      });
+      if (res.ok) {
+        closeIngestModal();
+        await loadBusinessBrain();
+        alert('Manual article published and indexed successfully!');
+      } else {
+        const d = await res.json();
+        alert(`Failed to save article: ${d.error}`);
+      }
+    }
+
+    async function handleFAQSubmit(e) {
+      e.preventDefault();
+      const question = document.getElementById('faq-q').value;
+      const answer = document.getElementById('faq-a').value;
+      const language = document.getElementById('faq-lang').value;
+      const category = document.getElementById('faq-cat').value;
+
+      const res = await fetch('/api/business-brain/faqs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, answer, language, category })
+      });
+      if (res.ok) {
+        closeIngestModal();
+        await loadBusinessBrain();
+        alert('FAQ created successfully!');
+      }
+    }
+
+    async function openChunksModal(docId) {
+      const modal = document.getElementById('chunks-modal');
+      const body = document.getElementById('chunks-modal-body');
+      body.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs">Loading chunks...</div>';
+      modal.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/knowledge/documents/${docId}`);
+        if (res.ok) {
+          const d = await res.json();
+          document.getElementById('chunks-modal-title').innerText = d.document.title;
+          document.getElementById('chunks-modal-subtitle').innerText = `Total Chunks: ${d.chunks.length} • Language: ${d.document.language}`;
+          body.innerHTML = '';
+          d.chunks.forEach(c => {
+            const el = document.createElement('div');
+            el.className = 'p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs space-y-1';
+            el.innerHTML = `
+              <div class="flex items-center justify-between font-mono text-[10px] text-slate-500">
+                <span>Chunk #${c.chunkIndex + 1} ${c.heading ? `• ${c.heading}` : ''}</span>
+                <span>Tokens: ~${c.tokenCount}</span>
+              </div>
+              <p class="text-slate-800 leading-relaxed font-sans">${c.content}</p>
+            `;
+            body.appendChild(el);
+          });
+        }
+      } catch (e) {
+        body.innerHTML = '<div class="p-6 text-center text-red-500 text-xs">Failed to load chunks.</div>';
+      }
+    }
+
+    function closeChunksModal() {
+      document.getElementById('chunks-modal').classList.add('hidden');
+    }
+
+    async function resolveConflict(conflictId) {
+      const val = prompt('Enter approved authoritative value:');
+      if (!val) return;
+      try {
+        const res = await fetch(`/api/business-brain/conflicts/${conflictId}/resolve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resolvedValue: val })
+        });
+        if (res.ok) {
+          loadBusinessBrain();
+        }
+      } catch (e) {
+        alert('Failed to resolve conflict');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadBusinessBrain();
+    });
+  </script>
+</body>
+</html>
