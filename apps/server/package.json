@@ -21,7 +21,8 @@
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
     "ws": "^8.18.0",
-    "@vanni/providers": "1.0.0"
+    "@vanni/providers": "1.0.0",
+    "tsx": "^4.19.0"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",

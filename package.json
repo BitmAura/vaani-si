@@ -21,7 +21,8 @@
     "test:invariants": "vitest run packages/core/src/__tests__/invariants.test.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "node scripts/typecheck-all.mjs",
-    "prepare": "husky install || true"
+    "prepare": "husky install || true",
+    "start": "npm run server"
   },
   "keywords": [
     "conversational-ai",

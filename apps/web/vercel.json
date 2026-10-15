@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/app/dashboard",
+      "dest": "/app-dashboard.html"
+    },
+    {
+      "src": "/app/agents",
+      "dest": "/app-agents.html"
+    },
+    {
+      "src": "/app/knowledge",
+      "dest": "/app-knowledge.html"
+    },
+    {
+      "src": "/app/onboarding",
+      "dest": "/app-onboarding.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/login.html"
+    },
+    {
+      "src": "/signup",
+      "dest": "/signup.html"
+    },
+    {
+      "src": "/pricing",
+      "dest": "/pricing.html"
+    },
+    {
+      "src": "/features",
+      "dest": "/features.html"
+    },
+    {
+      "src": "/how-it-works",
+      "dest": "/how-it-works.html"
+    },
+    {
+      "src": "/industries",
+      "dest": "/industries.html"
+    },
+    {
+      "src": "/industries/real-estate",
+      "dest": "/industries-real-estate.html"
+    },
+    {
+      "src": "/industries/healthcare",
+      "dest": "/industries-healthcare.html"
+    },
+    {
+      "src": "/industries/dental",
+      "dest": "/industries-dental.html"
+    },
+    {
+      "src": "/industries/hospitality",
+      "dest": "/industries-hospitality.html"
+    },
+    {
+      "src": "/industries/ivf",
+      "dest": "/industries-ivf.html"
+    },
+    {
+      "src": "/demo",
+      "dest": "/demo.html"
+    },
+    {
+      "src": "/contact",
+      "dest": "/contact.html"
+    },
+    {
+      "src": "/security",
+      "dest": "/security.html"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ]
+}
