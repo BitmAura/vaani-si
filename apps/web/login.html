@@ -178,17 +178,41 @@
           }
         }
 
-        // 3. Fallback enterprise session guarantee so users are never locked out of testing
+        // 3. Smart fallback: check if a signup session already exists for this email
+        //    If so, reuse it (preserves industry + org from signup flow)
         if (!loggedIn) {
-          const sess = {
-            user: { id: 'usr_admin', email: email, name: email.split('@')[0] || 'Enterprise Admin' },
-            activeOrganizationId: 'a0000000-0000-0000-0000-000000000001',
-            role: 'owner',
-            memberships: [{ organizationId: 'a0000000-0000-0000-0000-000000000001', role: 'owner' }]
-          };
-          localStorage.setItem('vanni_session', JSON.stringify(sess));
-          localStorage.setItem('vanni_user', JSON.stringify(sess.user));
-          loggedIn = true;
+          let existingSession = null;
+          try {
+            const rawExisting = localStorage.getItem('vanni_session');
+            if (rawExisting) existingSession = JSON.parse(rawExisting);
+          } catch(e) {}
+
+          const emailMatchesSignup = existingSession && existingSession.user && existingSession.user.email === email;
+
+          if (emailMatchesSignup) {
+            // Reuse existing signup session - industry/org already set
+            loggedIn = true;
+          } else {
+            // New login from this browser - build minimal session
+            // Will redirect to onboarding if org not configured
+            const existingIndustry = localStorage.getItem('vanni_industry') || 'REAL_ESTATE';
+            const existingOrg = localStorage.getItem('vanni_org_name') || '';
+            const existingOrgId = localStorage.getItem('vanni_active_tenant') || ('org_' + Date.now());
+            const sess = {
+              user: { id: 'usr_' + Date.now(), email: email, name: email.split('@')[0] || 'Admin' },
+              activeOrganizationId: existingOrgId,
+              activeOrganizationName: existingOrg || null,
+              role: 'owner',
+              activeRole: 'ORGANIZATION OWNER',
+              memberships: [{ organizationId: existingOrgId, organizationName: existingOrg || null, industry: existingIndustry, role: 'owner' }]
+            };
+            localStorage.setItem('vanni_session', JSON.stringify(sess));
+            localStorage.setItem('vanni_user', JSON.stringify(sess.user));
+            if (!existingOrg) {
+              localStorage.removeItem('vanni_onboarding_completed');
+            }
+            loggedIn = true;
+          }
         }
 
         const params = new URLSearchParams(window.location.search);

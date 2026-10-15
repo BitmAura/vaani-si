@@ -5090,6 +5090,9 @@
       window.openProfileModal = openProfileModal;
       window.closeProfileModal = closeProfileModal;
       window.saveProfileChanges = saveProfileChanges;
+      // BUGFIX: profile modal Log Out button called handleLogout() which was undefined
+      window.handleLogout = handleConsoleLogout;
+      window.handleConsoleLogout = handleConsoleLogout;
     function openProfileModal() {
       const modal = document.getElementById('profile-modal');
       if (!modal) return;
@@ -5169,7 +5172,12 @@
       // Update UI immediately
       selectTenant(tenantKey);
       syncSessionAndTenants();
-      alert('✓ Profile & Organization updated successfully!');
+      // Non-blocking toast notification
+      const _vt = document.createElement('div');
+      _vt.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0F172A;color:#FFF;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);transition:opacity 0.3s ease;';
+      _vt.textContent = '\u2705 Profile & Organization updated!';
+      document.body.appendChild(_vt);
+      setTimeout(() => { _vt.style.opacity = '0'; setTimeout(() => _vt.remove(), 350); }, 2500);
     }
 
 
