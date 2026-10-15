@@ -212,13 +212,51 @@
   </footer>
   
 
-  <script>
+    <script>
     function handleSignup(e) {
       e.preventDefault();
-      const company = document.getElementById('signup-company').value;
-      localStorage.setItem('vanni_active_tenant', 'real_estate');
-      localStorage.setItem('vanni_user', company + ' Admin');
-      window.location.href = '/app/dashboard';
+      const company = document.getElementById('signup-company').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const phone = document.getElementById('signup-phone').value.trim();
+      const password = document.getElementById('signup-pass').value;
+
+      const orgId = 'org_' + Date.now();
+      
+      let industry = 'REAL_ESTATE';
+      const upper = company.toUpperCase();
+      if (upper.includes('HOSPITAL') || upper.includes('CLINIC') || upper.includes('DENTAL') || upper.includes('HEALTH') || upper.includes('CARE') || upper.includes('DOCTOR') || upper.includes('MED')) {
+        industry = 'HEALTHCARE_HOSPITAL';
+      } else if (upper.includes('AGENCY') || upper.includes('MARKETING') || upper.includes('DIGITAL') || upper.includes('MEDIA') || upper.includes('TECH')) {
+        industry = 'AGENCY';
+      } else if (upper.includes('HOTEL') || upper.includes('RESORT') || upper.includes('STAY')) {
+        industry = 'HOSPITALITY';
+      }
+
+      const sessionObj = {
+        user: { id: 'usr_' + Date.now(), email: email, name: email.split('@')[0], phone: phone },
+        activeOrganizationId: orgId,
+        activeOrganizationName: company,
+        role: 'owner',
+        activeRole: 'ORGANIZATION OWNER',
+        memberships: [{
+          organizationId: orgId,
+          organizationName: company,
+          industry: industry,
+          role: 'owner'
+        }]
+      };
+
+      localStorage.setItem('vanni_session', JSON.stringify(sessionObj));
+      localStorage.setItem('vanni_user', JSON.stringify(sessionObj.user));
+      localStorage.setItem('vanni_active_tenant', orgId);
+      localStorage.setItem('dhwani_active_tenant', orgId);
+      localStorage.setItem('vanni_org_name', company);
+      localStorage.setItem('vanni_phone', phone);
+      localStorage.setItem('vanni_industry', industry);
+      localStorage.removeItem('vanni_onboarding_completed');
+
+      // Forward directly to specialized onboarding wizard!
+      window.location.href = '/app/onboarding';
     }
   </script>
 </body>

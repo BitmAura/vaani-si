@@ -367,36 +367,40 @@
     }
 
     async function initOnboarding() {
+      let session = null;
       try {
         const res = await fetch('/api/auth/session');
-        const data = await res.json();
-        if (data.authenticated && data.session) {
-          activeSession = data.session;
-          const membership = data.session.memberships[0];
-          const rawIndustry = membership?.industry || 'REAL_ESTATE';
-          const orgName = membership?.organizationName || 'Workspace';
-
-          const orgBadge = document.getElementById('header-org-badge');
-          if (orgBadge) orgBadge.innerText = orgName;
-
-          const raw = (rawIndustry || '').toUpperCase();
-          const name = (orgName || '').toUpperCase();
-
-          if (raw.includes('AGENCY') || name.includes('AGENCY') || name.includes('MARKETING')) {
-            detectedIndustry = 'AGENCY';
-          } else if (raw.includes('HOSPITAL') || raw.includes('DENTAL') || raw.includes('HEALTHCARE') || raw.includes('CLINIC') || name.includes('HOSPITAL') || name.includes('CLINIC') || name.includes('CARE') || name.includes('HEALTH')) {
-            detectedIndustry = 'HEALTHCARE_HOSPITAL';
-          } else {
-            detectedIndustry = 'REAL_ESTATE';
-          }
-
-          renderIndustrySteps(detectedIndustry, orgName);
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated) session = data.session;
         }
-      } catch (e) {
-        console.warn('Session load error in onboarding', e);
+      } catch (e) {}
+
+      if (!session) {
+        try {
+          const raw = localStorage.getItem('vanni_session');
+          if (raw) session = JSON.parse(raw);
+        } catch(e) {}
       }
-      renderIndustrySteps('REAL_ESTATE', 'Workspace');
+
+      const orgName = session?.activeOrganizationName || session?.memberships?.[0]?.organizationName || localStorage.getItem('vanni_org_name') || 'Your Business';
+      const rawIndustry = session?.memberships?.[0]?.industry || localStorage.getItem('vanni_industry') || 'REAL_ESTATE';
+
+      const orgBadge = document.getElementById('header-org-badge');
+      if (orgBadge) orgBadge.innerText = orgName;
+
+      const raw = (rawIndustry || '').toUpperCase();
+      const name = (orgName || '').toUpperCase();
+
+      if (raw.includes('AGENCY') || name.includes('AGENCY') || name.includes('MARKETING')) {
+        detectedIndustry = 'AGENCY';
+      } else if (raw.includes('HOSPITAL') || raw.includes('DENTAL') || raw.includes('HEALTHCARE') || raw.includes('CLINIC') || name.includes('HOSPITAL') || name.includes('CLINIC') || name.includes('CARE') || name.includes('HEALTH') || name.includes('DOCTOR')) {
+        detectedIndustry = 'HEALTHCARE_HOSPITAL';
+      } else {
+        detectedIndustry = 'REAL_ESTATE';
+      }
+
+      renderIndustrySteps(detectedIndustry, orgName);
     }
 
     async function completeOnboarding() {
@@ -421,7 +425,7 @@
             body: JSON.stringify({ status: 'ready', industry: detectedIndustry })
           });
         }
-        window.location.href = '/app/dashboard';
+        localStorage.setItem('vanni_onboarding_completed', 'true'); window.location.href = '/app/dashboard';
       } catch (err) {
         window.location.href = '/app/dashboard';
       }

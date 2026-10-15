@@ -503,11 +503,11 @@
         <div class="p-4 rounded-lg bg-[#FFFFFF] border border-[#E0E0E0] shadow-2xs hover:border-[#1890FF] transition-all">
           <div class="flex items-center justify-between text-xs">
             <span class="text-xs uppercase font-bold text-[#8C8C8C] tracking-wider font-mono">INBOUND CALLS</span>
-            <span id="stat-total-calls-pct" class="ant-tag ant-tag-blue font-bold">100% Picked Up</span>
+            <span id="stat-total-calls-pct" class="ant-tag ant-tag-blue font-bold">0% Picked Up</span>
           </div>
           <div class="flex items-baseline justify-between mt-2.5">
             <span id="stat-total-missed" class="text-xs text-[#8C8C8C] font-sans">0 Missed • 0 Drops</span>
-            <span id="stat-total-calls" class="text-xl font-bold font-mono text-[#22075E] tracking-tight tnum">6 Calls</span>
+            <span id="stat-total-calls" class="text-xl font-bold font-mono text-[#22075E] tracking-tight tnum">0 Calls</span>
           </div>
         </div>
 
@@ -515,11 +515,11 @@
         <div class="p-4 rounded-lg bg-[#FFFFFF] border border-[#E0E0E0] shadow-2xs hover:border-[#52C41A] transition-all">
           <div class="flex items-center justify-between text-xs">
             <span class="text-xs uppercase font-bold text-[#8C8C8C] tracking-wider font-mono">QUALIFIED LEADS</span>
-            <span id="stat-hot-leads-pct" class="ant-tag ant-tag-green font-bold">67% Conv.</span>
+            <span id="stat-hot-leads-pct" class="ant-tag ant-tag-green font-bold">0% Conv.</span>
           </div>
           <div class="flex items-baseline justify-between mt-2.5">
             <span id="kpi-leads-subtitle" class="text-xs text-[#8C8C8C] font-sans">3 Cab Visits Booked</span>
-            <span id="stat-hot-leads" class="text-xl font-bold font-mono text-[#52C41A] tracking-tight tnum">4 Leads</span>
+            <span id="stat-hot-leads" class="text-xl font-bold font-mono text-[#52C41A] tracking-tight tnum">0 Leads</span>
           </div>
         </div>
 
@@ -531,7 +531,7 @@
           </div>
           <div class="flex items-baseline justify-between mt-2.5">
             <span id="kpi-wa-subtitle" class="text-xs text-[#8C8C8C] font-sans">Buyer Dossier Sent</span>
-            <span id="stat-wa-delivered" class="text-xl font-bold font-mono text-[#D48806] tracking-tight tnum">6 Sent</span>
+            <span id="stat-wa-delivered" class="text-xl font-bold font-mono text-[#D48806] tracking-tight tnum">0 Sent</span>
           </div>
         </div>
 
@@ -539,11 +539,11 @@
         <div onclick="switchTab('erp')" class="p-4 rounded-lg bg-[#FFFFFF] border border-[#E0E0E0] shadow-2xs hover:border-[#1890FF] transition-all cursor-pointer group">
           <div class="flex items-center justify-between text-xs">
             <span class="text-xs uppercase font-bold text-[#8C8C8C] tracking-wider font-mono group-hover:text-[#1890FF]">ERP PIPELINE</span>
-            <span class="ant-tag ant-tag-blue font-bold">4 Quotations</span>
+            <span class="ant-tag ant-tag-blue font-bold"<span id="stat-quotes-count">0 Quotations</span>/span>
           </div>
           <div class="flex items-baseline justify-between mt-2.5">
             <span class="text-xs text-[#8C8C8C] font-sans">Active Proposals</span>
-            <span class="text-xl font-bold font-mono text-[#1890FF] tracking-tight tnum">₹72,00,000</span>
+            <span class="text-xl font-bold font-mono text-[#1890FF] tracking-tight tnum"<span id="stat-pipeline-val">₹0</span>/span>
           </div>
         </div>
       </div>
@@ -556,11 +556,11 @@
           </button>
           <button onclick="setFilter('HOT')" id="flt-hot" class="px-3 py-1 rounded text-[#595959] hover:text-[#1890FF] transition-all text-xs flex items-center space-x-1.5 cursor-pointer">
             <span class="w-2 h-2 rounded-full bg-[#52C41A]"></span>
-            <span>Hot Leads (<span id="flt-hot-count">4</span>)</span>
+            <span>Hot Leads (<span id="flt-hot-count">0</span>)</span>
           </button>
           <button onclick="setFilter('VISIT')" id="flt-visit" class="px-3 py-1 rounded text-[#595959] hover:text-[#1890FF] transition-all text-xs flex items-center space-x-1.5 cursor-pointer">
             <span class="w-2 h-2 rounded-full bg-[#1890FF]"></span>
-            <span>Visits Booked (<span id="flt-visit-count">3</span>)</span>
+            <span>Visits Booked (<span id="flt-visit-count">0</span>)</span>
           </button>
         </div>
 
@@ -4600,10 +4600,23 @@
 
     async function syncSessionAndTenants() {
       try {
-        const res = await fetch('/api/auth/session');
-        const data = await res.json();
-        if (!data.authenticated) return;
-        const session = data.session;
+        let session = null;
+        try {
+          const res = await fetch('/api/auth/session');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.authenticated) session = data.session;
+          }
+        } catch(e) {}
+
+        if (!session) {
+          try {
+            const raw = localStorage.getItem('vanni_session');
+            if (raw) session = JSON.parse(raw);
+          } catch(e) {}
+        }
+
+        if (!session) return;
         
         const nameEl = document.getElementById('user-name');
         if (nameEl) nameEl.innerText = session.fullName || session.email;
@@ -4618,6 +4631,11 @@
           const orgSubEl = document.getElementById('sidebar-tenant-sub');
           
           if (orgNameEl) orgNameEl.innerText = activeOrg.organizationName;
+          const phone = localStorage.getItem('vanni_phone') || '+91 80 4719 2000';
+          const phoneEl = document.getElementById('sidebar-tenant-phone');
+          if (phoneEl) phoneEl.innerText = phone;
+          const crumbOrg = document.getElementById('crumb-org-name');
+          if (crumbOrg) crumbOrg.innerText = activeOrg.organizationName;
           if (orgSubEl) orgSubEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#52C41A] animate-pulse"></span><span class="font-medium text-[#595959]">Workspace • ${activeOrg.role}</span>`;
           
           activeTenant = activeOrg.organizationId;
