@@ -13,7 +13,7 @@
     "api": "npm run start --prefix apps/api",
     "voice": "npm run start --prefix apps/voice-gateway",
     "web": "npm run build --prefix apps/web",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --prefix packages/shared && npm run build --prefix packages/provider-sdk && npm run build --workspaces --if-present",
     "clean": "tsc --build --clean",
     "test": "vitest run",
     "test:watch": "vitest",
