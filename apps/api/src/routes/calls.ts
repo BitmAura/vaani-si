@@ -23,9 +23,29 @@ export async function registerCallRoutes(fastify: FastifyInstance) {
 
     PermissionService.assertPermission(auth.role, 'call:read', 'List Calls');
 
-    // Never accept tenantId from query params; use verified server session
-    const calls = await globalDb.getCalls(auth.organizationId);
-    return reply.send({ success: true, calls });
+    // Fetch from Supabase
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      return reply.status(500).send({
+        success: false,
+        error: 'CONFIGURATION_ERROR',
+        message: 'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured in environment.',
+      });
+    }
+    
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/calls?organization_id=eq.${auth.organizationId}`, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      const calls = await res.json();
+      return reply.send({ success: true, calls });
+    } catch (e) {
+      return reply.status(500).send({ success: false, error: 'DB_ERROR', message: String(e) });
+    }
   });
 
   // 2. POST /api/calls/cdr — Save Call Detail Record

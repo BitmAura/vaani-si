@@ -18,7 +18,7 @@ const identityService = new IdentityService();
 
 // In-memory session store (keyed by session token)
 // In production this would be Redis/Supabase
-const sessionStore = new Map<string, any>();
+export const sessionStore = new Map<string, any>();
 
 // Seed a default admin session so demo works without login
 const DEMO_SESSION = {
@@ -47,8 +47,8 @@ const DEMO_SESSION = {
     },
     {
       organizationId: 'a0000000-0000-0000-0000-000000000003',
-      organizationName: 'Dr. Sneha Multispecialty Dental',
-      organizationSlug: 'sneha-dental',
+      organizationName: 'Creative Digital Agency',
+      organizationSlug: 'creative-agency',
       role: 'OWNER',
       status: 'ACTIVE',
       onboardingStatus: 'ready',

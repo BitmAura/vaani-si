@@ -74,13 +74,22 @@ export class ProviderStreamingSTTSession implements IStreamingSTTSession {
     }
   }
 
+  /**
+   * Resets the active turn buffer (called on SPEECH_STOPPED or new turn)
+   */
+  public resetTurnBuffer(): void {
+    this.burstBuffer = [];
+  }
+
   private async flushBurstBuffer(isFinal = false): Promise<void> {
     if (this.burstBuffer.length === 0 || this.isProcessingBurst) return;
 
-    const audioToProcess = Buffer.concat(this.burstBuffer);
-    if (!isFinal) {
-      // Keep running buffer for continuous recognition until speech boundary
-    } else {
+    // Splice out the chunks to process so we do not re-send audio from t=0
+    // Any newly arriving chunks during transcription will collect for the next burst
+    const chunksToProcess = this.burstBuffer.splice(0, this.burstBuffer.length);
+    const audioToProcess = Buffer.concat(chunksToProcess);
+
+    if (isFinal) {
       this.burstBuffer = [];
     }
 

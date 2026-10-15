@@ -39,6 +39,60 @@ export class TelephonyMediaBridge {
   }
 
   /**
+   * Decodes an 8kHz G.711 μ-law buffer and upsamples to 16kHz PCM16 (LINEAR16)
+   */
+  public decodeMulaw8kToPcm16k(mulawBuffer: Buffer): Buffer {
+    const numSamples8k = mulawBuffer.length;
+    const pcm8k = Buffer.alloc(numSamples8k * 2);
+
+    for (let i = 0; i < numSamples8k; i++) {
+      let u = ~mulawBuffer[i] & 0xff;
+      let t = ((u & 0x0f) << 3) + 0x84;
+      t <<= (u & 0x70) >> 4;
+      let sample = (u & 0x80) !== 0 ? 0x84 - t : t - 0x84;
+      pcm8k.writeInt16LE(sample, i * 2);
+    }
+
+    // Upsample 8kHz -> 16kHz linear interpolation
+    const numSamples16k = numSamples8k * 2;
+    const pcm16k = Buffer.alloc(numSamples16k * 2);
+
+    for (let i = 0; i < numSamples8k - 1; i++) {
+      const s0 = pcm8k.readInt16LE(i * 2);
+      const s1 = pcm8k.readInt16LE((i + 1) * 2);
+      const interpolated = Math.round((s0 + s1) / 2);
+
+      pcm16k.writeInt16LE(s0, i * 4);
+      pcm16k.writeInt16LE(interpolated, i * 4 + 2);
+    }
+
+    if (numSamples8k > 0) {
+      const last = pcm8k.readInt16LE((numSamples8k - 1) * 2);
+      pcm16k.writeInt16LE(last, (numSamples8k - 1) * 4);
+      pcm16k.writeInt16LE(last, (numSamples8k - 1) * 4 + 2);
+    }
+
+    return pcm16k;
+  }
+
+  /**
+   * Decodes 8kHz base64 μ-law payload into 16kHz PCM16 (LINEAR16)
+   */
+  public decodePayloadToPcm16(base64Payload: string): Buffer {
+    const mulawBuffer = Buffer.from(base64Payload, 'base64');
+    return this.decodeMulaw8kToPcm16k(mulawBuffer);
+  }
+
+  /**
+   * Encodes 16kHz PCM16 into base64 8kHz μ-law payload
+   */
+  public encodePcm16ToPayload(pcm16: Buffer): string {
+    if (!pcm16 || pcm16.length === 0) return '';
+    const mulawBuffer = this.downsampleAndEncodeMulaw(pcm16);
+    return mulawBuffer.toString('base64');
+  }
+
+  /**
    * Converts synthesized PCM16 AudioFrame back to G.711 μ-law Telephony Media packet
    */
   audioFrameToOutboundPacket(pcm16Payload: Buffer, streamSid = this.streamSid): TelephonyMediaPacket {

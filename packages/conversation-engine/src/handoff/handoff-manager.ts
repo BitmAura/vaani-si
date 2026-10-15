@@ -28,9 +28,18 @@ export interface CreateHandoffOptions {
 export class HandoffManager {
   /**
    * Evaluates if caller utterance warrants an emergency escalation
+   * Includes Kannada/Kanglish medical red flags
    */
   detectEmergencySignals(utterance: string): { isEmergency: boolean; trigger?: string } {
-    const emergencyRegex = /\b(emergency|chest pain|heart attack|casualty|ambulance|bleeding heavily|unconscious|breathing difficulty|severe trauma)\b/i;
+    // Kannada script triggers
+    const kannadaTriggers = ['ಎದೆ ನೋವು', 'ಉಸಿರಾಟ ಕಷ್ಟ', 'ರಕ್ತಸ್ರಾವ', 'ದೆವ್ವ'];
+    for (const kt of kannadaTriggers) {
+      if (utterance.includes(kt)) {
+        return { isEmergency: true, trigger: kt };
+      }
+    }
+
+    const emergencyRegex = /\b(emergency|chest pain|heart attack|breathing|breathing difficulty|unconscious|severe bleeding|bleeding heavily|stroke|accident|108|casualty|ambulance|severe trauma)\b/i;
     const match = utterance.match(emergencyRegex);
     if (match) {
       return {
@@ -42,11 +51,26 @@ export class HandoffManager {
   }
 
   /**
-   * Evaluates if caller utterance explicitly requests a human representative
+   * Evaluates if caller utterance explicitly requests a human representative (Kannada/Kanglish/English)
    */
   detectHumanRequest(utterance: string): boolean {
-    const humanRegex = /\b(speak to (a )?human|talk to (a )?person|call (an? )?agent|representative|receptionist|manager|doctor directly|connect me with someone)\b/i;
+    const humanRegex = /\b(speak to (a )?human|talk to (a )?person|call (an? )?agent|representative|receptionist|manager|doctor directly|connect me with someone|senior|manushya|human ge|manager ge|manager hanna|direct doctor|transfer madi|connect madi|owner)\b/i;
     return humanRegex.test(utterance);
+  }
+
+  /**
+   * Evaluates if caller is angry, frustrated, or lodging a serious service complaint
+   */
+  detectFrustrationOrComplaint(utterance: string): { isFrustrated: boolean; trigger?: string } {
+    const frustrationRegex = /\b(kopa|waste|useless|worst|fraud|cheat|complaint|bad service|time waste|bekagilla nimma|nonsense|scam|angry|disappointed)\b/i;
+    const match = utterance.match(frustrationRegex);
+    if (match) {
+      return {
+        isFrustrated: true,
+        trigger: match[0],
+      };
+    }
+    return { isFrustrated: false };
   }
 
   /**
@@ -83,7 +107,7 @@ export class HandoffManager {
    */
   createHandoff(options: CreateHandoffOptions): ConversationHandoffDTO {
     const isEmergency = options.reason === 'EMERGENCY';
-    const priority = options.priority || (isEmergency ? 'CRITICAL' : 'NORMAL');
+    const priority = options.priority || (isEmergency ? 'CRITICAL' : (options.reason === 'COMPLAINT' ? 'HIGH' : 'NORMAL'));
     const handoffSummary = this.generateHandoffSummary({ ...options, priority });
 
     return {

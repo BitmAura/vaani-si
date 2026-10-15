@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import {
   ITelephonyProvider,
   OutboundCallRequest,
@@ -104,15 +105,39 @@ export class ExotelTelephonyProvider implements ITelephonyProvider {
     url: string,
     params: Record<string, string | string[] | undefined>
   ): { isValid: boolean; reason?: string } {
+    const secret = process.env.EXOTEL_WEBHOOK_SECRET || process.env.EXOTEL_API_TOKEN;
     // In development or when webhook secret is not set, allow requests
-    if (!process.env.EXOTEL_WEBHOOK_SECRET) {
+    if (!secret) {
       return { isValid: true };
     }
     // Verify HMAC-SHA256 signature if token present
     if (!signature) {
       return { isValid: false, reason: 'Missing Exotel signature header' };
     }
-    return { isValid: true };
+
+    try {
+      const sortedKeys = Object.keys(params || {}).sort();
+      const paramString = sortedKeys.map(k => `${k}=${params[k] ?? ''}`).join('');
+      const dataToSign = `${url}${paramString}`;
+
+      const expectedHex = crypto.createHmac('sha256', secret).update(dataToSign).digest('hex');
+      const expectedBase64 = crypto.createHmac('sha256', secret).update(dataToSign).digest('base64');
+
+      const sigClean = signature.replace(/^sha256=/i, '').trim();
+      const matchHex =
+        sigClean.length === expectedHex.length &&
+        crypto.timingSafeEqual(Buffer.from(sigClean), Buffer.from(expectedHex));
+      const matchBase64 =
+        sigClean.length === expectedBase64.length &&
+        crypto.timingSafeEqual(Buffer.from(sigClean), Buffer.from(expectedBase64));
+
+      if (matchHex || matchBase64) {
+        return { isValid: true };
+      }
+      return { isValid: false, reason: 'Invalid Exotel HMAC signature mismatch' };
+    } catch (err: any) {
+      return { isValid: false, reason: `Verification error: ${err.message}` };
+    }
   }
 
   public generateStreamResponse(wsStreamUrl: string, welcomeMessage?: string): string {

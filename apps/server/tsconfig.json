@@ -11,7 +11,8 @@
     "baseUrl": ".",
     "paths": {
       "@vanni/provider-sdk": ["../../packages/provider-sdk/dist/index.d.ts"],
-      "@vanni/providers": ["../../packages/providers/dist/index.d.ts"]
+      "@vanni/providers": ["../../packages/providers/dist/index.d.ts"],
+      "@vanni/observability": ["../../packages/observability/dist/index.d.ts"]
     }
   },
   "include": [

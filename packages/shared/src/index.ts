@@ -76,6 +76,7 @@ export interface AuthSessionDTO {
     organizationId: string;
     organizationName: string;
     organizationSlug: string;
+    industry?: string;
     role: UserRole;
     status: MemberStatus;
     onboardingStatus: OnboardingStatus;

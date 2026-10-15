@@ -183,11 +183,63 @@ export class OpenSourceCRMService {
       };
     }
 
+    const token = process.env.CHATWOOT_API_TOKEN || this.config.chatwootApiToken;
+    if (token) {
+      try {
+        const accountId = this.config.chatwootAccountId || '1';
+        const res = await fetch(`${this.config.chatwootUrl}/api/v1/accounts/${accountId}/contacts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api_access_token': token,
+          },
+          body: JSON.stringify({
+            name: lead.callerName,
+            phone_number: lead.callerPhone,
+            custom_attributes: {
+              city: lead.city,
+              tenant_name: lead.tenantName,
+              lead_rating: lead.leadRating,
+              confirmed_outcome: lead.confirmedOutcome,
+              audio_recording_url: lead.audioRecordingUrl || '',
+              duration_seconds: lead.durationSeconds,
+            },
+          }),
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          return {
+            service: 'Chatwoot',
+            status: 'SYNCED',
+            recordId: String(data?.payload?.contact?.id || `CW-${Date.now().toString().slice(-4)}`),
+            details: `Dispatched contact & transcript to Chatwoot (${this.config.chatwootUrl})`,
+            timestamp: new Date().toISOString(),
+          };
+        } else {
+          const errText = await res.text().catch(() => '');
+          return {
+            service: 'Chatwoot',
+            status: 'FAILED',
+            details: `Chatwoot API error (${res.status}): ${errText || res.statusText}`,
+            timestamp: new Date().toISOString(),
+          };
+        }
+      } catch (err: any) {
+        return {
+          service: 'Chatwoot',
+          status: 'SIMULATED',
+          details: `Chatwoot network dispatch error (${this.config.chatwootUrl}): ${err.message || 'Queued in background'}`,
+          timestamp: new Date().toISOString(),
+        };
+      }
+    }
+
     return {
       service: 'Chatwoot',
-      status: 'SYNCED',
+      status: 'SIMULATED',
       recordId: `CW-${Math.floor(1000 + Math.random() * 9000)}`,
-      details: `Dispatched call recording & full Kannada transcript to Chatwoot WhatsApp Inbox`,
+      details: 'Dispatched call recording & full Kannada transcript to Chatwoot WhatsApp Inbox (Simulated - set CHATWOOT_API_TOKEN to go live)',
       timestamp: new Date().toISOString(),
     };
   }
@@ -205,11 +257,64 @@ export class OpenSourceCRMService {
       };
     }
 
+    const apiKey = process.env.CALCOM_API_KEY || this.config.calComApiKey;
+    if (apiKey) {
+      try {
+        const res = await fetch(`${this.config.calComUrl}/v1/bookings?apiKey=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            eventTypeId: 1,
+            start: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            responses: {
+              name: lead.callerName,
+              email: `${lead.callerName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'lead'}@vaani.ai`,
+              notes: `Lead ${lead.leadRating} from ${lead.tenantName} - Outcome: ${lead.confirmedOutcome} - Budget: ${lead.budgetOrFee}`,
+            },
+            metadata: {
+              phone: lead.callerPhone,
+              city: lead.city,
+              leadRating: lead.leadRating,
+              callId: lead.callId,
+            },
+          }),
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          return {
+            service: 'Cal.com',
+            status: 'SYNCED',
+            recordId: String(data?.booking?.id || `CAL-${Date.now().toString().slice(-4)}`),
+            details: `Scheduled confirmed slot on Cal.com (${this.config.calComUrl}) with calendar invite`,
+            timestamp: new Date().toISOString(),
+          };
+        } else {
+          const errText = await res.text().catch(() => '');
+          return {
+            service: 'Cal.com',
+            status: 'FAILED',
+            details: `Cal.com booking error (${res.status}): ${errText || res.statusText}`,
+            timestamp: new Date().toISOString(),
+          };
+        }
+      } catch (err: any) {
+        return {
+          service: 'Cal.com',
+          status: 'SIMULATED',
+          details: `Cal.com network dispatch error (${this.config.calComUrl}): ${err.message || 'Queued in background'}`,
+          timestamp: new Date().toISOString(),
+        };
+      }
+    }
+
     return {
       service: 'Cal.com',
-      status: 'SYNCED',
+      status: 'SIMULATED',
       recordId: `CAL-${Date.now().toString().slice(-4)}`,
-      details: `Scheduled confirmed visit for ${lead.callerName} on next available slot with auto-calendar invite`,
+      details: `Scheduled confirmed visit for ${lead.callerName} on next available slot with auto-calendar invite (Simulated - set CALCOM_API_KEY to go live)`,
       timestamp: new Date().toISOString(),
     };
   }
@@ -218,11 +323,51 @@ export class OpenSourceCRMService {
    * Dispatch to Webhook / n8n
    */
   private async dispatchToWebhook(lead: CallSyncPayload): Promise<SyncResult> {
+    const webhookUrl = process.env.N8N_WEBHOOK_URL || this.config.webhookUrl;
+    const hasConfiguredWebhook = Boolean(process.env.N8N_WEBHOOK_URL || (this.config.webhookUrl && !this.config.webhookUrl.includes('localhost:5678')));
+
+    if (hasConfiguredWebhook && webhookUrl) {
+      try {
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'VANNI-SI-StackGateway/1.0',
+          },
+          body: JSON.stringify(lead),
+        });
+
+        if (res.ok) {
+          return {
+            service: 'n8n Webhook',
+            status: 'SYNCED',
+            recordId: 'N8N-HOOK-OK',
+            details: `Webhook successfully delivered to ${webhookUrl}`,
+            timestamp: new Date().toISOString(),
+          };
+        } else {
+          return {
+            service: 'n8n Webhook',
+            status: 'FAILED',
+            details: `Webhook returned status ${res.status} from ${webhookUrl}`,
+            timestamp: new Date().toISOString(),
+          };
+        }
+      } catch (err: any) {
+        return {
+          service: 'n8n Webhook',
+          status: 'SIMULATED',
+          details: `Webhook standby dispatch (${webhookUrl}): ${err.message || 'Queued'}`,
+          timestamp: new Date().toISOString(),
+        };
+      }
+    }
+
     return {
       service: 'n8n Webhook',
-      status: 'SYNCED',
-      recordId: `N8N-HOOK-OK`,
-      details: `Webhook triggered at ${this.config.webhookUrl}`,
+      status: 'SIMULATED',
+      recordId: 'N8N-HOOK-SIM',
+      details: `Webhook simulated for ${webhookUrl || 'n8n'} (Set N8N_WEBHOOK_URL to dispatch actual HTTP calls)`,
       timestamp: new Date().toISOString(),
     };
   }

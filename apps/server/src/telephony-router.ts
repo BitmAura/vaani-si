@@ -27,7 +27,7 @@ export class TelephonyRouter {
    * Generates Twilio Media Streams TwiML or Exotel Voice App JSON to stream cellular call audio to our server
    */
   public generateTelephonyStreamResponse(serverHost: string, callSid: string): string {
-    const wsUrl = `wss://${serverHost}/telephony/stream?callSid=${callSid}`;
+    const wsUrl = `wss://${serverHost}/ws/audio-stream?callSid=${callSid}&source=telephony`;
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say language="kn-IN">Namaskara, call connect aaguththe, ondu second.</Say>

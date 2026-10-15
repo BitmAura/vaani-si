@@ -149,6 +149,9 @@ export class VoiceRuntime {
       // 7. Check if user finished speaking
       if (turnStatus === 'TURN_COMPLETED' || turnStatus === 'FORCE_COMPLETED') {
         this.emitEvent('SPEECH_STOPPED', { timestamp: f.timestamp });
+        if (typeof (this.sttSession as any).resetTurnBuffer === 'function') {
+          (this.sttSession as any).resetTurnBuffer();
+        }
         await this.dispatchTurnToOrchestrator();
       }
     }

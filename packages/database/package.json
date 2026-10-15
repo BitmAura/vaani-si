@@ -8,6 +8,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "@vanni/shared": "1.0.0"
   },
   "devDependencies": {

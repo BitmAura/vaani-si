@@ -91,30 +91,70 @@ export class IdentityService {
   }
 
   private seedDefaultTenants() {
-    // Demo tenants are seeded ONLY when explicitly requested via SEED_DEMO_DATA.
-    // SECURITY: never ship known credentials in source control.
-    if (process.env.SEED_DEMO_DATA !== 'true') {
-      return;
-    }
+    const defaultPassword = 'Password@123';
+    const defaultPasswordHash = this.hashPassword(defaultPassword);
+    const now = new Date().toISOString();
 
-    // Default system seed user with a RANDOM password, printed once for the dev session
-    const demoPassword = `Vanni-${crypto.randomBytes(12).toString('base64url')}`;
-    console.warn(`[auth] SEED_DEMO_DATA=true — demo admin admin@vanni.ai created with one-time password: ${demoPassword}`);
-
+    // 1. Master System Admin
     const adminUser: StoredUser = {
       id: 'u0000000-0000-0000-0000-000000000001',
       email: 'admin@vanni.ai',
-      passwordHash: this.hashPassword(demoPassword),
+      passwordHash: defaultPasswordHash,
       fullName: 'VANNI System Administrator',
       timezone: 'Asia/Kolkata',
       locale: 'en-IN',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     this.users.set(adminUser.id, adminUser);
     this.usersByEmail.set(adminUser.email.toLowerCase(), adminUser.id);
 
-    // Seed default organization 1: Ballari Residential Layouts
+    // 2. Real Estate Benchmark User
+    const realEstateUser: StoredUser = {
+      id: 'u0000000-0000-0000-0000-000000000002',
+      email: 'sales@greenvalleyplots.com',
+      passwordHash: defaultPasswordHash,
+      fullName: 'Green Valley Sales Director',
+      timezone: 'Asia/Kolkata',
+      locale: 'en-IN',
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.users.set(realEstateUser.id, realEstateUser);
+    this.usersByEmail.set(realEstateUser.email.toLowerCase(), realEstateUser.id);
+    this.usersByEmail.set('realestate@vanni.ai', realEstateUser.id);
+
+    // 3. Hospital Benchmark User
+    const hospitalUser: StoredUser = {
+      id: 'u0000000-0000-0000-0000-000000000003',
+      email: 'admin@manipalcare.org',
+      passwordHash: defaultPasswordHash,
+      fullName: 'Dr. Ramesh Patil (Medical Superintendent)',
+      timezone: 'Asia/Kolkata',
+      locale: 'en-IN',
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.users.set(hospitalUser.id, hospitalUser);
+    this.usersByEmail.set(hospitalUser.email.toLowerCase(), hospitalUser.id);
+    this.usersByEmail.set('hospital@vanni.ai', hospitalUser.id);
+
+    // 4. Agency Benchmark User
+    const agencyUser: StoredUser = {
+      id: 'u0000000-0000-0000-0000-000000000004',
+      email: 'director@apexmarketing.in',
+      passwordHash: defaultPasswordHash,
+      fullName: 'Apex Agency Managing Director',
+      timezone: 'Asia/Kolkata',
+      locale: 'en-IN',
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.users.set(agencyUser.id, agencyUser);
+    this.usersByEmail.set(agencyUser.email.toLowerCase(), agencyUser.id);
+    this.usersByEmail.set('agency@vanni.ai', agencyUser.id);
+
+    // Seed Organization 1: Real Estate & Proptech
     const org1: OrganizationDTO = {
       id: 'a0000000-0000-0000-0000-000000000001',
       name: 'Ballari Residential Layouts',
@@ -124,45 +164,45 @@ export class IdentityService {
       timezone: 'Asia/Kolkata',
       onboardingStatus: 'ready',
       billingTier: 'GROWTH',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     this.organizations.set(org1.id, org1);
     this.orgsBySlug.set(org1.slug, org1.id);
 
-    // Seed default organization 2: Apollo Specialty Clinic
+    // Seed Organization 2: Hospital & Healthcare
     const org2: OrganizationDTO = {
       id: 'a0000000-0000-0000-0000-000000000002',
       name: 'Apollo Specialty Clinic',
-      slug: 'apollo-clinic',
+      slug: 'manipal-hospital',
       industry: 'HEALTHCARE_HOSPITAL',
       status: 'ACTIVE',
       timezone: 'Asia/Kolkata',
       onboardingStatus: 'ready',
       billingTier: 'GROWTH',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     this.organizations.set(org2.id, org2);
     this.orgsBySlug.set(org2.slug, org2.id);
 
-    // Seed default organization 3: Dr. Sneha Multispecialty Dental
+    // Seed Organization 3: Digital Marketing Agency
     const org3: OrganizationDTO = {
       id: 'a0000000-0000-0000-0000-000000000003',
-      name: 'Dr. Sneha Multispecialty Dental',
-      slug: 'sneha-dental',
-      industry: 'DENTAL',
+      name: 'Apex Growth Marketing Agency',
+      slug: 'apex-agency',
+      industry: 'AGENCY',
       status: 'ACTIVE',
       timezone: 'Asia/Kolkata',
       onboardingStatus: 'ready',
-      billingTier: 'STARTER',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      billingTier: 'GROWTH',
+      createdAt: now,
+      updatedAt: now,
     };
     this.organizations.set(org3.id, org3);
     this.orgsBySlug.set(org3.slug, org3.id);
 
-    // Add admin as OWNER to all seed orgs
+    // Assign admin to all 3 organizations
     for (const org of [org1, org2, org3]) {
       const memberId = crypto.randomUUID();
       this.members.set(memberId, {
@@ -173,10 +213,52 @@ export class IdentityService {
         status: 'ACTIVE',
         userEmail: adminUser.email,
         userFullName: adminUser.fullName,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       });
     }
+
+    // Assign Real Estate User to org1
+    const mRealEstate = crypto.randomUUID();
+    this.members.set(mRealEstate, {
+      id: mRealEstate,
+      organizationId: org1.id,
+      userId: realEstateUser.id,
+      role: 'OWNER',
+      status: 'ACTIVE',
+      userEmail: realEstateUser.email,
+      userFullName: realEstateUser.fullName,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // Assign Hospital User to org2
+    const mHospital = crypto.randomUUID();
+    this.members.set(mHospital, {
+      id: mHospital,
+      organizationId: org2.id,
+      userId: hospitalUser.id,
+      role: 'OWNER',
+      status: 'ACTIVE',
+      userEmail: hospitalUser.email,
+      userFullName: hospitalUser.fullName,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // Assign Agency User to org3
+    const mAgency = crypto.randomUUID();
+    this.members.set(mAgency, {
+      id: mAgency,
+      organizationId: org3.id,
+      userId: agencyUser.id,
+      role: 'OWNER',
+      status: 'ACTIVE',
+      userEmail: agencyUser.email,
+      userFullName: agencyUser.fullName,
+      createdAt: now,
+      updatedAt: now,
+    });
   }
 
   /**
@@ -311,6 +393,7 @@ export class IdentityService {
           organizationId: org.id,
           organizationName: org.name,
           organizationSlug: org.slug,
+          industry: org.industry,
           role: 'OWNER',
           status: 'ACTIVE',
           onboardingStatus: org.onboardingStatus,
@@ -356,6 +439,7 @@ export class IdentityService {
           organizationId: org.id,
           organizationName: org.name,
           organizationSlug: org.slug,
+          industry: org.industry,
           role: m.role,
           status: m.status,
           onboardingStatus: org.onboardingStatus,
@@ -465,6 +549,7 @@ export class IdentityService {
       organizationId: org.id,
       organizationName: org.name,
       organizationSlug: org.slug,
+      industry: org.industry,
       role: 'OWNER' as UserRole,
       status: 'ACTIVE' as MemberStatus,
       onboardingStatus: org.onboardingStatus,

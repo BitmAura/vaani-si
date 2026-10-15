@@ -1,159 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Organization Onboarding — VANNI</title>
-  <meta name="description" content="Complete setup for your AI employee.">
-  <link rel="canonical" href="https://vanni.ai/login">
+  <meta name="description" content="Complete specialized setup for your autonomous regional AI employee.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vanni.css">
   <style>
     body {
       margin: 0;
-      background: var(--vanni-bg);
-      color: var(--vanni-text-primary);
+      background: #F8FAFC;
+      color: #0F172A;
       font-family: var(--vanni-font-sans);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
-    .auth-card {
-      width: 100%;
-      max-width: 440px;
-      background: var(--vanni-surface);
-      border: 1px solid var(--vanni-border);
-      border-radius: var(--vanni-radius-lg);
-      padding: 36px;
-      box-shadow: var(--vanni-shadow-md);
-      box-sizing: border-box;
-    }
-    .auth-alert-error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #EF4444;
-      padding: 10px 14px;
-      border-radius: var(--vanni-radius-md);
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .auth-alert-success {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #10B981;
-      padding: 10px 14px;
-      border-radius: var(--vanni-radius-md);
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
-    }
-  </style>
-  
-  <style>
     .step-card {
-      border: 1px solid var(--vanni-border);
-      border-radius: var(--vanni-radius-lg);
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
       padding: 24px;
-      background: var(--vanni-surface);
+      background: #FFFFFF;
       margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      transition: all 0.2s ease;
+    }
+    .step-card:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .vanni-input, .vanni-select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #CBD5E1;
+      font-size: 13px;
+      color: #0F172A;
+      box-sizing: border-box;
+      background: #FFFFFF;
+    }
+    .vanni-input:focus, .vanni-select:focus {
+      outline: none;
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .vanni-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
     }
   </style>
 </head>
 <body>
   
-  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
-    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
-      <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+  <header style="height: 64px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #0F172A;">
+      <div style="width: 32px; height: 32px; border-radius: 8px; background: #2563EB; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
         V
       </div>
       <div>
-        <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
-        <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+        <div style="font-weight: 800; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+        <div id="header-platform-sub" style="font-size: 10px; color: #64748B; font-weight: 600; margin-top: 2px;">AI Employee Platform</div>
       </div>
     </a>
     <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
-      <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
-      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
+      <span id="header-org-badge" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: #EEF2F6; color: #334155;">Workspace Loading...</span>
     </div>
   </header>
   
-  <main style="flex: 1; max-width: 720px; margin: 40px auto; padding: 0 24px; width: 100%; box-sizing: border-box;">
+  <main style="flex: 1; max-width: 760px; margin: 40px auto; padding: 0 24px; width: 100%; box-sizing: border-box;">
     
-    <div style="margin-bottom: 32px;">
-      <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(37, 99, 235, 0.1); border-radius: var(--vanni-radius-full); color: var(--vanni-accent); font-size: 11px; font-weight: 600; margin-bottom: 12px; font-family: var(--vanni-font-mono);">
-        ORGANIZATION ONBOARDING
+    <div style="margin-bottom: 28px;">
+      <div id="onboarding-industry-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(37, 99, 235, 0.08); border-radius: 9999px; color: #2563EB; font-size: 11px; font-weight: 700; margin-bottom: 12px; font-family: var(--vanni-font-mono); border: 1px solid rgba(37, 99, 235, 0.2);">
+        SPECIALIZED ONBOARDING
       </div>
-      <h1 style="font-size: 26px; font-weight: 800; margin: 0 0 8px 0;">Configure Your Business Brain</h1>
-      <p style="font-size: 14px; color: var(--vanni-text-muted); margin: 0;">Teach your autonomous AI employee your practice details, services, and call handling rules.</p>
+      <h1 id="onboarding-title" style="font-size: 26px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.02em;">Configure Your Business Brain</h1>
+      <p id="onboarding-sub" style="font-size: 14px; color: #64748B; margin: 0; line-height: 1.5;">Teach your autonomous AI employee your industry operational details, offerings, and call handling rules.</p>
     </div>
 
-    <!-- Step 1: Business Hours & Phone -->
-    <div class="step-card">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">1</div>
-        <div>
-          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Business & Operating Timings</h2>
-          <div style="font-size: 12px; color: var(--vanni-text-muted);">When should your AI answer customer queries?</div>
-        </div>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div class="vanni-form-group">
-          <label class="vanni-label">Daily Office Timings</label>
-          <input type="text" id="ob-timings" value="9:00 AM - 7:00 PM (Monday - Saturday)" class="vanni-input" />
-        </div>
-        <div class="vanni-form-group">
-          <label class="vanni-label">Escalation WhatsApp Number</label>
-          <input type="tel" id="ob-whatsapp" placeholder="+91 98450 XXXXX" value="+91 98450 12345" class="vanni-input" />
-        </div>
-      </div>
+    <!-- Dynamic Industry Container -->
+    <div id="industry-steps-container">
+      <!-- Injected dynamically via detectAndHydrateIndustry() -->
     </div>
 
-    <!-- Step 2: AI Employee Personality -->
-    <div class="step-card">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">2</div>
-        <div>
-          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">AI Employee Role & Dialect</h2>
-          <div style="font-size: 12px; color: var(--vanni-text-muted);">Choose how your AI communicates with callers.</div>
-        </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
+      <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981;"></span>
+        <span>Isolated Row-Level Security Enabled</span>
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div class="vanni-form-group">
-          <label class="vanni-label">AI Employee Name</label>
-          <input type="text" id="ob-agent-name" value="Sahana" class="vanni-input" />
-        </div>
-        <div class="vanni-form-group">
-          <label class="vanni-label">Regional Dialect</label>
-          <select id="ob-dialect" class="vanni-select">
-            <option value="KANGLISH_BUSINESS" selected>Kanglish (Kannada + English Mix)</option>
-            <option value="KANNADA_STANDARD_POLITE">Pure Polite Kannada (Bengaluru/Standard)</option>
-            <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka (Ballari/Hubballi Commercial)</option>
-            <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Corporate Professional)</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 3: Test Call Audio Simulator -->
-    <div class="step-card">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">3</div>
-        <div>
-          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Verify & Launch Telephony Routing</h2>
-          <div style="font-size: 12px; color: var(--vanni-text-muted);">Ready to connect calls and sync confirmed leads.</div>
-        </div>
-      </div>
-      <div style="padding: 12px 16px; background: var(--vanni-surface-subdued); border-radius: var(--vanni-radius-md); font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.5;">
-        Your AI employee is provisioned with tenant-isolated Row Level Security. All transcripts, recordings, and lead dossiers remain strictly accessible only to active members of this organization.
-      </div>
-    </div>
-
-    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-      <button type="button" onclick="completeOnboarding()" class="vanni-button vanni-button-primary vanni-button-lg" style="padding: 12px 28px;">
+      <button type="button" id="btn-complete-setup" onclick="completeOnboarding()" style="background: #0F172A; color: #FFFFFF; padding: 12px 28px; border-radius: 12px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(15,23,42,0.15);">
         <span>Complete Setup & Open Dashboard &rarr;</span>
       </button>
     </div>
@@ -161,31 +101,333 @@
   </main>
 
   <script>
-    async function completeOnboarding() {
+    let activeSession = null;
+    let detectedIndustry = 'REAL_ESTATE';
+
+    const INDUSTRY_TEMPLATES = {
+      AGENCY: {
+        badge: '📱 DIGITAL MARKETING AGENCY RESELLER',
+        badgeColor: 'text-purple-600 bg-purple-50 border-purple-200',
+        title: 'Configure Your Agency Command Center',
+        subtitle: 'Configure your reseller brand, sub-client margins, Meta speed-to-lead autodial rules, and outbound B2B sales rep.',
+        step1Title: 'Agency Reseller Brand & Margins',
+        step1Sub: 'How you package and monetize AI voice for your marketing clients',
+        step1Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">Agency Brand / DBA Name</label>
+              <input type="text" id="ob-brand-name" value="Creative Digital Marketing Agency" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">Agency Alert WhatsApp (Owner)</label>
+              <input type="tel" id="ob-whatsapp" placeholder="+91 98450 XXXXX" value="+91 98450 11223" class="vanni-input" />
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Default Client Markup / Margin Model</label>
+            <select id="ob-margin" class="vanni-select">
+              <option value="MARKUP_100" selected>Double Margin (+100% Markup) — Buy at ₹2.00/min, Bill client at ₹4.00/min</option>
+              <option value="MARKUP_50">Standard Margin (+50% Markup) — Buy at ₹2.00/min, Bill client at ₹3.00/min</option>
+              <option value="RETAINER">Flat Monthly SaaS Retainer — ₹15,000 to ₹25,000 / month per client</option>
+            </select>
+          </div>
+        `,
+        step2Title: 'Meta & Google Lead Autodial (Speed-to-Lead)',
+        step2Sub: 'Trigger an immediate Kannada phone call the second a lead hits Meta Instant Forms',
+        step2Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">Speed-to-Lead Dial Window</label>
+              <select id="ob-dial-speed" class="vanni-select">
+                <option value="5_SEC" selected>⚡ Instant (Within 5 seconds of form submit)</option>
+                <option value="30_SEC">Within 30 seconds</option>
+                <option value="2_MIN">Within 2 minutes</option>
+              </select>
+            </div>
+            <div>
+              <label class="vanni-label">Unanswered Retry Policy</label>
+              <select id="ob-retry-policy" class="vanni-select">
+                <option value="3_RETRIES" selected>3 Retries spaced 15 mins apart</option>
+                <option value="2_RETRIES">2 Retries spaced 30 mins apart</option>
+                <option value="1_RETRY">1 Retry only</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Instant Meta/Google Webhook URL</label>
+            <input type="text" readonly value="https://api.vanni.ai/telephony/meta-lead" class="vanni-input" style="background:#F1F5F9; font-family:monospace; font-size:12px; color:#334155;" />
+          </div>
+        `,
+        step3Title: 'Outbound B2B Sales Persona (Sahana)',
+        step3Sub: 'Autonomous agent that calls Karnataka business directors to pitch voice automation',
+        step3Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">AI Pitch Rep Name</label>
+              <input type="text" id="ob-agent-name" value="Sahana" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">Regional Dialect</label>
+              <select id="ob-dialect" class="vanni-select">
+                <option value="KANGLISH_BUSINESS" selected>Kanglish (Business Professional Kannada + English)</option>
+                <option value="KANNADA_STANDARD_POLITE">Pure Polite Kannada (Bengaluru Standard)</option>
+                <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Corporate Professional)</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Primary Call Goal</label>
+            <input type="text" id="ob-goal" value="Demonstrate fluent Kannada voice capability & book a 15-min Zoom Strategy Session" class="vanni-input" />
+          </div>
+        `
+      },
+      HEALTHCARE_HOSPITAL: {
+        badge: '🏥 HOSPITAL & CLINICAL PRACTICE ONBOARDING',
+        badgeColor: 'text-blue-600 bg-blue-50 border-blue-200',
+        title: 'Configure Your Clinical Reception Desk',
+        subtitle: 'Teach your autonomous receptionist OPD doctor schedules, consultation fees, and emergency triage protocols.',
+        step1Title: 'Hospital Hours & Emergency Escalation',
+        step1Sub: 'Triage rules for patient care and casualty line transfers',
+        step1Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">OPD & Consultation Timings</label>
+              <input type="text" id="ob-timings" value="8:00 AM - 8:00 PM (Monday - Saturday)" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">Emergency Casualty WhatsApp Number</label>
+              <input type="tel" id="ob-whatsapp" placeholder="+91 99801 XXXXX" value="+91 99801 22334" class="vanni-input" />
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Emergency Protocol (Chest Pain / Trauma / Breathlessness)</label>
+            <select id="ob-emergency-action" class="vanni-select">
+              <option value="INSTANT_TRANSFER" selected>🚨 Instant Live Transfer to Casualty Duty Doctor (080-4719-EMERGENCY)</option>
+              <option value="SMS_AMBULANCE">Immediate Ambulance Alert & WhatsApp Location Dispatch</option>
+            </select>
+          </div>
+        `,
+        step2Title: 'Doctor Roster & OPD Consultation Fees',
+        step2Sub: 'Doctor availability and appointment scheduling rates',
+        step2Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">Primary Specialties</label>
+              <input type="text" id="ob-specialties" value="Cardiology, Orthopedics, General Medicine, Dental" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">General OPD Consultation Fee</label>
+              <input type="text" id="ob-fee" value="₹750 per patient" class="vanni-input" />
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Lead Consultant OPD Availability</label>
+            <input type="text" id="ob-doctor-info" value="Dr. Ramesh Patil (Mon-Sat 10:00 AM - 1:00 PM & 5:00 PM - 8:00 PM)" class="vanni-input" />
+          </div>
+        `,
+        step3Title: 'Patient Care Receptionist (Kavya)',
+        step3Sub: 'Empathetic regional voice reassuring patients and confirming tokens',
+        step3Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">AI Receptionist Name</label>
+              <input type="text" id="ob-agent-name" value="Kavya" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">Regional Dialect</label>
+              <select id="ob-dialect" class="vanni-select">
+                <option value="KANNADA_STANDARD_POLITE" selected>Pure Polite Kannada (Bengaluru Standard - Empathetic)</option>
+                <option value="KANGLISH_BUSINESS">Kanglish (Kannada + English Mix)</option>
+                <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Professional Clinical)</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Prescription Policy Disclaimer</label>
+            <input type="text" readonly value="Strictly disclaims Schedule H prescriptions over phone; books verified OPD slot token." class="vanni-input" style="background:#F1F5F9; font-size:12px; color:#475569;" />
+          </div>
+        `
+      },
+      REAL_ESTATE: {
+        badge: '🏢 REAL ESTATE & PROPTECH SALES ONBOARDING',
+        badgeColor: 'text-amber-600 bg-amber-50 border-amber-200',
+        title: 'Configure Your Layout Sales & Site Visit Brain',
+        subtitle: 'Configure plot dimensions, DC conversion approvals, starting prices, and Sunday free cab visits.',
+        step1Title: 'Project Details & Layout Approvals',
+        step1Sub: 'Key credentials prospective property buyers ask first',
+        step1Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">Layout / Project Name</label>
+              <input type="text" id="ob-project-name" value="Ballari Residential Layouts (Siruguppa Bypass)" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">Sales Director WhatsApp (Hot Leads)</label>
+              <input type="tel" id="ob-whatsapp" placeholder="+91 97412 XXXXX" value="+91 97412 33445" class="vanni-input" />
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Legal Approvals & Khata Status</label>
+            <input type="text" id="ob-approvals" value="DC Converted with A-Khata, RERA Approved, Clear Title Deeds" class="vanni-input" />
+          </div>
+        `,
+        step2Title: 'Plot Dimensions & Pricing Inventory',
+        step2Sub: 'Exact plot sizes and starting budgets Sahana explains to buyers',
+        step2Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">Standard Dimension & Starting Price</label>
+              <input type="text" id="ob-pricing-std" value="30x40 DC Converted plots starting ₹18 Lakhs" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">Premium Dimension & Starting Price</label>
+              <input type="text" id="ob-pricing-prem" value="40x60 DC Converted plots starting ₹35 Lakhs" class="vanni-input" />
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Bank Approval Partners</label>
+            <input type="text" id="ob-bank-loans" value="Pre-approved 80% home loans from SBI, HDFC, and Canara Bank" class="vanni-input" />
+          </div>
+        `,
+        step3Title: 'Sunday Free Cab Site Visit Schedule',
+        step3Sub: 'Driving buyers directly to physical site visits every weekend',
+        step3Html: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="vanni-label">AI Sales Manager Name</label>
+              <input type="text" id="ob-agent-name" value="Sahana" class="vanni-input" />
+            </div>
+            <div>
+              <label class="vanni-label">Regional Dialect</label>
+              <select id="ob-dialect" class="vanni-select">
+                <option value="KANGLISH_BUSINESS" selected>Kanglish (Commercial Business Kannada)</option>
+                <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka (Ballari/Hubballi Commercial)</option>
+                <option value="KANNADA_STANDARD_POLITE">Pure Polite Kannada (Bengaluru Standard)</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 14px;">
+            <label class="vanni-label">Free Cab Site Visit Commitment</label>
+            <input type="text" id="ob-site-visit" value="Every Sunday 11:00 AM Direct Free AC Cab Pickup for buyer & family" class="vanni-input" />
+          </div>
+        `
+      }
+    };
+
+    function renderIndustrySteps(industryKey, companyName) {
+      const template = INDUSTRY_TEMPLATES[industryKey] || INDUSTRY_TEMPLATES.REAL_ESTATE;
+
+      // Update Header & Badge
+      const badgeEl = document.getElementById('onboarding-industry-badge');
+      if (badgeEl) {
+        badgeEl.innerText = template.badge;
+      }
+
+      document.getElementById('onboarding-title').innerText = template.title;
+      document.getElementById('onboarding-sub').innerText = template.subtitle;
+
+      const container = document.getElementById('industry-steps-container');
+      container.innerHTML = `
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 28px; height: 28px; border-radius: 8px; background: #2563EB; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">1</div>
+            <div>
+              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">${template.step1Title}</h2>
+              <div style="font-size: 12px; color: #64748B;">${template.step1Sub}</div>
+            </div>
+          </div>
+          ${template.step1Html}
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 28px; height: 28px; border-radius: 8px; background: #2563EB; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">2</div>
+            <div>
+              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">${template.step2Title}</h2>
+              <div style="font-size: 12px; color: #64748B;">${template.step2Sub}</div>
+            </div>
+          </div>
+          ${template.step2Html}
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 28px; height: 28px; border-radius: 8px; background: #2563EB; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">3</div>
+            <div>
+              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">${template.step3Title}</h2>
+              <div style="font-size: 12px; color: #64748B;">${template.step3Sub}</div>
+            </div>
+          </div>
+          ${template.step3Html}
+        </div>
+      `;
+    }
+
+    async function initOnboarding() {
       try {
-        const sessionRes = await fetch('/api/auth/session');
-        const sessionData = await sessionRes.json();
-        if (!sessionData.authenticated) {
-          window.location.href = '/login';
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (data.authenticated && data.session) {
+          activeSession = data.session;
+          const membership = data.session.memberships[0];
+          const rawIndustry = membership?.industry || 'REAL_ESTATE';
+          const orgName = membership?.organizationName || 'Workspace';
+
+          const orgBadge = document.getElementById('header-org-badge');
+          if (orgBadge) orgBadge.innerText = orgName;
+
+          const raw = (rawIndustry || '').toUpperCase();
+          const name = (orgName || '').toUpperCase();
+
+          if (raw.includes('AGENCY') || name.includes('AGENCY') || name.includes('MARKETING')) {
+            detectedIndustry = 'AGENCY';
+          } else if (raw.includes('HOSPITAL') || raw.includes('DENTAL') || raw.includes('HEALTHCARE') || raw.includes('CLINIC') || name.includes('HOSPITAL') || name.includes('CLINIC') || name.includes('CARE') || name.includes('HEALTH')) {
+            detectedIndustry = 'HEALTHCARE_HOSPITAL';
+          } else {
+            detectedIndustry = 'REAL_ESTATE';
+          }
+
+          renderIndustrySteps(detectedIndustry, orgName);
           return;
         }
+      } catch (e) {
+        console.warn('Session load error in onboarding', e);
+      }
+      renderIndustrySteps('REAL_ESTATE', 'Workspace');
+    }
 
-        const orgId = sessionData.session.activeOrganizationId;
-        const res = await fetch(`/api/orgs/${orgId}/onboarding`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'ready' })
-        });
+    async function completeOnboarding() {
+      const btn = document.getElementById('btn-complete-setup');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="animate-pulse">Saving Knowledge Brain...</span>';
+      }
 
-        if (res.ok) {
-          window.location.href = '/app/dashboard';
-        } else {
-          window.location.href = '/app/dashboard';
+      try {
+        if (!activeSession) {
+          const res = await fetch('/api/auth/session');
+          const data = await res.json();
+          if (data.authenticated) activeSession = data.session;
         }
+
+        if (activeSession) {
+          const orgId = activeSession.activeOrganizationId;
+          await fetch(`/api/orgs/${orgId}/onboarding`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'ready', industry: detectedIndustry })
+          });
+        }
+        window.location.href = '/app/dashboard';
       } catch (err) {
         window.location.href = '/app/dashboard';
       }
     }
+
+    window.addEventListener('DOMContentLoaded', initOnboarding);
   </script>
 </body>
 </html>

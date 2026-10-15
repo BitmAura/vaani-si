@@ -79,7 +79,21 @@ export async function buildVoiceGateway() {
     },
   });
 
-  await fastify.register(cors, { origin: '*' });
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:4100')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  await fastify.register(cors, {
+    origin: (origin, cb) => {
+      // Allow server-to-server calls (no Origin header) and whitelisted origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error(`CORS: Origin ${origin} not allowed`), false);
+      }
+    },
+    credentials: true,
+  });
   await fastify.register(websocket);
 
   // Health check

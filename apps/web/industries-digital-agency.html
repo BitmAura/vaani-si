@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>White-Label Voice AI for Digital Marketing Agencies — VANNI</title>
+  <meta name="description" content="Offer AI voice employees to your clients under your own brand. Multi-client management, white-label dashboard, and seamless CRM integration for agencies.">
+  <link rel="canonical" href="https://vanni.ai/industries/digital-agency">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="White-Label Voice AI for Digital Marketing Agencies — VANNI">
+  <meta property="og:description" content="Offer AI voice employees to your clients under your own brand. Multi-client management, white-label dashboard, and seamless CRM integration for agencies.">
+  <meta property="og:url" content="https://vanni.ai/industries/digital-agency">
+  <meta property="og:site_name" content="VANNI">
+  <meta property="og:locale" content="en_IN">
+  
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="White-Label Voice AI for Digital Marketing Agencies — VANNI">
+  <meta name="twitter:description" content="Offer AI voice employees to your clients under your own brand. Multi-client management, white-label dashboard, and seamless CRM integration for agencies.">
+  
+  <!-- Fonts: Inter, Noto Sans Kannada, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- VANNI Design System -->
+  <link rel="stylesheet" href="/assets/vanni.css">
+
+  <style>
+    @media (max-width: 860px) {
+      .vanni-desktop-nav { display: none !important; }
+      .vanni-mobile-menu-btn { display: inline-flex !important; }
+      .vanni-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+      .vanni-comparison-grid { grid-template-columns: 1fr !important; }
+      .vanni-steps-grid { grid-template-columns: 1fr !important; }
+    }
+    
+    @keyframes vanniFadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .vanni-fade-in {
+      animation: vanniFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+
+  
+  <script>
+    function toggleMobileNav() {
+      const nav = document.getElementById('vanni-mobile-nav');
+      if (nav) {
+        nav.style.display = nav.style.display === 'none' || !nav.style.display ? 'flex' : 'none';
+      }
+    }
+
+    function openDemoModal(prefillIndustry) {
+      const modal = document.getElementById('vanni-demo-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        if (prefillIndustry) {
+          const select = document.getElementById('demo-industry');
+          if (select) select.value = prefillIndustry;
+        }
+      }
+    }
+
+    function closeDemoModal() {
+      const modal = document.getElementById('vanni-demo-modal');
+      if (modal) modal.style.display = 'none';
+      setTimeout(() => {
+        const formContent = document.getElementById('demo-modal-form-content');
+        const successContent = document.getElementById('demo-modal-success-content');
+        if (formContent) formContent.style.display = 'block';
+        if (successContent) successContent.style.display = 'none';
+      }, 300);
+    }
+  </script>
+</head>
+<body style="margin: 0; background: var(--vanni-bg); color: var(--vanni-text-primary); font-family: var(--vanni-font-sans);">
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); position: sticky; top: 0; z-index: 50;">
+    <div style="max-width: 1200px; margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+      
+      <!-- Brand Logo -->
+      <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+        <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+          V
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+          <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav style="display: flex; align-items: center; gap: 4px;" class="vanni-desktop-nav" aria-label="Main Navigation">
+        <a href="/features" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Product</a><a href="/how-it-works" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">How It Works</a><a href="/industries" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-primary); font-weight: 600;">Industries</a><a href="/pricing" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Pricing</a><a href="/security" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Security</a>
+      </nav>
+
+      <!-- Desktop Action CTAs -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="/login" class="vanni-button vanni-button-ghost" style="font-size: 13px;">Sign In</a>
+        <button type="button" onclick="openDemoModal('agency')" class="vanni-button vanni-button-primary" style="font-size: 13px;">
+          <span>Talk to VANNI</span>
+        </button>
+        <!-- Mobile Nav Toggle -->
+        <button type="button" class="vanni-mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle Mobile Menu" style="display: none; background: transparent; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 10px; font-size: 16px; cursor: pointer;">
+          &#9776;
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="vanni-mobile-nav" style="display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); padding: 16px 24px; box-shadow: var(--vanni-shadow-md); flex-direction: column; gap: 12px;">
+      <a href="/features" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Product Features</a>
+      <a href="/how-it-works" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">How It Works</a>
+      <a href="/industries" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Industry Solutions</a>
+      <a href="/pricing" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Pricing Plans</a>
+      <a href="/security" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Enterprise Security</a>
+      <div style="border-top: 1px solid var(--vanni-border-subdued); padding-top: 12px; display: flex; gap: 10px;">
+        <a href="/login" class="vanni-button vanni-button-secondary" style="flex: 1; text-align: center; text-decoration: none;">Sign In</a>
+        <button type="button" onclick="openDemoModal('agency'); toggleMobileNav();" class="vanni-button vanni-button-primary" style="flex: 1;">Talk to VANNI</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section style="padding: 80px 24px 64px 24px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid var(--vanni-border);">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      <div class="vanni-hero-grid" style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px; align-items: center;">
+        
+        <!-- Left Content -->
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--vanni-radius-sm); margin-bottom: 20px; font-size: 12px; font-weight: 600; color: #60a5fa;">
+            <span>📱</span>
+            <span>For Digital Marketing Agencies</span>
+          </div>
+          
+          <h1 style="font-size: 42px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin: 0 0 20px 0; color: #FFF;">
+            White-Label Voice AI for Your Clients
+          </h1>
+          
+          <p style="font-size: 17px; color: var(--vanni-text-secondary); line-height: 1.65; margin: 0 0 28px 0;">
+            Deploy AI voice employees for your clients under <strong style="color: #FFF;">your own brand</strong>. Multi-client management, custom branding, and seamless CRM integration — all from one dashboard.
+          </p>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 40px;">
+            <button type="button" onclick="openDemoModal('agency')" class="vanni-button vanni-button-primary vanni-button-lg">
+              Request Multi-Client Demo
+            </button>
+            <a href="/pricing" class="vanni-button vanni-button-secondary vanni-button-lg">
+              Agency Pricing
+            </a>
+          </div>
+
+          <!-- Agency Stats -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding-top: 28px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+            <div>
+              <div style="font-size: 28px; font-weight: 800; color: #FFF; margin-bottom: 4px;">Unlimited</div>
+              <div style="font-size: 12px; color: var(--vanni-text-muted);">Client Accounts</div>
+            </div>
+            <div>
+              <div style="font-size: 28px; font-weight: 800; color: #FFF; margin-bottom: 4px;">White-Label</div>
+              <div style="font-size: 12px; color: var(--vanni-text-muted);">Custom Branding</div>
+            </div>
+            <div>
+              <div style="font-size: 28px; font-weight: 800; color: #FFF; margin-bottom: 4px;">API Access</div>
+              <div style="font-size: 12px; color: var(--vanni-text-muted);">Full Integration</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Content - Value Prop Card -->
+        <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-xl); padding: 32px; box-shadow: var(--vanni-shadow-xl);">
+          <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 24px 0; color: var(--vanni-text-primary);">Why Agencies Choose VANNI</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; gap: 14px;">
+              <div style="width: 36px; height: 36px; border-radius: var(--vanni-radius-sm); background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;">🎨</div>
+              <div>
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--vanni-text-primary);">Your Brand, Your Domain</div>
+                <div style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.5;">Custom logo, colors, and subdomain for each client.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <div style="width: 36px; height: 36px; border-radius: var(--vanni-radius-sm); background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;">🔗</div>
+              <div>
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--vanni-text-primary);">CRM Integration Per Client</div>
+                <div style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.5;">HubSpot, Salesforce, Zoho — sync leads bi-directionally.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <div style="width: 36px; height: 36px; border-radius: var(--vanni-radius-sm); background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;">📊</div>
+              <div>
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--vanni-text-primary);">Unified Dashboard</div>
+                <div style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.5;">Monitor all client accounts, usage, and revenue in one place.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <div style="width: 36px; height: 36px; border-radius: var(--vanni-radius-sm); background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;">💰</div>
+              <div>
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--vanni-text-primary);">Revenue Share Model</div>
+                <div style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.5;">Earn margin on every client deployment. Transparent pricing.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Client Use Cases -->
+  <section style="padding: 80px 24px; background: var(--vanni-bg);">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      
+      <div style="text-align: center; margin-bottom: 48px;">
+        <h2 style="font-size: 32px; font-weight: 800; margin: 0 0 12px 0;">Deploy for Any Client Vertical</h2>
+        <p style="font-size: 15px; color: var(--vanni-text-secondary); max-width: 640px; margin: 0 auto;">Each client gets a voice agent tailored to their industry — from real estate to healthcare.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        
+        <!-- Real Estate Client -->
+        <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 24px; transition: transform 200ms ease, box-shadow 200ms ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--vanni-shadow-lg)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--vanni-radius-md); background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px;">🏢</div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">Real Estate Developers</div>
+          </div>
+          <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0 0 16px 0;">
+            Lead qualification for plot bookings, site visit scheduling, dimension queries.
+          </p>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Lead conversion rate: <strong style="color: var(--vanni-primary);">+45%</strong></div>
+        </div>
+
+        <!-- Healthcare Client -->
+        <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 24px; transition: transform 200ms ease, box-shadow 200ms ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--vanni-shadow-lg)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--vanni-radius-md); background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px;">🏥</div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">Hospitals & Clinics</div>
+          </div>
+          <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0 0 16px 0;">
+            OPD appointment booking, doctor availability, emergency escalation.
+          </p>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">No-show reduction: <strong style="color: var(--vanni-success);">-30%</strong></div>
+        </div>
+
+        <!-- Auto Dealership -->
+        <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 24px; transition: transform 200ms ease, box-shadow 200ms ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--vanni-shadow-lg)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--vanni-radius-md); background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px;">🚗</div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">Automobile Dealerships</div>
+          </div>
+          <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0 0 16px 0;">
+            Test drive scheduling, model availability, finance options explanation.
+          </p>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Test drive bookings: <strong style="color: var(--vanni-accent);">+65%</strong></div>
+        </div>
+
+        <!-- Education -->
+        <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 24px; transition: transform 200ms ease, box-shadow 200ms ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--vanni-shadow-lg)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--vanni-radius-md); background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px;">📚</div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">PU/NEET Coaching</div>
+          </div>
+          <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0 0 16px 0;">
+            Course inquiry handling, batch scheduling, fee structure queries.
+          </p>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Enrollment rate: <strong style="color: var(--vanni-primary);">+38%</strong></div>
+        </div>
+
+        <!-- Hospitality -->
+        <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 24px; transition: transform 200ms ease, box-shadow 200ms ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--vanni-shadow-lg)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--vanni-radius-md); background: rgba(236, 72, 153, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px;">🏨</div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">Resorts & Hotels</div>
+          </div>
+          <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0 0 16px 0;">
+            Room booking, amenity queries, package customization in regional language.
+          </p>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Direct bookings: <strong style="color: var(--vanni-success);">+52%</strong></div>
+        </div>
+
+        <!-- Dental -->
+        <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 24px; transition: transform 200ms ease, box-shadow 200ms ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--vanni-shadow-lg)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--vanni-radius-md); background: rgba(14, 165, 233, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px;">🦷</div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">Dental Clinics</div>
+          </div>
+          <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0 0 16px 0;">
+            Appointment reminders, procedure queries, insurance verification.
+          </p>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Patient retention: <strong style="color: var(--vanni-accent);">+42%</strong></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works for Agencies -->
+  <section style="padding: 80px 24px; background: var(--vanni-surface); border-top: 1px solid var(--vanni-border);">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      
+      <div style="text-align: center; margin-bottom: 56px;">
+        <h2 style="font-size: 32px; font-weight: 800; margin: 0 0 12px 0;">Agency Workflow in 3 Steps</h2>
+        <p style="font-size: 15px; color: var(--vanni-text-secondary); max-width: 640px; margin: 0 auto;">From client signup to live voice agent in under 24 hours.</p>
+      </div>
+
+      <div class="vanni-steps-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
+        
+        <!-- Step 1 -->
+        <div style="text-align: center;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05)); border: 2px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; font-size: 28px; font-weight: 800; color: var(--vanni-primary);">1</div>
+          <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 12px 0; color: var(--vanni-text-primary);">Create Client Account</h3>
+          <p style="font-size: 14px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0;">
+            Add client details, select their industry vertical, and configure branding (logo, colors, custom domain).
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div style="text-align: center;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05)); border: 2px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; font-size: 28px; font-weight: 800; color: var(--vanni-primary);">2</div>
+          <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 12px 0; color: var(--vanni-text-primary);">Connect CRM & Data</h3>
+          <p style="font-size: 14px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0;">
+            Integrate client's CRM (HubSpot, Zoho, Salesforce), upload inventory/knowledge base for the AI agent.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div style="text-align: center;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05)); border: 2px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; font-size: 28px; font-weight: 800; color: var(--vanni-primary);">3</div>
+          <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 12px 0; color: var(--vanni-text-primary);">Deploy & Monitor</h3>
+          <p style="font-size: 14px; color: var(--vanni-text-secondary); line-height: 1.6; margin: 0;">
+            Go live with regional voice agent. Monitor calls, leads, and conversions from unified dashboard.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Card -->
+  <section style="padding: 80px 24px; background: var(--vanni-bg);">
+    <div style="max-width: 700px; margin: 0 auto;">
+      
+      <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-xl); padding: 40px; box-shadow: var(--vanni-shadow-xl);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px;">
+          <div>
+            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(59, 130, 246, 0.2); border-radius: var(--vanni-radius-sm); font-size: 11px; font-weight: 600; color: #60a5fa; margin-bottom: 12px;">
+              <span>📱</span>
+              <span>AGENCY PARTNER</span>
+            </div>
+            <h2 style="font-size: 28px; font-weight: 800; margin: 0; color: #FFF;">White-Label Voice AI</h2>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 36px; font-weight: 800; color: #FFF; line-height: 1;">₹75,000</div>
+            <div style="font-size: 13px; color: var(--vanni-text-muted);">/month per agency</div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(148, 163, 184, 0.2); padding-top: 24px; margin-bottom: 28px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: var(--vanni-success); font-size: 18px;">✓</span>
+              <span style="font-size: 14px; color: var(--vanni-text-secondary);">Unlimited client accounts</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: var(--vanni-success); font-size: 18px;">✓</span>
+              <span style="font-size: 14px; color: var(--vanni-text-secondary);">White-label branding</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: var(--vanni-success); font-size: 18px;">✓</span>
+              <span style="font-size: 14px; color: var(--vanni-text-secondary);">Custom domain mapping</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: var(--vanni-success); font-size: 18px;">✓</span>
+              <span style="font-size: 14px; color: var(--vanni-text-secondary);">API access</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: var(--vanni-success); font-size: 18px;">✓</span>
+              <span style="font-size: 14px; color: var(--vanni-text-secondary);">CRM integrations</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: var(--vanni-success); font-size: 18px;">✓</span>
+              <span style="font-size: 14px; color: var(--vanni-text-secondary);">Revenue share: 20% margin</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="window.location.href='/signup'" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%;">
+          Start Agency Trial — 14 Days Free
+        </button>
+
+        <div style="margin-top: 20px; text-align: center; font-size: 12px; color: var(--vanni-text-muted);">
+          No credit card required • Setup in under 1 hour • Cancel anytime
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ROI Calculator -->
+  <section style="padding: 80px 24px; background: var(--vanni-surface); border-top: 1px solid var(--vanni-border);">
+    <div style="max-width: 1000px; margin: 0 auto;">
+      
+      <div style="text-align: center; margin-bottom: 48px;">
+        <h2 style="font-size: 32px; font-weight: 800; margin: 0 0 12px 0;">Agency Revenue Calculator</h2>
+        <p style="font-size: 15px; color: var(--vanni-text-secondary);">See how much you can earn by offering VANNI to your clients.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+        
+        <!-- Input Side -->
+        <div style="background: var(--vanni-bg); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 32px;">
+          <div class="vanni-form-group" style="margin-bottom: 20px;">
+            <label class="vanni-label">Number of Clients</label>
+            <input type="number" id="calc-clients" value="5" min="1" max="100" class="vanni-input" onchange="calculateROI()" />
+          </div>
+
+          <div class="vanni-form-group" style="margin-bottom: 20px;">
+            <label class="vanni-label">Avg. Monthly Calls per Client</label>
+            <input type="number" id="calc-calls" value="500" min="100" max="10000" step="100" class="vanni-input" onchange="calculateROI()" />
+          </div>
+
+          <div class="vanni-form-group">
+            <label class="vanni-label">Your Markup per Client (₹/month)</label>
+            <input type="number" id="calc-markup" value="10000" min="0" max="100000" step="1000" class="vanni-input" onchange="calculateROI()" />
+          </div>
+        </div>
+
+        <!-- Output Side -->
+        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02)); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: var(--vanni-radius-lg); padding: 32px;">
+          <div style="margin-bottom: 24px;">
+            <div style="font-size: 12px; color: var(--vanni-text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">Your Monthly Revenue</div>
+            <div id="calc-revenue" style="font-size: 42px; font-weight: 800; color: var(--vanni-primary);">₹50,000</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-top: 20px; border-top: 1px solid var(--vanni-border);">
+            <div>
+              <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 4px;">Total Calls Managed</div>
+              <div id="calc-total-calls" style="font-size: 20px; font-weight: 700; color: var(--vanni-text-primary);">2,500</div>
+            </div>
+            <div>
+              <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 4px;">Annual Revenue</div>
+              <div id="calc-annual" style="font-size: 20px; font-weight: 700; color: var(--vanni-text-primary);">₹6,00,000</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section style="padding: 72px 24px; background: var(--vanni-bg); border-top: 1px solid var(--vanni-border); text-align: center;">
+    <div style="max-width: 640px; margin: 0 auto;">
+      <h2 style="font-size: 28px; font-weight: 700; margin: 0 0 12px 0;">Ready to Offer Voice AI to Your Clients?</h2>
+      <p style="font-size: 14px; color: var(--vanni-text-secondary); margin: 0 0 24px 0;">Start your 14-day free trial. No credit card required.</p>
+      <div style="display: flex; justify-content: center; gap: 12px;">
+        <button type="button" onclick="openDemoModal('agency')" class="vanni-button vanni-button-primary">Request Agency Demo</button>
+        <a href="/signup" class="vanni-button vanni-button-secondary">Start Free Trial</a>
+      </div>
+    </div>
+  </section>
+
+  
+  <footer style="background: var(--vanni-surface); border-top: 1px solid var(--vanni-border); padding: 64px 24px 32px 24px; color: var(--vanni-text-secondary); font-size: 13px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 48px;">
+      
+      <!-- Col 1: Brand Info -->
+      <div style="grid-column: span 1.5;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <div style="width: 24px; height: 24px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 12px; font-family: var(--vanni-font-mono);">V</div>
+          <span style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">VANNI</span>
+        </div>
+        <p style="color: var(--vanni-text-secondary); line-height: 1.6; max-width: 280px; margin: 0 0 16px 0;">
+          Configurable AI employees that speak your customer's language. Built specifically for regional enterprises across Karnataka.
+        </p>
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 4px 8px; background: var(--vanni-surface-subdued); border-radius: var(--vanni-radius-sm); color: var(--vanni-text-muted);">
+          <span class="vanni-status-dot vanni-status-dot-live"></span>
+          <span>Kannada & Kanglish Runtime Active</span>
+        </div>
+      </div>
+
+      <!-- Col 2: Product -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Product</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/features" style="color: var(--vanni-text-secondary); text-decoration: none;">Platform Features</a>
+          <a href="/how-it-works" style="color: var(--vanni-text-secondary); text-decoration: none;">How It Works</a>
+          <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing & Tiers</a>
+          <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security & Isolation</a>
+          <a href="/demo" style="color: var(--vanni-text-secondary); text-decoration: none;">Request Live Demo</a>
+        </div>
+      </div>
+
+      <!-- Col 3: Industries -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Industries</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/industries/dental" style="color: var(--vanni-text-secondary); text-decoration: none;">Dental & Clinics</a>
+          <a href="/industries/healthcare" style="color: var(--vanni-text-secondary); text-decoration: none;">Healthcare & Hospitals</a>
+          <a href="/industries/ivf" style="color: var(--vanni-text-secondary); text-decoration: none;">IVF & Fertility</a>
+          <a href="/industries/hospitality" style="color: var(--vanni-text-secondary); text-decoration: none;">Hospitality & Resorts</a>
+          <a href="/industries/real-estate" style="color: var(--vanni-text-secondary); text-decoration: none;">Real Estate & Layouts</a>
+        </div>
+      </div>
+
+      <!-- Col 4: Enterprise & Contact -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Company & Support</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/contact" style="color: var(--vanni-text-secondary); text-decoration: none;">Contact Sales</a>
+          <a href="/login" style="color: var(--vanni-text-secondary); text-decoration: none;">Console Sign In</a>
+          <a href="/signup" style="color: var(--vanni-text-secondary); text-decoration: none;">Create Organization</a>
+          <span style="color: var(--vanni-text-muted); font-size: 12px; margin-top: 4px;">Headquarters: Bengaluru, Karnataka</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div style="max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--vanni-border-subdued); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--vanni-text-muted);">
+      <div>
+        &copy; 2026 VANNI Technologies Inc. All rights reserved.
+      </div>
+      <div style="display: flex; gap: 20px;">
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Privacy & Data Isolation</a>
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Terms of Service</a>
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Telemetry Policies</a>
+      </div>
+    </div>
+  </footer>
+  
+  
+  <div id="vanni-demo-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 16px;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-xl); box-shadow: var(--vanni-shadow-xl); width: 100%; max-width: 520px; overflow: hidden; animation: vanniModalIn 200ms ease-out;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">V</div>
+          <div>
+            <h3 id="modal-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--vanni-text-primary);">Talk to VANNI</h3>
+            <div style="font-size: 12px; color: var(--vanni-text-muted);">Experience an autonomous regional call demonstration</div>
+          </div>
+        </div>
+        <button type="button" onclick="closeDemoModal()" class="vanni-icon-button" aria-label="Close Modal" style="font-size: 18px;">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div id="demo-modal-form-content" style="padding: 24px;">
+        <div style="margin-bottom: 20px; padding: 12px 14px; background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); font-size: 12px; color: var(--vanni-text-secondary); line-height: 1.5;">
+          Our AI employee can speak in natural <strong>Kannada</strong> or <strong>Kanglish</strong> to demonstrate lead qualification, appointment booking, and answering business FAQs.
+        </div>
+
+        <form id="demo-request-form" onsubmit="handleDemoSubmit(event)">
+          <div class="vanni-form-group">
+            <label for="demo-industry" class="vanni-label">Your Industry</label>
+            <select id="demo-industry" name="industry" class="vanni-select" required>
+              <option value="dental">Dental / Specialty Clinic</option>
+              <option value="healthcare">Hospital / Healthcare</option>
+              <option value="ivf">IVF / Fertility Center</option>
+              <option value="real_estate" selected>Real Estate / Plotted Layouts</option>
+              <option value="hospitality">Hospitality & Resorts</option>
+              <option value="agency">Digital Marketing Agency</option>
+              <option value="other">Other Commercial Business</option>
+            </select>
+          </div>
+
+          <div class="vanni-form-group">
+            <label for="demo-phone" class="vanni-label">Phone Number for Demo Call *</label>
+            <input type="tel" id="demo-phone" name="phone" placeholder="+91 98450 XXXXX" required class="vanni-input" />
+            <div class="vanni-form-hint">We will connect a live test call to this number.</div>
+          </div>
+
+          <div class="vanni-form-group">
+            <label for="demo-name" class="vanni-label">Your Name or Business</label>
+            <input type="text" id="demo-name" name="name" placeholder="e.g. Dr. Ramesh / Venkatesh Plots" required class="vanni-input" />
+          </div>
+
+          <div style="margin-top: 16px; margin-bottom: 20px; font-size: 11px; color: var(--vanni-text-muted); line-height: 1.4;">
+            By requesting a demonstration, you authorize VANNI to initiate a single autonomous voice interaction to the provided number for evaluation purposes. Zero promotional spam.
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" onclick="closeDemoModal()" class="vanni-button vanni-button-secondary">Cancel</button>
+            <button type="submit" id="btn-submit-demo" class="vanni-button vanni-button-primary">Request Demo Call</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success State -->
+      <div id="demo-modal-success-content" style="display: none; padding: 32px 24px; text-align: center;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--vanni-success-subtle); color: var(--vanni-success); display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px;">
+          ✓
+        </div>
+        <h4 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: var(--vanni-text-primary);">Demo Call Dispatched</h4>
+        <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6; max-width: 360px; margin: 0 auto 24px auto;">
+          VANNI has queued your request. You will receive an incoming call shortly to evaluate real regional voice comprehension.
+        </p>
+        <button type="button" onclick="closeDemoModal()" class="vanni-button vanni-button-primary">Done</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function calculateROI() {
+      const clients = parseInt(document.getElementById('calc-clients').value) || 5;
+      const calls = parseInt(document.getElementById('calc-calls').value) || 500;
+      const markup = parseInt(document.getElementById('calc-markup').value) || 10000;
+      
+      const totalCalls = clients * calls;
+      const monthlyRevenue = clients * markup;
+      const annualRevenue = monthlyRevenue * 12;
+      
+      document.getElementById('calc-total-calls').textContent = totalCalls.toLocaleString('en-IN');
+      document.getElementById('calc-revenue').textContent = '₹' + monthlyRevenue.toLocaleString('en-IN');
+      document.getElementById('calc-annual').textContent = '₹' + annualRevenue.toLocaleString('en-IN');
+    }
+    
+    calculateROI();
+
+    async function handleDemoSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-demo');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Connecting...';
+      }
+
+      const phone = document.getElementById('demo-phone').value;
+      const name = document.getElementById('demo-name').value;
+      const industry = document.getElementById('demo-industry').value;
+
+      try {
+        await fetch('/api/calls/outbound-inception', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetPhone: phone,
+            businessName: name,
+            industry: industry === 'agency' ? 'AGENCY' : (industry === 'healthcare' || industry === 'dental' ? 'HEALTHCARE_HOSPITAL' : 'REAL_ESTATE'),
+            directorName: name
+          })
+        }).catch(() => null);
+      } catch (err) {
+        // Fallback gracefully
+      }
+
+      document.getElementById('demo-modal-form-content').style.display = 'none';
+      document.getElementById('demo-modal-success-content').style.display = 'block';
+    }
+  </script>
+  
+</body>
+</html>

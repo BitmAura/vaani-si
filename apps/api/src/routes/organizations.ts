@@ -111,7 +111,7 @@ export async function registerOrganizationRoutes(fastify: FastifyInstance) {
     return reply.status(201).send({
       success: true,
       organization: newOrg,
-      redirectUrl: '/app-onboarding.html',
+      redirectUrl: '/app/onboarding',
     });
   });
 }

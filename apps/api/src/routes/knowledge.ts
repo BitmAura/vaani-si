@@ -17,11 +17,18 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { logger } from '@vanni/observability';
 import crypto from 'node:crypto';
+import { sessionStore } from './auth';
 
 function getOrgId(req: FastifyRequest): string {
   // If explicitly provided
   if (req.headers['x-organization-id']) {
     return req.headers['x-organization-id'] as string;
+  }
+  // Check session token
+  const token = req.headers['x-session-token'] as string;
+  if (token) {
+    const session = sessionStore.get(token);
+    if (session?.activeOrganizationId) return session.activeOrganizationId;
   }
   return 'a0000000-0000-0000-0000-000000000001';
 }

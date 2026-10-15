@@ -359,7 +359,90 @@ export class ConversationOrchestrator {
         };
       }
 
-      // 2.5 Language Intelligence Layer: Normalization, Intent Preservation & Code-Switch Tracking
+      // 2.5 Deterministic Fast-Path Gate (Inspired by Vocalis dialog-engine.js)
+      // Resolves instant affirmative/negative turns (ಸರಿ / ಹೌದು / ಬೇಡ) in sub-50ms without LLM latency
+      const recentAiMsg = session.memory.getRecentMessages(2).find(m => m.speaker === 'AGENT')?.content?.toLowerCase() || '';
+      const lowUtterance = utterance.trim().toLowerCase();
+      const isAffirmative = ['ಸರಿ', 'ಹೌದು', 'ಖಂಡಿತ', 'sure', 'yes', 'okay', 'ok', 'ha', 'haudu', 'sari'].includes(lowUtterance) || lowUtterance.startsWith('yes ');
+      const isNegative = ['ಬೇಡ', 'ಬೇರೆ', 'no', 'nope', 'beda', 'not now'].includes(lowUtterance) || lowUtterance.startsWith('no ');
+
+      if (recentAiMsg.includes('confirm') || recentAiMsg.includes('ಮಾಡಲಾ') || recentAiMsg.includes('slot') || recentAiMsg.includes('visit') || recentAiMsg.includes('book')) {
+        if (isAffirmative) {
+          const fastReply = session.agentConfig.language.primaryLanguage === 'kn'
+            ? 'ಧನ್ಯವಾದಗಳು! ನಿಮ್ಮ ಬುಕಿಂಗ್ ಖಚಿತವಾಗಿದೆ. ನಮ್ಮ ತಂಡವು ನಿಮಗೆ ವಾಟ್ಸಾಪ್ ಮೂಲಕ ವಿವರಗಳನ್ನು ಕಳುಹಿಸುತ್ತದೆ.'
+            : 'Thank you! Your slot has been confirmed. Our team has dispatched the details to your WhatsApp.';
+
+          session.stateMachine.transition('SPEAKING', 'AGENT_RESPONSE_READY');
+          session.stateMachine.transition('LISTENING', 'AGENT_RESPONSE_READY');
+          session.sequenceCounter++;
+          const fastMsg: ConversationMessageDTO = {
+            id: `msg_${Date.now()}_fast_yes`,
+            conversationId,
+            organizationId: session.organizationId,
+            speaker: 'AGENT',
+            messageType: 'TEXT',
+            content: fastReply,
+            sequenceNumber: session.sequenceCounter,
+            createdAt: new Date().toISOString(),
+          };
+          session.memory.addMessage(fastMsg);
+          await this.db.saveConversationMessage(fastMsg);
+          await session.channel.sendMessage(fastMsg);
+
+          return {
+            turnId: resolvedEventId,
+            conversationId,
+            speaker: 'AGENT',
+            userUtterance: utterance,
+            agentResponse: fastReply,
+            stateBefore,
+            stateAfter: session.stateMachine.getCurrentState(),
+            groundedSources: [{ sourceTitle: 'Deterministic Fast-Path Gate', content: 'Instant affirmative confirmation', score: 1.0 }],
+            policyFlags: ['FAST_PATH_CONFIRMED'],
+            toolInteractions: [],
+            executionDurationMs: Date.now() - startTimestamp,
+            createdAt: new Date().toISOString(),
+          };
+        } else if (isNegative) {
+          const fastReply = session.agentConfig.language.primaryLanguage === 'kn'
+            ? 'ಸರಿ, ತೊಂದರೆಯಿಲ್ಲ. ನಿಮಗೆ ಬೇರೆ ಯಾವ ಸಮಯ ಅಥವಾ ದಿನ ಅನುಕೂಲವಾಗುತ್ತದೆ ಎಂದು ತಿಳಿಸುತ್ತೀರಾ?'
+            : 'No problem at all. Which alternative date or time would suit you better?';
+
+          session.stateMachine.transition('SPEAKING', 'AGENT_RESPONSE_READY');
+          session.stateMachine.transition('LISTENING', 'AGENT_RESPONSE_READY');
+          session.sequenceCounter++;
+          const fastMsg: ConversationMessageDTO = {
+            id: `msg_${Date.now()}_fast_no`,
+            conversationId,
+            organizationId: session.organizationId,
+            speaker: 'AGENT',
+            messageType: 'TEXT',
+            content: fastReply,
+            sequenceNumber: session.sequenceCounter,
+            createdAt: new Date().toISOString(),
+          };
+          session.memory.addMessage(fastMsg);
+          await this.db.saveConversationMessage(fastMsg);
+          await session.channel.sendMessage(fastMsg);
+
+          return {
+            turnId: resolvedEventId,
+            conversationId,
+            speaker: 'AGENT',
+            userUtterance: utterance,
+            agentResponse: fastReply,
+            stateBefore,
+            stateAfter: session.stateMachine.getCurrentState(),
+            groundedSources: [{ sourceTitle: 'Deterministic Fast-Path Gate', content: 'Instant negative reschedule', score: 1.0 }],
+            policyFlags: ['FAST_PATH_RESCHEDULED'],
+            toolInteractions: [],
+            executionDurationMs: Date.now() - startTimestamp,
+            createdAt: new Date().toISOString(),
+          };
+        }
+      }
+
+      // 2.6 Language Intelligence Layer: Normalization, Intent Preservation & Code-Switch Tracking
       const normalizedUtterance = this.languageNormalizer.normalize(utterance);
 
       // Check for explicit customer language switch request

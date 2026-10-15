@@ -79,21 +79,6 @@
         <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Access your organization dashboard and AI voice telemetry.</p>
       </div>
 
-      <!-- Quick 1-Click Demo Logins -->
-      <div style="background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); padding: 12px; margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <span style="font-size: 11px; font-weight: 600; color: var(--vanni-accent); font-family: var(--vanni-font-mono);">DEVELOPMENT ACCESS</span>
-          <span style="font-size: 10px; color: var(--vanni-text-muted);">Seed Credentials</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>🏢 Ballari Plots</span>
-          </button>
-          <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>🏥 Apollo Clinic</span>
-          </button>
-        </div>
-      </div>
 
       <div id="login-error" class="auth-alert-error"></div>
 
@@ -141,11 +126,8 @@
       const password = document.getElementById('login-password').value;
 
       try {
-        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-          ? 'http://localhost:4100/api/auth/login' 
-          : '/api/auth/login';
-
-        const res = await fetch(apiUrl, {
+        // Always use relative URL - the server serving the page has the API
+        const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -164,7 +146,7 @@
 
         // Check redirect param
         const params = new URLSearchParams(window.location.search);
-        const redirectUrl = params.get('redirect') || '/console.html';
+        const redirectUrl = params.get('redirect') || '/app/dashboard';
         window.location.href = redirectUrl;
       } catch (err) {
         errEl.innerText = err.message;

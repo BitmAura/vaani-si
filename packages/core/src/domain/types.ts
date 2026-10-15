@@ -10,7 +10,9 @@ export type IndustryType =
   | 'EDUCATION_COLLEGE'
   | 'BANKING_NBFC'
   | 'HOSPITALITY_CAFE'
-  | 'ECOMMERCE_D2C';
+  | 'ECOMMERCE_D2C'
+  | 'AI_SAAS'
+  | 'AGENCY';
 
 export type RegionalDialect =
   | 'KANNADA_STANDARD_POLITE' // Universal clean conversational Karnataka

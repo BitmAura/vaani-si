@@ -210,6 +210,7 @@ export interface IDatabaseService {
 
   saveConversationHandoff(handoff: ConversationHandoffDTO): Promise<void>;
   getConversationHandoff(conversationId: string, organizationId?: string): Promise<ConversationHandoffDTO | null>;
+  getConversationHandoffs(organizationId?: string): Promise<ConversationHandoffDTO[]>;
 
   // Handoff Engine Extended Records (Module 17)
   saveHandoffRecord(record: ConversationHandoffRecordDTO): Promise<void>;
@@ -390,8 +391,146 @@ export class InMemoryDatabaseService implements IDatabaseService {
   private billingProviderEvents: Map<string, BillingProviderEventDTO> = new Map();
 
   constructor() {
-    this.seedDefaults();
+    this.seedCanonicalPlans();
   }
+
+  private seedCanonicalPlans() {
+    const now = new Date().toISOString();
+
+    const starter: PlanDTO = {
+      id: 'plan_starter',
+      name: 'Starter Plan',
+      slug: 'starter',
+      description: 'Ideal for independent clinics & single offices',
+      monthlyPrice: 4999,
+      annualPrice: 49990,
+      currency: 'INR',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      activeVersion: 'v1.0',
+      entitlements: {
+        maxAiEmployees: 1,
+        maxLocations: 1,
+        maxUsers: 5,
+        maxKnowledgeSources: 10,
+        maxKnowledgeStorageMb: 500,
+        maxContacts: 1000,
+        maxMonthlyVoiceMinutes: 600,
+        maxMonthlySttSeconds: 36000,
+        maxMonthlyTtsCharacters: 300000,
+        maxMonthlyLlmTokens: 1000000,
+        maxMonthlyCalls: 300,
+        maxMonthlyOutboundCalls: 100,
+        maxCampaignTargets: 200,
+        maxAppointments: 500,
+        voiceEnabled: true,
+        outboundCallingEnabled: true,
+        campaignsEnabled: true,
+        knowledgeBaseEnabled: true,
+        analyticsEnabled: true,
+        advancedAnalyticsEnabled: false,
+        humanHandoffEnabled: true,
+        customAiEmployeeEnabled: false,
+        apiAccessEnabled: false,
+        webhooksEnabled: false,
+        crmIntegrationsEnabled: false,
+      },
+      overageVoiceMinutePrice: 2.5,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const growth: PlanDTO = {
+      id: 'plan_growth',
+      name: 'Growth Plan',
+      slug: 'growth',
+      description: 'For hospitals, busy clinics & real estate layout teams',
+      monthlyPrice: 14999,
+      annualPrice: 149990,
+      currency: 'INR',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      activeVersion: 'v1.0',
+      entitlements: {
+        maxAiEmployees: 3,
+        maxLocations: 3,
+        maxUsers: 15,
+        maxKnowledgeSources: 50,
+        maxKnowledgeStorageMb: 2500,
+        maxContacts: 10000,
+        maxMonthlyVoiceMinutes: 2500,
+        maxMonthlySttSeconds: 150000,
+        maxMonthlyTtsCharacters: 1250000,
+        maxMonthlyLlmTokens: 5000000,
+        maxMonthlyCalls: 1500,
+        maxMonthlyOutboundCalls: 800,
+        maxCampaignTargets: 2000,
+        maxAppointments: 2500,
+        voiceEnabled: true,
+        outboundCallingEnabled: true,
+        campaignsEnabled: true,
+        knowledgeBaseEnabled: true,
+        analyticsEnabled: true,
+        advancedAnalyticsEnabled: true,
+        humanHandoffEnabled: true,
+        customAiEmployeeEnabled: true,
+        apiAccessEnabled: true,
+        webhooksEnabled: true,
+        crmIntegrationsEnabled: true,
+      },
+      overageVoiceMinutePrice: 2.2,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const scale: PlanDTO = {
+      id: 'plan_scale',
+      name: 'Agency / Scale Plan',
+      slug: 'scale',
+      description: 'For digital agencies, hospital networks & multi-branch builders',
+      monthlyPrice: 29999,
+      annualPrice: 299990,
+      currency: 'INR',
+      visibility: 'PUBLIC',
+      status: 'ACTIVE',
+      activeVersion: 'v1.0',
+      entitlements: {
+        maxAiEmployees: 10,
+        maxLocations: 10,
+        maxUsers: 50,
+        maxKnowledgeSources: 200,
+        maxKnowledgeStorageMb: 10000,
+        maxContacts: 50000,
+        maxMonthlyVoiceMinutes: 6000,
+        maxMonthlySttSeconds: 360000,
+        maxMonthlyTtsCharacters: 3000000,
+        maxMonthlyLlmTokens: 15000000,
+        maxMonthlyCalls: 4000,
+        maxMonthlyOutboundCalls: 2500,
+        maxCampaignTargets: 10000,
+        maxAppointments: 10000,
+        voiceEnabled: true,
+        outboundCallingEnabled: true,
+        campaignsEnabled: true,
+        knowledgeBaseEnabled: true,
+        analyticsEnabled: true,
+        advancedAnalyticsEnabled: true,
+        humanHandoffEnabled: true,
+        customAiEmployeeEnabled: true,
+        apiAccessEnabled: true,
+        webhooksEnabled: true,
+        crmIntegrationsEnabled: true,
+      },
+      overageVoiceMinutePrice: 1.9,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    this.plans.set(starter.id, starter);
+    this.plans.set(growth.id, growth);
+    this.plans.set(scale.id, scale);
+  }
+
 
   private seedDefaults() {
     const now = new Date().toISOString();
@@ -1904,6 +2043,12 @@ export class InMemoryDatabaseService implements IDatabaseService {
     this.conversationHandoffs.set(handoff.id, handoff);
   }
 
+  async getConversationHandoffs(organizationId?: string): Promise<ConversationHandoffDTO[]> {
+    const list = Array.from(this.conversationHandoffs.values());
+    if (!organizationId) return list;
+    return list.filter(h => h.organizationId === organizationId);
+  }
+
   async getConversationHandoff(conversationId: string, organizationId?: string): Promise<ConversationHandoffDTO | null> {
     for (const h of this.conversationHandoffs.values()) {
       if (h.conversationId === conversationId) {
@@ -2454,7 +2599,7 @@ export class InMemoryDatabaseService implements IDatabaseService {
         id: `sub_trial_${organizationId.substring(0, 8)}`,
         organizationId,
         billingAccountId: billingAccount?.id || `ba_${organizationId.substring(0, 8)}`,
-        planId: 'plan_starter',
+        planId: (await this.getOrganizationById(organizationId))?.billingTier === 'BUSINESS' ? 'plan_scale' : ((await this.getOrganizationById(organizationId))?.billingTier === 'GROWTH' ? 'plan_growth' : 'plan_starter'),
         planVersionId: 'v1.0',
         provider: 'RAZORPAY',
         status: 'TRIALING',

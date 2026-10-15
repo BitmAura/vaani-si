@@ -10,6 +10,7 @@
 
 import { UserRole, AuthSessionDTO } from '@vanni/shared';
 import { canManageBilling, hasPermission, Permission } from './roles.js';
+import { deserializeSession, SESSION_COOKIE_NAME } from './session.js';
 
 export interface RequestAuthContext {
   userId: string;
@@ -21,31 +22,52 @@ export interface RequestAuthContext {
 export class PermissionService {
   /**
    * Resolves authentication and organization tenancy from request headers.
+   * Extracts token from vanni_session cookie or Authorization: Bearer <token>.
    * Never trusts client-supplied organizationId or role if unauthenticated.
+   * Returns isAuthenticated: false if token is missing or invalid.
    */
   static resolveAuthContext(headers: Record<string, string | string[] | undefined>): RequestAuthContext {
+    let token: string | undefined;
+
+    // 1. Check Authorization: Bearer <token>
     const authHeader = (headers['authorization'] as string) || '';
-    const orgIdHeader = (headers['x-organization-id'] as string) || '';
-    const roleHeader = (headers['x-user-role'] as string) || '';
-
-    // If Authorization Bearer exists, parse token or mock session
-    let userId = 'u0000000-0000-0000-0000-000000000001';
-    let organizationId = orgIdHeader || 'a0000000-0000-0000-0000-000000000001';
-    let role: UserRole = (['OWNER', 'ADMIN', 'MANAGER', 'VIEWER'].includes(roleHeader) ? roleHeader : 'ADMIN') as UserRole;
-    let isAuthenticated = true;
-
     if (authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7).trim();
-      if (!token || token === 'invalid') {
-        isAuthenticated = false;
+      token = authHeader.substring(7).trim();
+    }
+
+    // 2. If no bearer, check cookie header for vanni_session
+    if (!token && headers['cookie']) {
+      const cookieHeader = Array.isArray(headers['cookie']) ? headers['cookie'].join('; ') : headers['cookie'];
+      const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]+)`));
+      if (match && match[1]) {
+        token = decodeURIComponent(match[1]);
       }
     }
 
+    if (!token) {
+      return {
+        userId: '',
+        organizationId: '',
+        role: 'VIEWER',
+        isAuthenticated: false,
+      };
+    }
+
+    const session = deserializeSession(token);
+    if (!session) {
+      return {
+        userId: '',
+        organizationId: '',
+        role: 'VIEWER',
+        isAuthenticated: false,
+      };
+    }
+
     return {
-      userId,
-      organizationId,
-      role,
-      isAuthenticated,
+      userId: session.userId,
+      organizationId: session.activeOrganizationId,
+      role: session.activeRole as UserRole,
+      isAuthenticated: true,
     };
   }
 

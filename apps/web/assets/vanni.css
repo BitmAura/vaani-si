@@ -5,75 +5,77 @@
  */
 
 :root {
-  /* Canvas & Surfaces */
-  --vanni-bg: #F8FAFC;
+  /* IDURAR Enterprise Canvas & Surfaces */
+  --vanni-bg: #F0F2F5;
   --vanni-surface: #FFFFFF;
   --vanni-surface-elevated: #FFFFFF;
-  --vanni-surface-subdued: #F1F5F9;
+  --vanni-surface-subdued: #FAFAFA;
 
-  /* Borders */
-  --vanni-border: #E2E8F0;
-  --vanni-border-subdued: #F1F5F9;
-  --vanni-border-strong: #CBD5E1;
+  /* IDURAR Borders & Dividers */
+  --vanni-border: #E0E0E0;
+  --vanni-border-subdued: #EDF0F5;
+  --vanni-border-strong: #D9D9D9;
 
-  /* Typography Colors */
-  --vanni-text-primary: #0F172A;
-  --vanni-text-secondary: #475569;
-  --vanni-text-muted: #64748B;
-  --vanni-text-disabled: #94A3B8;
+  /* IDURAR & Ant Design Typography */
+  --vanni-header-brand: #22075E;
+  --vanni-text-primary: #22075E;
+  --vanni-text-body: #262626;
+  --vanni-text-secondary: #595959;
+  --vanni-text-muted: #8C8C8C;
+  --vanni-text-disabled: #BFBFBF;
 
-  /* Primary Brand (Executive Deep Slate) */
-  --vanni-primary: #0F172A;
-  --vanni-primary-hover: #1E293B;
+  /* Primary Brand Action (Ant Design Classic Blue #1890FF) */
+  --vanni-primary: #1890FF;
+  --vanni-primary-hover: #40A9FF;
   --vanni-primary-fg: #FFFFFF;
 
-  /* Accent (Professional Cobalt) */
-  --vanni-accent: #2563EB;
-  --vanni-accent-subtle: #EFF6FF;
-  --vanni-accent-fg: #1D4ED8;
+  /* Brand Accent & Highlights */
+  --vanni-accent: #1890FF;
+  --vanni-accent-subtle: #E6F7FF;
+  --vanni-accent-fg: #1890FF;
 
-  /* Status Colors */
-  --vanni-success: #059669;
-  --vanni-success-subtle: #ECFDF5;
-  --vanni-success-fg: #047857;
+  /* Status Colors (Ant Design Enterprise Standard) */
+  --vanni-success: #52C41A;
+  --vanni-success-subtle: #F6FFED;
+  --vanni-success-fg: #389E0D;
 
-  --vanni-warning: #D97706;
-  --vanni-warning-subtle: #FFFBEB;
-  --vanni-warning-fg: #B45309;
+  --vanni-warning: #FAAD14;
+  --vanni-warning-subtle: #FFFBE6;
+  --vanni-warning-fg: #D48806;
 
-  --vanni-danger: #DC2626;
-  --vanni-danger-subtle: #FEF2F2;
-  --vanni-danger-fg: #B91C1C;
+  --vanni-danger: #F5222D;
+  --vanni-danger-subtle: #FFF1F0;
+  --vanni-danger-fg: #CF1322;
 
-  --vanni-info: #0284C7;
-  --vanni-info-subtle: #F0F9FF;
-  --vanni-info-fg: #0369A1;
+  --vanni-info: #1890FF;
+  --vanni-info-subtle: #E6F7FF;
+  --vanni-info-fg: #096DD9;
 
   /* Typography Families */
-  --vanni-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Kannada', 'Kannada Sangam MN', Tunga, sans-serif;
+  --vanni-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --vanni-font-kannada: 'Noto Sans Kannada', 'Kannada Sangam MN', Tunga, sans-serif;
-  --vanni-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --vanni-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
 
-  /* Border Radii */
-  --vanni-radius-sm: 4px;
-  --vanni-radius-md: 6px;
-  --vanni-radius-lg: 8px;
-  --vanni-radius-xl: 12px;
+  /* IDURAR Border Radii (Clean enterprise geometry) */
+  --vanni-radius-sm: 2px;
+  --vanni-radius-md: 4px;
+  --vanni-radius-lg: 6px;
+  --vanni-radius-xl: 8px;
   --vanni-radius-full: 9999px;
 
-  /* Shadows */
-  --vanni-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --vanni-shadow-default: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
-  --vanni-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
-  --vanni-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
-  --vanni-shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  /* IDURAR Enterprise Shadows (.whiteBox .shadow) */
+  --vanni-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --vanni-shadow-default: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --vanni-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --vanni-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --vanni-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.12);
 
   /* Layout Constants */
   --vanni-header-height: 56px;
-  --vanni-sidebar-width: 240px;
+  --vanni-sidebar-width: 256px;
   --vanni-sidebar-collapsed-width: 64px;
-  --vanni-drawer-width: 520px;
-  --vanni-max-content-width: 1280px;
+  --vanni-drawer-width: 540px;
+  --vanni-max-content-width: 1200px;
 
   /* Transitions */
   --vanni-transition-fast: all 150ms cubic-bezier(0.2, 0.0, 0, 1.0);
@@ -87,15 +89,109 @@ html, body {
   padding: 0;
   font-family: var(--vanni-font-sans);
   background-color: var(--vanni-bg);
-  color: var(--vanni-text-primary);
+  color: var(--vanni-text-body);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  color: var(--vanni-text-primary);
+  font-weight: 700;
+  margin-top: 0;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+/* IDURAR Core Components */
+.whiteBox {
+  background: #FFFFFF;
+  width: 100%;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+.shadow {
+  border: 1px solid #E0E0E0;
+}
+.shadow:hover {
+  border: 1px solid #BDBDBD;
+}
+.line {
+  border-top: 1px solid #EDF0F5;
+  width: 100%;
+  margin: 8px 0;
+}
+
+/* Ant Design Tags */
+.ant-tag {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 7px;
+  color: #262626;
+  font-size: 11px;
+  line-height: 20px;
+  white-space: nowrap;
+  background: #FAFAFA;
+  border: 1px solid #D9D9D9;
+  border-radius: 2px;
+  font-family: var(--vanni-font-mono);
+}
+.ant-tag-blue { color: #1890FF; background: #E6F7FF; border-color: #91D5FF; }
+.ant-tag-green { color: #52C41A; background: #F6FFED; border-color: #B7EB8F; }
+.ant-tag-gold { color: #FAAD14; background: #FFFBE6; border-color: #FFE58F; }
+.ant-tag-purple { color: #722ED1; background: #F9F0FF; border-color: #D3ADF7; }
+.ant-tag-red { color: #F5222D; background: #FFF1F0; border-color: #FFA39E; }
+
+/* IDURAR Card & Badge Standards */
+.vanni-card {
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease-in-out;
+}
+.vanni-card:hover {
+  border-color: #1890FF;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.08);
+}
+
+.vanni-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #D9D9D9;
+  background: #FAFAFA;
+  color: #262626;
+  font-family: var(--vanni-font-mono);
+}
+.vanni-badge-accent, .vanni-badge-default {
+  background: #E6F7FF;
+  border-color: #91D5FF;
+  color: #1890FF;
+}
+.vanni-badge-success {
+  background: #F6FFED;
+  border-color: #B7EB8F;
+  color: #52C41A;
+}
+.vanni-badge-warning {
+  background: #FFFBE6;
+  border-color: #FFE58F;
+  color: #FAAD14;
+}
+.vanni-badge-danger {
+  background: #FFF1F0;
+  border-color: #FFA39E;
+  color: #F5222D;
 }
 
 /* Kannada regional text helper */

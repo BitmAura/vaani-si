@@ -125,7 +125,8 @@ export class GeminiFlashLLMProvider {
         },
       ];
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`;
+      const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
 
       const res = await fetch(url, {
         method: 'POST',
@@ -137,7 +138,7 @@ export class GeminiFlashLLMProvider {
           contents,
           generationConfig: {
             temperature: options?.temperature ?? 0.3,
-            maxOutputTokens: options?.maxOutputTokens ?? 60,
+            maxOutputTokens: options?.maxOutputTokens ?? 150,
           },
         }),
       });

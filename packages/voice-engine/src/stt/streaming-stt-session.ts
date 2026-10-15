@@ -25,4 +25,5 @@ export interface IStreamingSTTSession {
   onError(callback: (error: Error) => void): void;
   stop(): Promise<void>;
   cancel(): void;
+  resetTurnBuffer?(): void;
 }

@@ -249,3 +249,25 @@ voice_invariant_violations_total ${compliance.violations}
 
 // Global singleton
 export const globalLatencyMonitor = new LatencyMonitor();
+
+export class LatencyTracker {
+  private startTime: number = 0;
+  private monitor: LatencyMonitor = globalLatencyMonitor;
+
+  start(): void {
+    this.startTime = Date.now();
+  }
+
+  end(metrics?: Partial<Omit<LatencyMetrics, 'timestamp' | 'meetsInvariant'>>): number {
+    const totalLatency = Date.now() - (this.startTime || Date.now());
+    this.monitor.recordLatency({
+      vadLatency: metrics?.vadLatency ?? 0,
+      sttLatency: metrics?.sttLatency ?? 0,
+      llmLatency: metrics?.llmLatency ?? 0,
+      ttsLatency: metrics?.ttsLatency ?? 0,
+      totalLatency: metrics?.totalLatency ?? totalLatency,
+      metadata: metrics?.metadata,
+    });
+    return totalLatency;
+  }
+}
