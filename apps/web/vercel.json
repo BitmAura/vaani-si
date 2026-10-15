@@ -7,6 +7,14 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/console.html",
+      "dest": "/app-dashboard.html"
+    },
+    {
+      "src": "/console",
+      "dest": "/app-dashboard.html"
+    },
+    {
       "src": "/app/dashboard",
       "dest": "/app-dashboard.html"
     },

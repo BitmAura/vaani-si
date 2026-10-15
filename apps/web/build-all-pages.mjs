@@ -1612,7 +1612,7 @@ const signupHtml = `<!DOCTYPE html>
       const company = document.getElementById('signup-company').value;
       localStorage.setItem('vanni_active_tenant', 'real_estate');
       localStorage.setItem('vanni_user', company + ' Admin');
-      window.location.href = '/console';
+      window.location.href = '/app/dashboard';
     }
   </script>
 </body>
