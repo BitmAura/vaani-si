@@ -410,25 +410,57 @@
         btn.innerHTML = '<span class="animate-pulse">Saving Knowledge Brain...</span>';
       }
 
-      try {
-        if (!activeSession) {
-          const res = await fetch('/api/auth/session');
-          const data = await res.json();
-          if (data.authenticated) activeSession = data.session;
-        }
+      // Collect inputs from onboarding steps
+      const brandInput = document.querySelector('input[placeholder*="Digital Marketing Agency"], input[id*="agency-brand"], input[name*="brand"]');
+      const brandName = brandInput?.value?.trim() || activeSession?.activeOrganizationName || localStorage.getItem('vanni_org_name') || 'AuraDigital';
+      
+      const phoneInput = document.querySelector('input[type="tel"]');
+      const phoneVal = phoneInput?.value?.trim() || localStorage.getItem('vanni_phone') || '+91 80 4719 2000';
 
+      const ind = detectedIndustry || localStorage.getItem('vanni_industry') || 'AGENCY';
+      const tenantKey = ind === 'AGENCY' ? 'agency' : (ind.includes('HOSPITAL') ? 'hospital' : 'real_estate');
+
+      const sessionObj = activeSession || {
+        user: { id: 'usr_admin', email: 'director@auradigital.com', name: 'AuraDigital Admin' },
+        activeOrganizationId: tenantKey,
+        activeOrganizationName: brandName,
+        role: 'owner',
+        activeRole: 'ORGANIZATION OWNER',
+        memberships: [{
+          organizationId: tenantKey,
+          organizationName: brandName,
+          industry: ind,
+          role: 'owner'
+        }]
+      };
+
+      sessionObj.activeOrganizationName = brandName;
+      sessionObj.activeOrganizationId = tenantKey;
+      if (sessionObj.memberships && sessionObj.memberships[0]) {
+        sessionObj.memberships[0].organizationName = brandName;
+        sessionObj.memberships[0].industry = ind;
+      }
+
+      localStorage.setItem('vanni_session', JSON.stringify(sessionObj));
+      localStorage.setItem('vanni_org_name', brandName);
+      localStorage.setItem('vanni_phone', phoneVal);
+      localStorage.setItem('vanni_industry', ind);
+      localStorage.setItem('vanni_active_tenant', tenantKey);
+      localStorage.setItem('dhwani_active_tenant', tenantKey);
+      localStorage.setItem('vanni_onboarding_completed', 'true');
+
+      try {
         if (activeSession) {
           const orgId = activeSession.activeOrganizationId;
           await fetch(`/api/orgs/${orgId}/onboarding`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'ready', industry: detectedIndustry })
+            body: JSON.stringify({ status: 'ready', industry: ind, brandName })
           });
         }
-        localStorage.setItem('vanni_onboarding_completed', 'true'); window.location.href = '/app/dashboard';
-      } catch (err) {
-        window.location.href = '/app/dashboard';
-      }
+      } catch(e) {}
+
+      window.location.href = '/app/dashboard';
     }
 
     window.addEventListener('DOMContentLoaded', initOnboarding);
