@@ -16,3 +16,4 @@ export * from './registry/health-service.js';
 export * from './mocks/index.js';
 export * from './benchmarks/provider-benchmark.js';
 export * from './billing/razorpay.js';
+export * from './billing/resolve-provider.js';

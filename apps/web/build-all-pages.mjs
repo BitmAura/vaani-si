@@ -1554,14 +1554,105 @@ buildStandardPage({
 const signupHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  ${renderHead({
-    title: 'Create Organization Account — VANNI',
-    description: 'Sign up to deploy your first regional AI employee for your business.',
-    canonicalUrl: 'https://vanni.ai/signup'
-  })}
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Organization Account — VANNI</title>
+  <meta name="description" content="Sign up to deploy your first regional AI employee for your business.">
+  <link rel="canonical" href="https://vanni.ai/signup">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Create Organization Account — VANNI">
+  <meta property="og:description" content="Sign up to deploy your first regional AI employee for your business.">
+  <meta property="og:url" content="https://vanni.ai/signup">
+  <meta property="og:site_name" content="VANNI">
+  <meta property="og:locale" content="en_IN">
+  
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Create Organization Account — VANNI">
+  <meta name="twitter:description" content="Sign up to deploy your first regional AI employee for your business.">
+  
+  <!-- Fonts: Inter, Noto Sans Kannada, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- VANNI Design System -->
+  <link rel="stylesheet" href="/assets/vanni.css">
+
+  <style>
+    @media (max-width: 860px) {
+      .vanni-desktop-nav { display: none !important; }
+      .vanni-mobile-menu-btn { display: inline-flex !important; }
+      .vanni-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+      .vanni-comparison-grid { grid-template-columns: 1fr !important; }
+      .vanni-steps-grid { grid-template-columns: 1fr !important; }
+    }
+    
+    @keyframes vanniFadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .vanni-fade-in {
+      animation: vanniFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+
+  
+  
 </head>
 <body style="margin: 0; background: var(--vanni-bg); color: var(--vanni-text-primary); font-family: var(--vanni-font-sans); min-height: 100vh; display: flex; flex-direction: column;">
-  ${renderNavigation('/signup')}
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); position: sticky; top: 0; z-index: 50;">
+    <div style="max-width: 1200px; margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+      
+      <!-- Brand Logo -->
+      <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+        <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+          V
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+          <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav style="display: flex; align-items: center; gap: 4px;" class="vanni-desktop-nav" aria-label="Main Navigation">
+        <a href="/features" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Product</a><a href="/how-it-works" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">How It Works</a><a href="/industries" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Industries</a><a href="/pricing" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Pricing</a><a href="/security" style="text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; transition: color 150ms ease; color: var(--vanni-text-secondary);">Security</a>
+      </nav>
+
+      <!-- Desktop Action CTAs -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="/login" class="vanni-button vanni-button-ghost" style="font-size: 13px;">Sign In</a>
+        <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary" style="font-size: 13px;">
+          <span>Talk to VANNI</span>
+        </button>
+        <!-- Mobile Nav Toggle -->
+        <button type="button" class="vanni-mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle Mobile Menu" style="display: none; background: transparent; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 10px; font-size: 16px; cursor: pointer;">
+          &#9776;
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="vanni-mobile-nav" style="display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); padding: 16px 24px; box-shadow: var(--vanni-shadow-md); flex-direction: column; gap: 12px;">
+      <a href="/features" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Product Features</a>
+      <a href="/how-it-works" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">How It Works</a>
+      <a href="/industries" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Industry Solutions</a>
+      <a href="/pricing" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Pricing Plans</a>
+      <a href="/security" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Enterprise Security</a>
+      <div style="border-top: 1px solid var(--vanni-border-subdued); padding-top: 12px; display: flex; gap: 10px;">
+        <a href="/login" class="vanni-button vanni-button-secondary" style="flex: 1; text-align: center; text-decoration: none;">Sign In</a>
+        <button type="button" onclick="openDemoModal(); toggleMobileNav();" class="vanni-button vanni-button-primary" style="flex: 1;">Talk to VANNI</button>
+      </div>
+    </div>
+  </header>
+  
 
   <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
     <div style="width: 100%; max-width: 440px; background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 36px; box-shadow: var(--vanni-shadow-md);">
@@ -1573,27 +1664,43 @@ const signupHtml = `<!DOCTYPE html>
 
       <form onsubmit="handleSignup(event)">
         <div class="vanni-form-group">
-          <label class="vanni-label">Company / Practice Name</label>
-          <input type="text" id="signup-company" placeholder="e.g. Apollo Clinic / Ballari Layouts" required class="vanni-input" />
+          <label class="vanni-label" for="signup-name">Full Name *</label>
+          <input type="text" id="signup-name" placeholder="Priya Sharma / Rahul Gowda" required class="vanni-input" autofocus />
         </div>
 
         <div class="vanni-form-group">
-          <label class="vanni-label">Work Email</label>
+          <label class="vanni-label" for="signup-company">Company / Practice Name *</label>
+          <input type="text" id="signup-company" placeholder="e.g. Apex Growth / Apollo Clinic / Ballari Layouts" required class="vanni-input" />
+        </div>
+
+        <div class="vanni-form-group">
+          <label class="vanni-label" for="signup-industry">Select Your Industry *</label>
+          <select id="signup-industry" required class="vanni-input vanni-select" onchange="document.getElementById('industry-error').style.display='none'" style="height: 42px; cursor: pointer;">
+            <option value="" disabled selected>Select Your Industry...</option>
+            <option value="AGENCY">🚀 Digital Marketing Agency &amp; Reseller</option>
+            <option value="REAL_ESTATE">🏡 Real Estate, Plots &amp; Developers</option>
+            <option value="HEALTHCARE_HOSPITAL">🏥 Healthcare, Hospital &amp; Clinics</option>
+          </select>
+          <div id="industry-error" style="display:none;color:#EF4444;font-size:11px;margin-top:5px;">⚠️ Please select your industry type to continue.</div>
+        </div>
+
+        <div class="vanni-form-group">
+          <label class="vanni-label" for="signup-email">Work Email *</label>
           <input type="email" id="signup-email" placeholder="director@company.com" required class="vanni-input" />
         </div>
 
         <div class="vanni-form-group">
-          <label class="vanni-label">Mobile Phone (For Admin Alerts)</label>
+          <label class="vanni-label" for="signup-phone">Mobile Phone (For Admin Alerts) *</label>
           <input type="tel" id="signup-phone" placeholder="+91 98450 XXXXX" required class="vanni-input" />
         </div>
 
         <div class="vanni-form-group">
-          <label class="vanni-label">Password</label>
-          <input type="password" id="signup-pass" placeholder="Create password" required class="vanni-input" />
+          <label class="vanni-label" for="signup-pass">Password *</label>
+          <input type="password" id="signup-pass" placeholder="Create password (min 6 chars)" required class="vanni-input" />
         </div>
 
-        <button type="submit" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 12px;">
-          Create Account & Access Console
+        <button type="submit" id="signup-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 14px;">
+          <span>Create Account &amp; Access Console</span>
         </button>
       </form>
 
@@ -1604,30 +1711,118 @@ const signupHtml = `<!DOCTYPE html>
     </div>
   </main>
 
-  ${renderFooter()}
+  
+  <footer style="background: var(--vanni-surface); border-top: 1px solid var(--vanni-border); padding: 64px 24px 32px 24px; color: var(--vanni-text-secondary); font-size: 13px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 48px;">
+      
+      <!-- Col 1: Brand Info -->
+      <div style="grid-column: span 1.5;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <div style="width: 24px; height: 24px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 12px; font-family: var(--vanni-font-mono);">V</div>
+          <span style="font-weight: 700; font-size: 16px; color: var(--vanni-text-primary);">VANNI</span>
+        </div>
+        <p style="color: var(--vanni-text-secondary); line-height: 1.6; max-width: 280px; margin: 0 0 16px 0;">
+          Configurable AI employees that speak your customer's language. Built specifically for regional enterprises across Karnataka.
+        </p>
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 4px 8px; background: var(--vanni-surface-subdued); border-radius: var(--vanni-radius-sm); color: var(--vanni-text-muted);">
+          <span class="vanni-status-dot vanni-status-dot-live"></span>
+          <span>Kannada & Kanglish Runtime Active</span>
+        </div>
+      </div>
+
+      <!-- Col 2: Product -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Product</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/features" style="color: var(--vanni-text-secondary); text-decoration: none;">Platform Features</a>
+          <a href="/how-it-works" style="color: var(--vanni-text-secondary); text-decoration: none;">How It Works</a>
+          <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing & Tiers</a>
+          <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security & Isolation</a>
+          <a href="/demo" style="color: var(--vanni-text-secondary); text-decoration: none;">Request Live Demo</a>
+        </div>
+      </div>
+
+      <!-- Col 3: Industries -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Industries</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/industries/dental" style="color: var(--vanni-text-secondary); text-decoration: none;">Dental & Clinics</a>
+          <a href="/industries/healthcare" style="color: var(--vanni-text-secondary); text-decoration: none;">Healthcare & Hospitals</a>
+          <a href="/industries/ivf" style="color: var(--vanni-text-secondary); text-decoration: none;">IVF & Fertility</a>
+          <a href="/industries/hospitality" style="color: var(--vanni-text-secondary); text-decoration: none;">Hospitality & Resorts</a>
+          <a href="/industries/real-estate" style="color: var(--vanni-text-secondary); text-decoration: none;">Real Estate & Layouts</a>
+        </div>
+      </div>
+
+      <!-- Col 4: Enterprise & Contact -->
+      <div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Company & Support</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="/contact" style="color: var(--vanni-text-secondary); text-decoration: none;">Contact Sales</a>
+          <a href="/login" style="color: var(--vanni-text-secondary); text-decoration: none;">Console Sign In</a>
+          <a href="/signup" style="color: var(--vanni-text-secondary); text-decoration: none;">Create Organization</a>
+          <span style="color: var(--vanni-text-muted); font-size: 12px; margin-top: 4px;">Headquarters: Bengaluru, Karnataka</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div style="max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--vanni-border-subdued); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--vanni-text-muted);">
+      <div>
+        &copy; 2026 VANNI Technologies Inc. All rights reserved.
+      </div>
+      <div style="display: flex; gap: 20px;">
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Privacy & Data Isolation</a>
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Terms of Service</a>
+        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Telemetry Policies</a>
+      </div>
+    </div>
+  </footer>
+  
 
     <script>
-    function handleSignup(e) {
+    async function handleSignup(e) {
       e.preventDefault();
+      const submitBtn = document.getElementById('signup-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Creating Organization Tenant...</span>';
+      }
+
+      const fullName = document.getElementById('signup-name').value.trim();
       const company = document.getElementById('signup-company').value.trim();
+      const industry = document.getElementById('signup-industry').value;
       const email = document.getElementById('signup-email').value.trim();
       const phone = document.getElementById('signup-phone').value.trim();
       const password = document.getElementById('signup-pass').value;
 
-      const orgId = 'org_' + Date.now();
-      
-      let industry = 'REAL_ESTATE';
-      const upper = company.toUpperCase();
-      if (upper.includes('HOSPITAL') || upper.includes('CLINIC') || upper.includes('DENTAL') || upper.includes('HEALTH') || upper.includes('CARE') || upper.includes('DOCTOR') || upper.includes('MED')) {
-        industry = 'HEALTHCARE_HOSPITAL';
-      } else if (upper.includes('AGENCY') || upper.includes('MARKETING') || upper.includes('DIGITAL') || upper.includes('MEDIA') || upper.includes('TECH')) {
-        industry = 'AGENCY';
-      } else if (upper.includes('HOTEL') || upper.includes('RESORT') || upper.includes('STAY')) {
-        industry = 'HOSPITALITY';
+      if (!industry) {
+        const err = document.getElementById('industry-error');
+        if (err) err.style.display = 'block';
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Create Account &amp; Access Console</span>';
+        }
+        return;
       }
 
+      const orgId = 'org_' + Date.now();
+      const userId = 'usr_' + Date.now();
+      const tenantKey = industry === 'AGENCY' ? 'agency' : (industry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
+
+      const userObj = {
+        id: userId,
+        email: email,
+        name: fullName || email.split('@')[0],
+        fullName: fullName || email.split('@')[0],
+        phone: phone
+      };
+
       const sessionObj = {
-        user: { id: 'usr_' + Date.now(), email: email, name: email.split('@')[0], phone: phone },
+        userId: userId,
+        email: email,
+        fullName: fullName || email.split('@')[0],
         activeOrganizationId: orgId,
         activeOrganizationName: company,
         role: 'owner',
@@ -1640,16 +1835,64 @@ const signupHtml = `<!DOCTYPE html>
         }]
       };
 
+      // 1. Attempt POST /api/auth/signup with { fullName, organizationName: company, email, phone, password, industry }
+      try {
+        fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName,
+            organizationName: company,
+            email,
+            phone,
+            password,
+            industry
+          })
+        }).catch(err => {
+          console.warn('Backend API signup non-blocking notice (running edge/static):', err);
+        });
+      } catch (err) {
+        console.warn('Signup fetch exception:', err);
+      }
+
+      // 2. Also save the account into a persistent localStorage registry (\`vanni_accounts_db\`, keyed by lowercase email)
+      // containing { user, organizationId, organizationName, industry, phone, email, passwordHash: btoa(password), onboardingCompleted: false, onboardingData: {} }
+      const accountEntry = {
+        user: userObj,
+        organizationId: orgId,
+        organizationName: company,
+        industry: industry,
+        phone: phone,
+        email: email,
+        passwordHash: btoa(password),
+        onboardingCompleted: false,
+        onboardingData: {}
+      };
+
+      try {
+        let accountsDb = {};
+        const rawDb = localStorage.getItem('vanni_accounts_db');
+        if (rawDb) {
+          try { accountsDb = JSON.parse(rawDb) || {}; } catch(e) { accountsDb = {}; }
+        }
+        accountsDb[email.toLowerCase()] = accountEntry;
+        localStorage.setItem('vanni_accounts_db', JSON.stringify(accountsDb));
+      } catch (err) {
+        console.warn('Failed to save to vanni_accounts_db:', err);
+      }
+
+      // 3. Set vanni_session, vanni_user, vanni_org_name, vanni_phone, vanni_email, vanni_industry, and vanni_onboarding_completed = 'false'
       localStorage.setItem('vanni_session', JSON.stringify(sessionObj));
-      localStorage.setItem('vanni_user', JSON.stringify(sessionObj.user));
+      localStorage.setItem('vanni_user', JSON.stringify(userObj));
       localStorage.setItem('vanni_active_tenant', orgId);
-      localStorage.setItem('dhwani_active_tenant', orgId);
+      localStorage.setItem('dhwani_active_tenant', tenantKey);
       localStorage.setItem('vanni_org_name', company);
       localStorage.setItem('vanni_phone', phone);
+      localStorage.setItem('vanni_email', email);
       localStorage.setItem('vanni_industry', industry);
-      localStorage.removeItem('vanni_onboarding_completed');
+      localStorage.setItem('vanni_onboarding_completed', 'false');
 
-      // Forward directly to specialized onboarding wizard!
+      // 4. Redirect to /app/onboarding
       window.location.href = '/app/onboarding';
     }
   </script>

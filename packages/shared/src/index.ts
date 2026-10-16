@@ -2262,3 +2262,38 @@ export interface BillingSnapshotDTO {
   exceededEntities?: string[];
   recentPayments: PaymentRecordDTO[];
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Provider Runtime Safety Policy
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Central policy for provider mock/simulation fallbacks (SMS/telephony,
+ * WhatsApp, TTS/STT, embeddings, payments).
+ *
+ * SAFETY CONTRACT:
+ * A provider must NEVER silently fabricate a successful result. Mocks are an
+ * explicit opt-in for local development and demos, and are forbidden in
+ * production regardless of configuration.
+ *
+ * Enable locally with:  ALLOW_MOCK_PROVIDERS=true
+ */
+export function areMockProvidersAllowed(): boolean {
+  return process.env.NODE_ENV !== 'production' && process.env.ALLOW_MOCK_PROVIDERS === 'true';
+}
+
+/**
+ * Thrown when a provider is invoked without real credentials and mock
+ * fallbacks have not been explicitly enabled. Fail loudly, never fake success.
+ */
+export class ProviderNotConfiguredError extends Error {
+  public readonly provider: string;
+  constructor(provider: string, requiredEnvVars: string[]) {
+    super(
+      `[${provider}] Provider is not configured. Missing: ${requiredEnvVars.join(', ')}. ` +
+        `Set these credentials, or enable simulated providers for local development with ALLOW_MOCK_PROVIDERS=true.`
+    );
+    this.name = 'ProviderNotConfiguredError';
+    this.provider = provider;
+  }
+}

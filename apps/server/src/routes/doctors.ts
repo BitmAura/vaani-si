@@ -5,6 +5,7 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { requireTenantContext } from '../http-auth';
 import { DoctorSchema, AppointmentSchema } from '../../../../packages/core/src/schemas/doctor-schema';
 import { randomUUID } from 'node:crypto';
 
@@ -16,12 +17,9 @@ interface DoctorRouteContext {
 }
 
 function getContext(request: FastifyRequest): DoctorRouteContext {
-  const reqAny = request as any;
-  if (reqAny.user) return reqAny.user as DoctorRouteContext;
-  return {
-    tenantId: (request.query as any)?.tenantId || (request.body as any)?.tenantId || 'a0000000-0000-0000-0000-000000000002',
-    userId: 'usr-dev-system',
-  };
+  // SECURITY: tenant scope is derived solely from the authenticated session.
+  // Client-supplied tenantId query/body params are no longer trusted.
+  return requireTenantContext(request);
 }
 
 /**

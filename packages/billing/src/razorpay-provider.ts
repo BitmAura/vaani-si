@@ -4,6 +4,18 @@
  */
 
 import crypto from 'node:crypto';
+import { areMockProvidersAllowed, ProviderNotConfiguredError } from '@vanni/shared';
+
+/**
+ * Constant-time comparison for hex signatures of arbitrary length.
+ * (crypto.timingSafeEqual throws on length mismatch, so guard first.)
+ */
+function signaturesMatch(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided, 'utf8');
+  const b = Buffer.from(expected, 'utf8');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
 
 export interface RazorpaySubscriptionOptions {
   planId: string;
@@ -80,10 +92,13 @@ export class RazorpayProvider {
    */
   async createSubscription(options: RazorpaySubscriptionOptions): Promise<{ subscriptionId: string; shortUrl: string }> {
     if (!this.keyId || !this.keySecret) {
-      console.warn('[Razorpay] Missing credentials, returning mock subscription');
+      if (!areMockProvidersAllowed()) {
+        throw new ProviderNotConfiguredError('Razorpay', ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']);
+      }
+      console.warn('[Razorpay] Simulating subscription (ALLOW_MOCK_PROVIDERS=true).');
       return {
-        subscriptionId: `sub_mock_${Date.now()}`,
-        shortUrl: `https://rzp.io/i/mock`,
+        subscriptionId: `sub_simulated_${Date.now()}`,
+        shortUrl: `https://rzp.io/i/simulated`,
       };
     }
 
@@ -120,7 +135,10 @@ export class RazorpayProvider {
    */
   async cancelSubscription(subscriptionId: string): Promise<{ success: boolean }> {
     if (!this.keyId || !this.keySecret) {
-      console.warn('[Razorpay] Mock cancel subscription');
+      if (!areMockProvidersAllowed()) {
+        throw new ProviderNotConfiguredError('Razorpay', ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']);
+      }
+      console.warn('[Razorpay] Simulating subscription cancel (ALLOW_MOCK_PROVIDERS=true).');
       return { success: true };
     }
 
@@ -141,20 +159,31 @@ export class RazorpayProvider {
   }
 
   /**
-   * Verify webhook signature for security
+   * Verify a Razorpay webhook signature.
+   *
+   * FAIL-CLOSED: an unconfigured secret rejects the webhook. Payment webhooks
+   * mutate billing state, so an unauthenticated request can never be trusted.
+   * The only exception is an explicit, non-production opt-in for local testing
+   * (ALLOW_UNSIGNED_RAZORPAY=true); it is ignored when NODE_ENV=production.
    */
   verifyWebhookSignature(body: string, signature: string): boolean {
     if (!this.webhookSecret) {
-      console.warn('[Razorpay] Webhook secret not configured');
-      return true; // Skip verification in development
+      if (process.env.NODE_ENV !== 'production' && process.env.ALLOW_UNSIGNED_RAZORPAY === 'true') {
+        console.warn('[Razorpay] ALLOW_UNSIGNED_RAZORPAY=true — accepting unsigned webhook (never in production).');
+        return true;
+      }
+      console.error('[Razorpay] RAZORPAY_WEBHOOK_SECRET is not configured — rejecting webhook (fail-closed).');
+      return false;
     }
+
+    if (!signature) return false;
 
     const expectedSignature = crypto
       .createHmac('sha256', this.webhookSecret)
       .update(body)
       .digest('hex');
 
-    return signature === expectedSignature;
+    return signaturesMatch(signature, expectedSignature);
   }
 
   /**
@@ -216,9 +245,12 @@ export class RazorpayProvider {
    */
   async createOrder(amount: number, currency: string = 'INR'): Promise<{ orderId: string; amount: number }> {
     if (!this.keyId || !this.keySecret) {
-      console.warn('[Razorpay] Mock order creation');
+      if (!areMockProvidersAllowed()) {
+        throw new ProviderNotConfiguredError('Razorpay', ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']);
+      }
+      console.warn('[Razorpay] Simulating order creation (ALLOW_MOCK_PROVIDERS=true).');
       return {
-        orderId: `order_mock_${Date.now()}`,
+        orderId: `order_simulated_${Date.now()}`,
         amount,
       };
     }
@@ -253,15 +285,27 @@ export class RazorpayProvider {
   /**
    * Verify payment signature after checkout
    */
+  /**
+   * Verify the checkout payment signature.
+   *
+   * FAIL-CLOSED: without a key secret nothing can be verified, so nothing is
+   * trusted (never report an unverified payment as captured).
+   */
   verifyPaymentSignature(
     orderId: string,
     paymentId: string,
     signature: string
   ): boolean {
     if (!this.keySecret) {
-      console.warn('[Razorpay] Key secret not configured');
-      return true;
+      if (process.env.NODE_ENV !== 'production' && process.env.ALLOW_UNSIGNED_RAZORPAY === 'true') {
+        console.warn('[Razorpay] ALLOW_UNSIGNED_RAZORPAY=true — accepting unsigned payment (never in production).');
+        return true;
+      }
+      console.error('[Razorpay] RAZORPAY_KEY_SECRET is not configured — rejecting payment (fail-closed).');
+      return false;
     }
+
+    if (!signature) return false;
 
     const body = `${orderId}|${paymentId}`;
     const expectedSignature = crypto
@@ -269,6 +313,6 @@ export class RazorpayProvider {
       .update(body)
       .digest('hex');
 
-    return signature === expectedSignature;
+    return signaturesMatch(signature, expectedSignature);
   }
 }

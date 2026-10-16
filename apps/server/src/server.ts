@@ -30,6 +30,7 @@ import {
   requireOrganizationMember,
   requireOrganizationRole,
   requirePermission,
+  ForbiddenError,
 } from '@vanni/auth';
 import {
   AuthSessionDTO,
@@ -205,8 +206,22 @@ export async function buildServer() {
     },
   });
 
+  // SECURITY: explicit origin allowlist. Never reflect an arbitrary Origin while
+  // credentials are enabled — that would let any third-party site read responses
+  // from authenticated APIs using the victim's session cookie.
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:4100,http://localhost:4200')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   await fastify.register(cors, {
-    origin: true,
+    origin: (origin, cb) => {
+      // Same-origin / server-to-server requests send no Origin header.
+      if (!origin || allowedOrigins.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error(`CORS: Origin ${origin} is not allowed`), false);
+      }
+    },
     credentials: true,
   });
 
@@ -218,6 +233,18 @@ export async function buildServer() {
   });
 
   await fastify.register(websocket);
+
+  // SECURITY: centralized error handler. Authorization helpers throw AuthError
+  // subclasses carrying a `statusCode`; map them to clean responses and never
+  // leak stack traces or provider internals to clients.
+  fastify.setErrorHandler((err, request, reply) => {
+    const statusCode = (err as any)?.statusCode || 500;
+    if (statusCode >= 500) {
+      request.log.error(err, '[Unhandled Server Error]');
+      return reply.status(statusCode).send({ error: 'Internal server error' });
+    }
+    return reply.status(statusCode).send({ error: err.message, code: (err as any)?.code });
+  });
 
   // Register vertical route plugins & ported REST modules
   await fastify.register(agencyRoutes);
@@ -456,14 +483,33 @@ export async function buildServer() {
       const payload = request.body as any;
       fastify.log.info({ payload }, '[Meta Lead Ad Webhook Received]');
 
-      // 1. Verify x-hub-signature-256 against raw request body when META_APP_SECRET is set
+      // SECURITY: signature verification is MANDATORY and fail-closed. With no
+      // configured secret we refuse the request rather than silently accepting
+      // unsigned payloads (which previously allowed unauthenticated call dispatch
+      // / toll fraud). An explicit non-production opt-in allows local testing only.
+      const metaSecret = process.env.META_APP_SECRET;
       const signature = request.headers['x-hub-signature-256'] as string;
-      if (process.env.META_APP_SECRET && signature) {
+      const allowUnsigned =
+        process.env.NODE_ENV !== 'production' && process.env.META_WEBHOOK_ALLOW_UNSIGNED === 'true';
+
+      if (allowUnsigned) {
+        fastify.log.warn('[Meta Lead Webhook] Unsigned webhook accepted (META_WEBHOOK_ALLOW_UNSIGNED=true, non-production only)');
+      } else if (!metaSecret) {
+        fastify.log.error('[Meta Lead Webhook] META_APP_SECRET is not configured — rejecting webhook (fail-closed)');
+        return reply.status(503).send({
+          error: 'WEBHOOK_NOT_CONFIGURED',
+          message: 'Meta app secret is not configured; refusing to process unsigned lead webhook.',
+        });
+      } else {
+        if (!signature) {
+          fastify.log.warn('[Meta Lead Webhook] Missing x-hub-signature-256 header');
+          return reply.status(401).send({ error: 'UNAUTHORIZED_WEBHOOK' });
+        }
         const rawBody = typeof request.body === 'string' ? request.body : JSON.stringify(request.body || {});
-        const hmac = crypto.createHmac('sha256', process.env.META_APP_SECRET);
-        hmac.update(rawBody);
-        const expectedSignature = `sha256=${hmac.digest('hex')}`;
-        if (signature !== expectedSignature) {
+        const expectedSignature = `sha256=${crypto.createHmac('sha256', metaSecret).update(rawBody).digest('hex')}`;
+        const sigBuf = Buffer.from(signature);
+        const expectedBuf = Buffer.from(expectedSignature);
+        if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
           fastify.log.error('Meta Webhook Signature mismatch - Potential Hijack');
           return reply.status(401).send({ error: 'UNAUTHORIZED_WEBHOOK' });
         }
@@ -617,64 +663,22 @@ export async function buildServer() {
 
   // 1.5 POST /api/auth/switch-org: Safely switch active organization
   fastify.post('/api/auth/switch-org', async (request, reply) => {
-    let session = getSessionFromRequest(request);
+    const session = getSessionFromRequest(request);
     const { organizationId } = (request.body as { organizationId: string }) || {};
     if (!organizationId) {
       return reply.status(400).send({ error: 'organizationId is required' });
     }
 
+    // SECURITY: switching organizations requires an authenticated session that is
+    // already an ACTIVE member of the target organization. We never fabricate a
+    // session for anonymous callers, and we never auto-grant membership to an
+    // arbitrary organization (that was an unauthenticated privilege-escalation path).
     if (!session) {
-      // In demo/unauthenticated mode, provide a valid workspace session
-      session = {
-        userId: 'u0000000-0000-0000-0000-000000000001',
-        email: 'admin@vanni.ai',
-        fullName: 'VANNI Administrator',
-        activeOrganizationId: organizationId,
-        activeRole: 'ADMIN',
-        memberships: [
-          {
-            organizationId: 'a0000000-0000-0000-0000-000000000001',
-            organizationName: 'Ballari Residential Layouts',
-            organizationSlug: 'ballari-plots',
-            role: 'OWNER',
-            status: 'ACTIVE',
-            onboardingStatus: 'ready',
-          },
-          {
-            organizationId: 'a0000000-0000-0000-0000-000000000002',
-            organizationName: 'Apollo Specialty Clinic',
-            organizationSlug: 'apollo-clinic',
-            role: 'OWNER',
-            status: 'ACTIVE',
-            onboardingStatus: 'ready',
-          },
-          {
-            organizationId: 'a0000000-0000-0000-0000-000000000003',
-            organizationName: 'Apex Growth Marketing Agency',
-            organizationSlug: 'apex-agency',
-            role: 'OWNER',
-            status: 'ACTIVE',
-            onboardingStatus: 'ready',
-          },
-        ],
-
-      };
-    } else {
-      const targetOrg = await globalDb.getOrganizationById(organizationId);
-      if (!session.memberships.some(m => m.organizationId === organizationId) && targetOrg) {
-        session.memberships.push({
-          organizationId: targetOrg.id,
-          organizationName: targetOrg.name,
-          organizationSlug: targetOrg.slug,
-          role: session.activeRole || 'ADMIN',
-          status: 'ACTIVE',
-          onboardingStatus: targetOrg.onboardingStatus || 'ready',
-        });
-      }
+      return reply.status(401).send({ error: 'Authentication required to switch organization.' });
     }
 
     try {
-      const updated = switchActiveOrganization(session!, organizationId);
+      const updated = switchActiveOrganization(session, organizationId);
       const token = serializeSession(updated);
       reply.setCookie(SESSION_COOKIE_NAME, token, DEFAULT_COOKIE_OPTIONS);
       return reply.send({ success: true, session: updated });
@@ -707,8 +711,10 @@ export async function buildServer() {
 
   // 1.7b GET /api/organization: Current org details (used by frontend dashboard)
   fastify.get('/api/organization', async (request, reply) => {
-    const session = getSessionFromRequest(request);
-    const orgId = session?.activeOrganizationId || (request.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    // SECURITY: tenant scope is derived solely from the authenticated session.
+    // The client-supplied x-organization-id header is no longer trusted.
+    const session = requireUser(getSessionFromRequest(request));
+    const orgId = session.activeOrganizationId;
     const org = await globalDb.getOrganizationById(orgId) || {
       id: orgId,
       name: 'Ballari Residential Layouts',
@@ -799,9 +805,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     try {
       const brain = await globalBusinessBrainService.getBusinessBrain(orgId);
@@ -816,9 +821,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     try {
       let snapshot = await globalDb.getLatestSnapshot(orgId);
@@ -836,9 +840,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const snapshot = await globalBusinessBrainService.compileSnapshot(orgId);
@@ -854,9 +857,8 @@ export async function buildServer() {
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
     const q = (request.query as any)?.q || '';
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     const result = await globalBusinessBrainService.searchBusinessKnowledge(orgId, q);
     return reply.send({ success: true, query: q, result });
@@ -867,9 +869,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = CreateLocationInputSchema.parse(request.body);
@@ -893,9 +894,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = CreateServiceInputSchema.parse(request.body);
@@ -920,9 +920,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = CreateStaffInputSchema.parse(request.body);
@@ -948,9 +947,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'ADMIN');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'ADMIN');
 
     try {
       const parsed = CreatePolicyInputSchema.parse(request.body);
@@ -975,9 +973,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = CreateFAQInputSchema.parse(request.body);
@@ -1003,9 +1000,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = CreateFactInputSchema.parse(request.body);
@@ -1031,9 +1027,8 @@ export async function buildServer() {
     const { resolvedValue, organizationId } = (request.body as any) || {};
     const orgId = organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'ADMIN');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'ADMIN');
 
     await globalDb.resolveConflict(id, resolvedValue || 'Resolved by Administrator', orgId);
     return reply.send({ success: true, message: 'Conflict marked resolved' });
@@ -1048,9 +1043,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     const sources = await globalDb.getKnowledgeSources(orgId);
     return reply.send({ success: true, sources });
@@ -1061,9 +1055,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = CreateSourceInputSchema.parse(request.body);
@@ -1088,9 +1081,8 @@ export async function buildServer() {
     const { id } = request.params as { id: string };
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     const sources = await globalDb.getKnowledgeSources(orgId);
     const source = sources.find(s => s.id === id);
@@ -1112,9 +1104,8 @@ export async function buildServer() {
     const { id } = request.params as { id: string };
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'ADMIN');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'ADMIN');
 
     const sources = await globalDb.getKnowledgeSources(orgId);
     const source = sources.find(s => s.id === id);
@@ -1140,9 +1131,8 @@ export async function buildServer() {
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
     const sourceId = (request.query as any)?.sourceId;
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     const documents = await globalDb.getDocuments(orgId, sourceId);
     return reply.send({ success: true, documents });
@@ -1154,9 +1144,8 @@ export async function buildServer() {
     const { id } = request.params as { id: string };
     const orgId = (request.query as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     const doc = await globalDb.getDocumentById(id, orgId);
     if (!doc) {
@@ -1172,9 +1161,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const body = request.body as any;
@@ -1252,9 +1240,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = IngestWebsiteInputSchema.parse(request.body);
@@ -1313,9 +1300,8 @@ export async function buildServer() {
     const session = getSessionFromRequest(request);
     const orgId = (request.body as any)?.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationRole(session, orgId, 'MANAGER');
-    }
+    requireUser(session);
+    requireOrganizationRole(session, orgId, 'MANAGER');
 
     try {
       const parsed = CreateManualArticleInputSchema.parse(request.body);
@@ -1356,9 +1342,8 @@ export async function buildServer() {
     const body = (request.body || {}) as any;
     const orgId = body.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-    if (session) {
-      requireOrganizationMember(session, orgId);
-    }
+    requireUser(session);
+    requireOrganizationMember(session, orgId);
 
     try {
       const parsed = QueryKnowledgeInputSchema.parse(body);
@@ -1381,32 +1366,23 @@ export async function buildServer() {
 
   // Helper: Enforce tenant access and optionally check required role
   function getEffectiveOrgAndUserId(request: FastifyRequest, requireRole?: UserRole[]): { orgId: string; userId: string } {
-    const session = getSessionFromRequest(request);
-    const bodyOrgId = (request.body as any)?.organizationId;
-    const queryOrgId = (request.query as any)?.organizationId;
-    const explicitOrgId = bodyOrgId || queryOrgId;
+    // SECURITY: no unauthenticated fallback. Tenant scope comes solely from the
+    // authenticated session; an explicit organizationId is honored only when the
+    // user is an ACTIVE member of it (enforced by requireOrganizationMember).
+    const session = requireUser(getSessionFromRequest(request));
+    const explicitOrgId = (request.body as any)?.organizationId || (request.query as any)?.organizationId;
+    const orgId = explicitOrgId || session.activeOrganizationId;
 
-    if (session) {
-      const orgId = explicitOrgId || session.activeOrganizationId;
-      requireOrganizationMember(session, orgId);
-      if (requireRole && requireRole.length > 0) {
-        const member = session.memberships.find(m => m.organizationId === orgId);
-        if (!member || !requireRole.includes(member.role)) {
-          throw new Error(`Forbidden: Action requires one of roles [${requireRole.join(', ')}]`);
-        }
+    requireOrganizationMember(session, orgId);
+
+    if (requireRole && requireRole.length > 0) {
+      const member = session.memberships.find(m => m.organizationId === orgId);
+      if (!member || !requireRole.includes(member.role)) {
+        throw new ForbiddenError(`Action requires one of roles [${requireRole.join(', ')}]`);
       }
-      return { orgId, userId: session.userId };
     }
 
-    // Unauthenticated dev / local test fallback
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Unauthorized: Authentication session required in production mode');
-    }
-
-    return {
-      orgId: explicitOrgId || 'a0000000-0000-0000-0000-000000000001',
-      userId: 'usr-dev-system',
-    };
+    return { orgId, userId: session.userId };
   }
 
   // GET /api/agents — List all AI Employees for an Organization
@@ -1663,9 +1639,8 @@ export async function buildServer() {
       const session = getSessionFromRequest(request);
       const orgId = parsed.organizationId || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
 
-      if (session) {
-        requireOrganizationMember(session, orgId);
-      }
+      requireUser(session);
+      requireOrganizationMember(session, orgId);
 
       // 1. Resolve Business Brain Snapshot
       let brainSnapshot = null;
@@ -1965,29 +1940,27 @@ export async function buildServer() {
 
   // 2.2 Live Call Logs (CRM Data Feed with Tenant Isolation Enforcement)
   fastify.get('/api/calls', async (request, reply) => {
-    const session = getSessionFromRequest(request);
+    // SECURITY: no unauthenticated read path and no hardcoded "benchmark tenant"
+    // bypass. A caller may only read calls for an organization they are an ACTIVE
+    // member of; an optional ?tenant= must resolve to one of their own memberships
+    // (by organization id or slug).
+    const session = requireUser(getSessionFromRequest(request));
     const q = request.query as { tenant?: string };
-    const targetTenant = q?.tenant || session?.activeOrganizationId || 'a0000000-0000-0000-0000-000000000001';
+    const requested = q?.tenant;
 
-    // Strict Tenant Isolation:
-    // If authenticated, caller can only access calls of an organization they are an active member of!
-    if (session) {
-      const isMember = session.memberships.some(
-        (m) => m.organizationId === targetTenant || m.organizationSlug === targetTenant
+    let targetTenant = session.activeOrganizationId;
+    if (requested) {
+      const membership = session.memberships.find(
+        (m) => m.organizationId === requested || m.organizationSlug === requested
       );
-      if (!isMember) {
-        // If switching between benchmark tenants in demo workspace, grant access
-        const isBenchmark = targetTenant.startsWith('a0000000-0000-0000-0000-00000000000') || ['real_estate', 'hospital', 'agency'].includes(targetTenant);
-        if (!isBenchmark) {
-          return reply.status(403).send({
-            error: 'Cross-tenant access forbidden. You are not a member of this organization.',
-          });
-        }
+      if (!membership || membership.status !== 'ACTIVE') {
+        return reply.status(403).send({
+          error: 'Cross-tenant access forbidden. You are not a member of this organization.',
+        });
       }
-      return db.getAllCalls(targetTenant);
+      targetTenant = membership.organizationId;
     }
 
-    // In demo/benchmark mode, serve tenant call records
     return db.getAllCalls(targetTenant);
   });
 

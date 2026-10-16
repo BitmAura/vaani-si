@@ -7,6 +7,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createClient } from '@supabase/supabase-js';
 import { PlotSchema, PlotImportRowSchema } from '../../../../packages/core/src/schemas/plot-schema';
+import { requireTenantContext } from '../http-auth';
 import { randomUUID } from 'node:crypto';
 
 const uuidv4 = randomUUID;
@@ -61,12 +62,9 @@ interface PlotRouteContext {
 }
 
 function getContext(request: FastifyRequest): PlotRouteContext {
-  const reqAny = request as any;
-  if (reqAny.user) return reqAny.user as PlotRouteContext;
-  return {
-    tenantId: (request.query as any)?.tenantId || (request.body as any)?.tenantId || 'a0000000-0000-0000-0000-000000000001',
-    userId: 'usr-dev-system',
-  };
+  // SECURITY: tenant scope is derived solely from the authenticated session.
+  // Client-supplied tenantId query/body params are no longer trusted.
+  return requireTenantContext(request);
 }
 
 /**
