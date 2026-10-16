@@ -284,13 +284,15 @@
               </div>
             </button>
 
-            <button onclick="selectTenant('agency')" class="w-full p-2 rounded-md hover:bg-[#F5F7FA] text-left transition-colors flex items-center space-x-2.5 border border-transparent hover:border-[#D9D9D9] cursor-pointer">
-              <div class="w-7 h-7 rounded-md bg-[#F9F0FF] border border-[#D3ADF7] text-[#722ED1] flex items-center justify-center font-bold text-xs shrink-0">🚀</div>
-              <div class="truncate">
-                <div class="font-bold text-[#22075E] text-xs">Apex Growth Marketing Agency</div>
-                <div class="text-[10px] text-[#8C8C8C] font-mono">Digital Marketer • +91 80 4719 2000</div>
-              </div>
-            </button>
+            <!-- Profile & Onboarding Actions inside Tenant Menu -->
+            <div class="border-t border-[#F0F0F0] pt-1.5 mt-1 space-y-1">
+              <button onclick="openProfileModal(); toggleTenantDropdown();" class="w-full px-2.5 py-1.5 rounded-md hover:bg-[#F5F7FA] text-left transition-colors flex items-center space-x-2 text-xs text-[#595959] hover:text-[#1890FF] font-medium cursor-pointer">
+                <span>✏️ Edit Organization &amp; Profile</span>
+              </button>
+              <a href="/app/onboarding" class="w-full px-2.5 py-1.5 rounded-md hover:bg-[#F5F7FA] text-left transition-colors flex items-center space-x-2 text-xs text-[#595959] hover:text-[#1890FF] font-medium cursor-pointer no-underline block">
+                <span>🔄 Re-run Industry Onboarding</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -344,12 +346,29 @@
               <span class="ml-auto w-2 h-2 rounded-full bg-[#52C41A]"></span>
             </button>
 
-            <a href="/app-knowledge.html" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-md text-[#595959] hover:text-[#1890FF] hover:bg-[#F5F7FA] text-left transition-all">
+            <a href="/app/knowledge" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-md text-[#595959] hover:text-[#1890FF] hover:bg-[#F5F7FA] text-left transition-all">
               <svg class="w-4 h-4 text-[#1890FF] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
               </svg>
               <span class="truncate font-medium">Knowledge Brain</span>
               <span class="ml-auto w-2 h-2 rounded-full bg-[#1890FF]"></span>
+            </a>
+
+            <a href="/app/agents" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-md text-[#595959] hover:text-[#1890FF] hover:bg-[#F5F7FA] text-left transition-all">
+              <svg class="w-4 h-4 text-[#722ED1] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+              <span class="truncate font-medium">AI Employee Builder</span>
+              <span class="ml-auto px-1.5 py-0.5 rounded bg-[#F9F0FF] text-[#722ED1] border border-[#D3ADF7] text-[9px] font-mono font-bold">Agents</span>
+            </a>
+
+            <a href="/app/onboarding" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-md text-[#595959] hover:text-[#1890FF] hover:bg-[#F5F7FA] text-left transition-all">
+              <svg class="w-4 h-4 text-[#D46B08] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span class="truncate font-medium">Industry Setup Wizard</span>
+              <span class="ml-auto px-1.5 py-0.5 rounded bg-[#FFF7E6] text-[#D46B08] border border-[#FFD591] text-[9px] font-mono font-bold">Setup</span>
             </a>
 
             <button onclick="switchTab('voice-lab')" id="nav-tab-voice-lab" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-md text-[#595959] hover:text-[#1890FF] hover:bg-[#F5F7FA] text-left transition-all cursor-pointer">
@@ -438,17 +457,20 @@
 
     <!-- User Profile & Sign Out Footer -->
     <div class="p-3 border-t border-[#EDF0F5] bg-[#FAFAFA]">
-      <div class="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#D9D9D9] flex items-center justify-between shadow-2xs">
-        <div class="flex items-center space-x-2.5 truncate">
-          <div class="w-7 h-7 rounded-full bg-[#E6F7FF] text-[#1890FF] border border-[#91D5FF] flex items-center justify-center font-bold text-xs shrink-0 font-sans shadow-2xs">
+      <div class="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#D9D9D9] flex items-center justify-between shadow-2xs hover:border-[#1890FF] transition-all">
+        <div onclick="openProfileModal()" class="flex items-center space-x-2.5 truncate cursor-pointer group flex-1" title="Click to view &amp; edit organization profile">
+          <div id="user-avatar" class="w-7 h-7 rounded-full bg-[#E6F7FF] text-[#1890FF] border border-[#91D5FF] flex items-center justify-center font-bold text-xs shrink-0 font-sans shadow-2xs group-hover:scale-105 transition-transform">
             AD
           </div>
           <div class="truncate">
-            <div id="user-name" class="font-bold text-xs text-[#262626] truncate">Administrator</div>
-            <div id="user-role-badge" class="text-[10px] text-[#8C8C8C] font-mono font-medium truncate">SOVEREIGN ROOT</div>
+            <div class="flex items-center space-x-1.5">
+              <span id="user-name" class="font-bold text-xs text-[#262626] truncate">Administrator</span>
+              <span class="text-[9px] bg-[#E6F7FF] text-[#1890FF] font-semibold px-1 py-0.2 rounded border border-[#91D5FF] shrink-0">Edit</span>
+            </div>
+            <div id="user-role-badge" class="text-[10px] text-[#8C8C8C] font-mono font-medium truncate">ORGANIZATION OWNER</div>
           </div>
         </div>
-        <button onclick="handleConsoleLogout()" title="Sign Out" class="text-[#8C8C8C] hover:text-[#FF4D4F] p-1.5 rounded hover:bg-[#FFF1F0] transition-colors cursor-pointer">
+        <button onclick="handleConsoleLogout()" title="Sign Out" class="text-[#8C8C8C] hover:text-[#FF4D4F] p-1.5 rounded hover:bg-[#FFF1F0] transition-colors cursor-pointer shrink-0 ml-1">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
@@ -475,7 +497,7 @@
         <span id="page-title-text" class="text-[#22075E] font-bold text-sm flex items-center space-x-1.5">
           <span>Call Operations</span>
           <span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block"></span>
-        <
+        </span>
       </div>
 
       <!-- Quick Actions Bar (Clean Enterprise IDURAR Standard) -->
@@ -499,6 +521,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
           </svg>
           <span id="btn-mic-test-label">Test Persona (Mic)</span>
+        </button>
+
+        <button onclick="openProfileModal()" class="px-3.5 py-1.5 rounded-md bg-[#FFFFFF] hover:bg-[#FAFAFA] border border-[#D9D9D9] text-xs font-semibold text-[#262626] hover:text-[#1890FF] transition-all flex items-center space-x-1.5 shadow-2xs cursor-pointer" title="Edit Profile &amp; Organization Settings">
+          <span>⚙️ Profile &amp; Org Settings</span>
         </button>
       </div>
 
@@ -627,7 +653,7 @@
             </div>
             <div class="flex items-center space-x-2">
               <span class="w-2 h-2 rounded-full bg-[#52C41A]"></span>
-              <span>Audio Stream: <span class="text-[#52C41A] font-semibold">Opus/G.711 PCMA 8kHz<<
+              <span>Audio Stream: <span class="text-[#52C41A] font-semibold">Opus/G.711 PCMA 8kHz</span></span>
             </div>
           </div>
         </div>
@@ -658,7 +684,7 @@
             <span class="font-bold text-xs text-[#22075E] flex items-center space-x-1.5">
               <span class="w-2 h-2 rounded-full bg-[#52C41A]"></span>
               <span>Site Visit Confirmed (0)</span>
-            <
+            </span>
           </div>
           <div class="space-y-2.5" id="cards-confirmed"></div>
         </div>
@@ -668,7 +694,7 @@
             <span class="font-bold text-xs text-[#22075E] flex items-center space-x-1.5">
               <span class="w-2 h-2 rounded-full bg-[#FAAD14]"></span>
               <span>Brochure Sent / Follow-up (0)</span>
-            <
+            </span>
           </div>
           <div class="space-y-2.5" id="cards-followup"></div>
         </div>
@@ -678,7 +704,7 @@
             <span class="font-bold text-xs text-[#22075E] flex items-center space-x-1.5">
               <span class="w-2 h-2 rounded-full bg-[#8C8C8C]"></span>
               <span>Disqualified / Below Budget (0)</span>
-            <
+            </span>
           </div>
           <div class="space-y-2.5" id="cards-disqualified"></div>
         </div>
@@ -826,7 +852,7 @@
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          <span>Sync All Leads Across CRMs</span>
+          <span>Sync All Leads Across CRMs</span>/span>
         </button>
       </div>
 
@@ -1380,7 +1406,7 @@
             <span class="text-[11px] font-bold text-[#8C8C8C] uppercase tracking-wider font-mono">Voice Minutes</span>
             <span id="billing-hud-minutes-pct" class="text-[10px] font-mono font-bold text-[#1890FF]">10% Used</span>
           </div>
-          <div class="text-xl font-bold font-mono text-[#22075E] mt-1"><span id="billing-hud-minutes-used">248< / <span id="billing-hud-minutes-max">2,500< <span class="text-xs font-normal text-[#8C8C8C]">min<</div>
+          <div class="text-xl font-bold font-mono text-[#22075E] mt-1"><span id="billing-hud-minutes-used">248</span> / <span id="billing-hud-minutes-max">2,500</span> <span class="text-xs font-normal text-[#8C8C8C]">min</span></div>
           <div class="w-full bg-[#F0F0F0] h-1.5 rounded-full overflow-hidden mt-2">
             <div id="billing-hud-minutes-bar" class="bg-[#1890FF] h-full transition-all" style="width: 10%;"></div>
           </div>
@@ -1389,7 +1415,7 @@
 
         <div class="p-4 rounded-lg bg-[#FFFFFF] border border-[#E0E0E0] shadow-2xs">
           <div class="text-[11px] font-bold text-[#8C8C8C] uppercase tracking-wider font-mono">Active AI Employees</div>
-          <div class="text-xl font-bold font-mono text-[#22075E] mt-1"><span id="billing-hud-agents-count">1< / <span id="billing-hud-agents-max">3< <span class="text-xs font-normal text-[#8C8C8C]">Roles<</div>
+          <div class="text-xl font-bold font-mono text-[#22075E] mt-1"><span id="billing-hud-agents-count">1</span> / <span id="billing-hud-agents-max">3</span> <span class="text-xs font-normal text-[#8C8C8C]">Roles</span></div>
           <div class="text-xs text-[#52C41A] font-medium mt-1">Regional Kannada & Kanglish</div>
         </div>
 
@@ -1415,7 +1441,7 @@
             <div>
               <div class="font-bold text-base text-[#22075E]">Starter</div>
               <div class="text-xs text-[#8C8C8C] mb-3">Independent clinics & single offices</div>
-              <div class="text-3xl font-extrabold font-mono text-[#262626] mb-3">₹4,999<span class="text-xs font-normal text-[#8C8C8C]">/mo<</div>
+              <div class="text-3xl font-extrabold font-mono text-[#262626] mb-3">₹4,999<span class="text-xs font-normal text-[#8C8C8C]">/mo</span></div>
               <div class="space-y-1.5 text-xs text-[#595959] mb-4">
                 <div>✓ 1 Autonomous AI Employee</div>
                 <div>✓ 600 Minutes included</div>
@@ -1437,7 +1463,7 @@
             <div>
               <div class="font-bold text-base text-[#1890FF]">Growth</div>
               <div class="text-xs text-[#8C8C8C] mb-3">Hospitals, busy clinics & real estate teams</div>
-              <div class="text-3xl font-extrabold font-mono text-[#262626] mb-3">₹14,999<span class="text-xs font-normal text-[#8C8C8C]">/mo<</div>
+              <div class="text-3xl font-extrabold font-mono text-[#262626] mb-3">₹14,999<span class="text-xs font-normal text-[#8C8C8C]">/mo</span></div>
               <div class="space-y-1.5 text-xs text-[#595959] mb-4">
                 <div>✓ Up to 3 AI Employees</div>
                 <div>✓ 2,500 Minutes included</div>
@@ -1457,7 +1483,7 @@
             <div>
               <div class="font-bold text-base text-[#22075E]">Agency / Scale</div>
               <div class="text-xs text-[#8C8C8C] mb-3">Digital marketing agencies & hospital chains</div>
-              <div class="text-3xl font-extrabold font-mono text-[#262626] mb-3">₹29,999<span class="text-xs font-normal text-[#8C8C8C]">/mo<</div>
+              <div class="text-3xl font-extrabold font-mono text-[#262626] mb-3">₹29,999<span class="text-xs font-normal text-[#8C8C8C]">/mo</span></div>
               <div class="space-y-1.5 text-xs text-[#595959] mb-4">
                 <div>✓ Up to 10 AI Employees</div>
                 <div>✓ 6,000 Minutes included</div>
@@ -1499,7 +1525,7 @@
               <td class="py-3 px-4 font-medium">Growth Plan (Monthly)</td>
               <td class="py-3 px-4 font-mono font-bold text-[#262626]">₹14,999.00</td>
               <td class="py-3 px-4 font-mono text-[11px] text-[#8C8C8C]">pay_rzp_live_948271</td>
-              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-[#F6FFED] text-[#389E0D] border border-[#B7EB8F] text-[10px] font-bold">PAID<</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-[#F6FFED] text-[#389E0D] border border-[#B7EB8F] text-[10px] font-bold">PAID</span></td>
               <td class="py-3 px-4 text-[#8C8C8C]">Oct 15, 2026</td>
               <td class="py-3 px-4 text-right"><button onclick="alert('Downloading GST Invoice INV-2026-1001.pdf')" class="text-[#1890FF] hover:underline font-medium">Download</button></td>
             </tr>
@@ -1549,15 +1575,15 @@
           <h3 class="text-xs font-bold text-[#22075E] uppercase tracking-wider font-mono">Dialect Accuracy & Code-Switching</h3>
           <div class="space-y-3 text-xs">
             <div>
-              <div class="flex justify-between mb-1 font-medium"><span>Kannada Natural Dialect<<span class="text-[#1890FF] font-bold">98.4%<</div>
+              <div class="flex justify-between mb-1 font-medium"><span>Kannada Natural Dialect</span><span class="text-[#1890FF] font-bold">98.4%</span></div>
               <div class="w-full bg-[#F0F0F0] h-2 rounded-full overflow-hidden"><div class="bg-[#1890FF] h-full" style="width: 98.4%;"></div></div>
             </div>
             <div>
-              <div class="flex justify-between mb-1 font-medium"><span>Kanglish (Kannada-English Code Switch)<<span class="text-[#52C41A] font-bold">99.1%<</div>
+              <div class="flex justify-between mb-1 font-medium"><span>Kanglish (Kannada-English Code Switch)</span><span class="text-[#52C41A] font-bold">99.1%</span></div>
               <div class="w-full bg-[#F0F0F0] h-2 rounded-full overflow-hidden"><div class="bg-[#52C41A] h-full" style="width: 99.1%;"></div></div>
             </div>
             <div>
-              <div class="flex justify-between mb-1 font-medium"><span>Price & Appointment Intent Extraction<<span class="text-[#722ED1] font-bold">97.6%<</div>
+              <div class="flex justify-between mb-1 font-medium"><span>Price & Appointment Intent Extraction</span><span class="text-[#722ED1] font-bold">97.6%</span></div>
               <div class="w-full bg-[#F0F0F0] h-2 rounded-full overflow-hidden"><div class="bg-[#722ED1] h-full" style="width: 97.6%;"></div></div>
             </div>
           </div>
@@ -1565,7 +1591,7 @@
 
         <div class="p-5 rounded-lg bg-[#FFFFFF] border border-[#E0E0E0] shadow-2xs space-y-3">
           <h3 class="text-xs font-bold text-[#22075E] uppercase tracking-wider font-mono">Speed-to-Lead Response Time</h3>
-          <div class="text-3xl font-extrabold font-mono text-[#52C41A]">7.4 <span class="text-sm font-normal text-[#8C8C8C]">seconds avg<</div>
+          <div class="text-3xl font-extrabold font-mono text-[#52C41A]">7.4 <span class="text-sm font-normal text-[#8C8C8C]">seconds avg</span></div>
           <p class="text-xs text-[#8C8C8C]">From Facebook/Google Ad submit to customer phone ringing with Sahana.</p>
           <div class="p-3 rounded bg-[#F6FFED] border border-[#B7EB8F] text-[11px] text-[#389E0D] font-medium">
             ★ 68% higher lead conversion compared to 24-hour manual sales team callbacks.
@@ -1613,7 +1639,7 @@
               <td class="py-3 px-4">30x40 East Facing Plot Site Visit</td>
               <td class="py-3 px-4 font-medium text-[#1890FF]">This Sunday, 10:30 AM</td>
               <td class="py-3 px-4">Siruguppa Road Bypass (Complimentary Cab)</td>
-              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-[#F6FFED] text-[#389E0D] border border-[#B7EB8F] text-[10px] font-bold">CONFIRMED<</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-[#F6FFED] text-[#389E0D] border border-[#B7EB8F] text-[10px] font-bold">CONFIRMED</span></td>
               <td class="py-3 px-4 text-right"><button onclick="alert('Cab dispatched via WhatsApp to driver!')" class="text-[#1890FF] hover:underline font-medium">Dispatch Cab</button></td>
             </tr>
             <tr>
@@ -1622,7 +1648,7 @@
               <td class="py-3 px-4">Cardiology Consultation OPD</td>
               <td class="py-3 px-4 font-medium text-[#1890FF]">Tomorrow, 4:00 PM</td>
               <td class="py-3 px-4">Apollo Clinic Room 204 (Dr. Ramesh)</td>
-              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-[#F6FFED] text-[#389E0D] border border-[#B7EB8F] text-[10px] font-bold">BOOKED<</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-[#F6FFED] text-[#389E0D] border border-[#B7EB8F] text-[10px] font-bold">BOOKED</span></td>
               <td class="py-3 px-4 text-right"><button onclick="alert('Appointment details resent to WhatsApp!')" class="text-[#1890FF] hover:underline font-medium">Resend SMS</button></td>
             </tr>
           </tbody>
@@ -1665,7 +1691,7 @@
           <span class="flex items-center space-x-1.5">
             <span class="w-2 h-2 rounded-full bg-[#52C41A] animate-pulse"></span>
             <span class="text-[#262626] font-semibold">EXOTEL SIP RECORDING (8kHz)</span>
-          <
+          </span>
           <span id="d-dur" class="font-bold text-[#262626] font-mono">1m 24s</span>
         </div>
 
@@ -1683,7 +1709,7 @@
               </svg>
             </button>
             <div class="font-mono text-xs text-[#262626]">
-              <span id="d-cur-time" class="font-bold text-[#1890FF]">0:00< / <span id="d-tot-time" class="text-[#8C8C8C]">1:24</span>
+              <span id="d-cur-time" class="font-bold text-[#1890FF]">0:00</span> / <span id="d-tot-time" class="text-[#8C8C8C]">1:24</span>
             </div>
           </div>
 
@@ -1737,7 +1763,7 @@
               <path d="M12 2C6.48 2 2 6.48 2 12c0 2.17.7 4.19 1.9 5.86L2.6 22l4.28-1.28C8.36 21.49 10.13 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.72 0-3.32-.47-4.71-1.3l-.34-.2-2.82.84.86-2.73-.22-.36C3.86 14.88 3.4 13.5 3.4 12c0-4.74 3.86-8.6 8.6-8.6s8.6 3.86 8.6 8.6-3.86 8.6-8.6 8.6z"/>
             </svg>
             <span>WHATSAPP LEAD DISPATCH</span>
-          <
+          </span>
           <span class="text-[11px] text-[#52C41A] font-semibold">3s Post-Call</span>
         </div>
         <div id="d-wa-text" class="text-[#262626] whitespace-pre-wrap p-3 rounded-md bg-[#FFFFFF] border border-[#B7EB8F] font-sans"></div>
@@ -1749,7 +1775,7 @@
           <span class="text-[#1890FF] font-bold flex items-center space-x-1.5">
             <span class="w-2 h-2 rounded-full bg-[#1890FF] animate-pulse"></span>
             <span>ENTERPRISE LEAD DISPATCH</span>
-          <
+          </span>
           <span class="ant-tag ant-tag-blue text-[10px]">Auto-Sync Active</span>
         </div>
         <button onclick="syncCurrentCallToStack()" id="btn-sync-drawer" class="w-full py-2.5 px-3 rounded-md bg-[#1890FF] hover:bg-[#40A9FF] text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-2xs transition-all cursor-pointer">
@@ -2040,7 +2066,7 @@
             <span class="font-bold text-sm text-[#22075E] flex items-center space-x-1.5">
               <span>🏢</span>
               <span>Real Estate Developers</span>
-            <
+            </span>
             <span class="ant-tag ant-tag-blue font-bold">Plot & Villa Sales</span>
           </div>
 
@@ -2077,7 +2103,7 @@
             <span class="font-bold text-sm text-[#22075E] flex items-center space-x-1.5">
               <span>🦷</span>
               <span>Dental & Specialty Clinics</span>
-            <
+            </span>
             <span class="ant-tag ant-tag-green font-bold">24/7 OPD Booking</span>
           </div>
 
@@ -2455,10 +2481,10 @@
         }
 
         const badge = isHot
-          ? `<span class="ant-tag ant-tag-green font-semibold">HOT LEAD<`
+          ? `<span class="ant-tag ant-tag-green font-semibold">HOT LEAD</span>`
           : isWarm
-          ? `<span class="ant-tag ant-tag-gold font-semibold">WARM<`
-          : `<span class="ant-tag font-medium">NURTURE<`;
+          ? `<span class="ant-tag ant-tag-gold font-semibold">WARM</span>`
+          : `<span class="ant-tag font-medium">NURTURE</span>`;
 
         const tr = document.createElement('tr');
         tr.className = 'idurar-row border-b border-[#F0F0F0] cursor-pointer group select-none transition-all hover:bg-[#FAFAFA]';
@@ -2610,7 +2636,7 @@
           <td class="py-3 px-4">
             <span class="ant-tag ant-tag-green font-semibold">
               Delivered (Read)
-            <
+            </span>
           </td>
           <td class="py-3 px-4 text-right">
             <button onclick="alert('Notification resent to ${item.phone}')" class="px-2.5 py-1 rounded bg-[#FFFFFF] hover:bg-[#FAFAFA] text-xs text-[#595959] hover:text-[#1890FF] border border-[#D9D9D9] transition-colors cursor-pointer">
@@ -2663,36 +2689,36 @@
       };
 
       if (tabId === 'calls') {
-        setPageHeaderTitle(`<span>${cfg.callsNavLabel}<<span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"><`, 'Live bilingual recordings, transcripts, and verified lead dossiers');
+        setPageHeaderTitle(`<span>${cfg.callsNavLabel}</span><span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"></span>`, 'Live bilingual recordings, transcripts, and verified lead dossiers');
         renderCallsTable();
       } else if (tabId === 'leads') {
-        setPageHeaderTitle(`<span>${cfg.leadsNavLabel}<<span class="w-2 h-2 rounded-full bg-[#FAAD14] inline-block ml-1"><`, currentIndustryKey === 'hospital' 
+        setPageHeaderTitle(`<span>${cfg.leadsNavLabel}</span><span class="w-2 h-2 rounded-full bg-[#FAAD14] inline-block ml-1"></span>`, currentIndustryKey === 'hospital' 
           ? 'Scheduled doctor consultations and emergency casualty triage tokens'
           : (currentIndustryKey === 'agency' ? 'Qualified marketing retainer inquiries and client discovery calls' : 'Automated Sunday site visits and confirmed plot inquiries'));
         renderPipeline();
       } else if (tabId === 'erp') {
-        setPageHeaderTitle('<span>IDURAR ERP & CRM Hub<<span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"><', 'Quotations, Invoices, Customer Directory & Payment Tracking');
+        setPageHeaderTitle('<span>IDURAR ERP & CRM Hub</span><span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"></span>', 'Quotations, Invoices, Customer Directory & Payment Tracking');
         renderErpData();
       } else if (tabId === 'agent') {
-        setPageHeaderTitle(`<span>${cfg.agentPersonaRole}<<span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"><`, 'Calibrate regional dialect, speech pace, and FAQ knowledge');
+        setPageHeaderTitle(`<span>${cfg.agentPersonaRole}</span><span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"></span>`, 'Calibrate regional dialect, speech pace, and FAQ knowledge');
       } else if (tabId === 'whatsapp') {
-        setPageHeaderTitle('<span>WhatsApp Notification Queue<<span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"><', 'Real-time structured alerts dispatched to business owners');
+        setPageHeaderTitle('<span>WhatsApp Notification Queue</span><span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"></span>', 'Real-time structured alerts dispatched to business owners');
         renderWhatsAppLogs();
       } else if (tabId === 'speed-to-lead') {
-        setPageHeaderTitle(`<span>${cfg.webhookNavLabel}<`, 'Automated zero-delay outbound callback engine (< 10 seconds callback)');
+        setPageHeaderTitle(`<span>${cfg.webhookNavLabel}</span>`, 'Automated zero-delay outbound callback engine (< 10 seconds callback)');
       } else if (tabId === 'call-forwarding') {
-        setPageHeaderTitle('<span>3-Ring Call Forwarding (*61*)<', 'Keep your existing phone numbers — Airtel & Jio automated routing guide');
+        setPageHeaderTitle('<span>3-Ring Call Forwarding (*61*)</span>', 'Keep your existing phone numbers — Airtel & Jio automated routing guide');
       } else if (tabId === 'integrations') {
-        setPageHeaderTitle('<span>Enterprise Integrations & Workflows<', 'Real-time sync across CRMs, WhatsApp, Google Calendar, and Hospital HMS');
+        setPageHeaderTitle('<span>Enterprise Integrations & Workflows</span>', 'Real-time sync across CRMs, WhatsApp, Google Calendar, and Hospital HMS');
       } else if (tabId === 'voice-lab') {
-        setPageHeaderTitle('<span>AI Voice Tuning Lab<', 'Kokoro 82M & Sarvam Bulbul v3 neural voice synthesis and tuning bench');
+        setPageHeaderTitle('<span>AI Voice Tuning Lab</span>', 'Kokoro 82M & Sarvam Bulbul v3 neural voice synthesis and tuning bench');
       } else if (tabId === 'billing') {
-        setPageHeaderTitle('<span>Billing & Subscription Management<<span class="w-2 h-2 rounded-full bg-[#1890FF] inline-block ml-1"><', 'Manage subscription tiers, talk minute entitlements, and Razorpay invoices');
+        setPageHeaderTitle('<span>Billing & Subscription Management</span><span class="w-2 h-2 rounded-full bg-[#1890FF] inline-block ml-1"></span>', 'Manage subscription tiers, talk minute entitlements, and Razorpay invoices');
         loadBillingData();
       } else if (tabId === 'analytics') {
-        setPageHeaderTitle('<span>Platform Analytics & Audio QoS<<span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"><', 'Pipeline latency, speech synthesis benchmark, and code-switching metrics');
+        setPageHeaderTitle('<span>Platform Analytics & Audio QoS</span><span class="w-2 h-2 rounded-full bg-[#52C41A] inline-block ml-1"></span>', 'Pipeline latency, speech synthesis benchmark, and code-switching metrics');
       } else if (tabId === 'appointments') {
-        setPageHeaderTitle('<span>Site Visits & OPD Appointments<<span class="w-2 h-2 rounded-full bg-[#1890FF] inline-block ml-1"><', 'Cal.com confirmed bookings, Sunday cab pickups, and patient triage');
+        setPageHeaderTitle('<span>Site Visits & OPD Appointments</span><span class="w-2 h-2 rounded-full bg-[#1890FF] inline-block ml-1"></span>', 'Cal.com confirmed bookings, Sunday cab pickups, and patient triage');
       }
     }
 
@@ -2831,10 +2857,10 @@
       if (qTbody) {
         qTbody.innerHTML = IDURAR_DATA.quotes.map(q => {
           const badge = q.status === 'ACCEPTED'
-            ? `<span class="ant-tag ant-tag-green font-bold">ACCEPTED<`
+            ? `<span class="ant-tag ant-tag-green font-bold">ACCEPTED</span>`
             : q.status === 'SENT'
-            ? `<span class="ant-tag ant-tag-blue font-bold">SENT TO CLIENT<`
-            : `<span class="ant-tag ant-tag-gold font-bold">INTERNAL DRAFT<`;
+            ? `<span class="ant-tag ant-tag-blue font-bold">SENT TO CLIENT</span>`
+            : `<span class="ant-tag ant-tag-gold font-bold">INTERNAL DRAFT</span>`;
 
           return `
             <tr class="border-b border-[#F0F0F0] hover:bg-[#FAFAFA] transition-colors">
@@ -2864,8 +2890,8 @@
       if (invTbody) {
         invTbody.innerHTML = IDURAR_DATA.invoices.map(inv => {
           const badge = inv.status === 'PAID'
-            ? `<span class="ant-tag ant-tag-green font-bold">PAID IN FULL<`
-            : `<span class="ant-tag ant-tag-gold font-bold">PENDING PAYMENT<`;
+            ? `<span class="ant-tag ant-tag-green font-bold">PAID IN FULL</span>`
+            : `<span class="ant-tag ant-tag-gold font-bold">PENDING PAYMENT</span>`;
 
           return `
             <tr class="border-b border-[#F0F0F0] hover:bg-[#FAFAFA] transition-colors">
@@ -2906,7 +2932,7 @@
             <td class="py-3 px-4">
               <span class="ant-tag ${c.status === 'HOT' ? 'ant-tag-green' : 'ant-tag-gold'} font-bold">
                 ${c.status === 'HOT' ? 'HOT LEAD' : 'WARM'}
-              <
+              </span>
             </td>
             <td class="py-3 px-4 font-mono font-bold text-[#52C41A]">${c.budget}</td>
             <td class="py-3 px-4 text-right">
@@ -3165,10 +3191,10 @@
       const resEl = document.getElementById('sim-response');
       const phone = phoneInput ? phoneInput.value.trim() : '+919876543210';
       if (!phone) {
-        if (resEl) resEl.innerHTML = '<span class="text-rose-400">⚠️ Please enter a phone number.<';
+        if (resEl) resEl.innerHTML = '<span class="text-rose-400">⚠️ Please enter a phone number.</span>';
         return;
       }
-      if (resEl) resEl.innerHTML = '<span class="text-cyan-400 animate-pulse">⚡ Simulating Meta Lead Ad webhook arrival & sub-10s phone call...<';
+      if (resEl) resEl.innerHTML = '<span class="text-cyan-400 animate-pulse">⚡ Simulating Meta Lead Ad webhook arrival & sub-10s phone call...</span>';
 
       const newCall = {
         id: `CALL-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -3218,7 +3244,7 @@
         renderCallsTable();
         updateStats();
         if (resEl) {
-          resEl.innerHTML = `<span class="text-emerald-400 font-bold">✅ Webhook Ingested in 5.8s! Cellular call placed to ${phone}. Registered in Call Operations & Pipeline.<`;
+          resEl.innerHTML = `<span class="text-emerald-400 font-bold">✅ Webhook Ingested in 5.8s! Cellular call placed to ${phone}. Registered in Call Operations & Pipeline.</span>`;
         }
       }, 700);
     }
@@ -3230,13 +3256,13 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="animate-pulse">Syncing to Enterprise CRM & WhatsApp...<';
+        btn.innerHTML = '<span class="animate-pulse">Syncing to Enterprise CRM & WhatsApp...</span>';
       }
 
       setTimeout(() => {
         if (btn) {
           btn.className = 'w-full py-2 px-3 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow';
-          btn.innerHTML = '<span>✅ Lead Synced to CRM & WhatsApp<';
+          btn.innerHTML = '<span>✅ Lead Synced to CRM & WhatsApp</span>';
         }
         if (msg) {
           msg.classList.remove('hidden');
@@ -3249,7 +3275,7 @@
       const btn = document.getElementById('btn-trigger-sync');
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="animate-pulse">Syncing Enterprise CRMs...<';
+        btn.innerHTML = '<span class="animate-pulse">Syncing Enterprise CRMs...</span>';
       }
 
       setTimeout(() => {
@@ -3257,7 +3283,7 @@
           btn.disabled = false;
           btn.innerHTML = '<span>✅ All Leads Synchronized!<';
           setTimeout(() => {
-            btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg><span>Sync All Leads Across CRMs<';
+            btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg><span>Sync All Leads Across CRMs</span>';
           }, 3000);
         }
         alert('Successfully synchronized all customer call records to Enterprise CRM, WhatsApp Gateway, and Calendar!');
@@ -3322,7 +3348,7 @@
         d.innerHTML = `
           <div class="flex items-center justify-between text-xs mb-1 font-sans">
             <strong class="${isAgent ? 'text-[#1890FF] font-bold' : 'text-[#595959] font-bold'} flex items-center space-x-1.5">
-              ${isAgent ? '<span class="w-2 h-2 rounded-full bg-[#1890FF] animate-pulse"><' : ''}
+              ${isAgent ? '<span class="w-2 h-2 rounded-full bg-[#1890FF] animate-pulse"></span>' : ''}
               <span>${t.speaker}</span>
             </strong>
             <button onclick="playNeuralTranscriptAudio('${t.text.replace(/'/g, "\\'")}')" class="text-[#1890FF] hover:text-[#40A9FF] cursor-pointer font-mono font-bold flex items-center space-x-1" title="Play Kannada Neural Audio">
@@ -3554,7 +3580,7 @@
           else if (item.label.includes('🛑')) colorClasses = 'bg-orange-50 hover:bg-orange-100 text-orange-800 hover:text-orange-900 border-orange-200 hover:border-orange-400 font-semibold';
 
           btn.className = `py-1 px-2.5 rounded-lg border text-[11px] transition-all whitespace-nowrap cursor-pointer flex items-center space-x-1 shadow-2xs ${colorClasses}`;
-          btn.innerHTML = `<span>${item.label}<`;
+          btn.innerHTML = `<span>${item.label}</span>`;
           btn.onclick = () => sendTurnToAgent(item.prompt);
           chipsContainer.appendChild(btn);
         });
@@ -3703,12 +3729,12 @@
               <span class="flex items-center space-x-1.5">
                 <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                 <span>👑 VIP REPEAT CALLER RECOGNIZED (CALL #${data.callerDossier.callCount})</span>
-              <
+              </span>
               <span class="font-mono text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md border border-blue-200">${data.callerDossier.name || 'Returning Client'}</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-600 font-medium">
               <div><strong>Phone:</strong> ${data.callerDossier.phone}</div>
-              <div><strong>Status:</strong> <span class="text-emerald-700 font-bold">${data.callerDossier.leadRating || 'HOT'}<</div>
+              <div><strong>Status:</strong> <span class="text-emerald-700 font-bold">${data.callerDossier.leadRating || 'HOT'}</span></div>
             </div>
             <div class="text-[9px] text-blue-700 font-mono flex items-center space-x-1">
               <span>🧠 Prior Inquiry: ${data.callerDossier.lastInquiry || 'Site Visit'} • Greeted by Name</span>
@@ -3726,7 +3752,7 @@
         // 3. Append Agent Message Bubble with Business Brain RAG Grounding Badge
         const agentBubble = document.createElement('div');
         agentBubble.className = 'flex items-start space-x-2.5 text-xs';
-        const langBadge = data.detectedLanguage ? `<span class="ant-tag ant-tag-gold font-mono text-[9px]">${data.detectedLanguage.toUpperCase()}<` : '';
+        const langBadge = data.detectedLanguage ? `<span class="ant-tag ant-tag-gold font-mono text-[9px]">${data.detectedLanguage.toUpperCase()}</span>` : '';
 
         // Business Brain RAG Grounding & Citations Badge
         const ragCitationText = (data.rag?.citations && data.rag.citations.length > 0)
@@ -3736,7 +3762,7 @@
           ? `<div class="mt-2 pt-1.5 border-t border-slate-100 flex items-center space-x-1">
                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[9px] font-semibold shadow-2xs">
                  🛡️ Grounded in Business Brain (${ragCitationText}) — 0% Hallucination
-               <
+               </span>
              </div>`
           : '';
 
@@ -3773,12 +3799,12 @@
               <span class="flex items-center space-x-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping"></span>
                 <span class="tracking-wide">🚨 CRITICAL MEDICAL EMERGENCY TRIAGE — IMMEDIATE 108 / CASUALTY TRANSFER</span>
-              <
+              </span>
               <span class="font-mono text-rose-700 bg-rose-100 px-2 py-0.5 rounded-md border border-rose-300 font-bold">#${alertId}</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-medium bg-white/80 p-2 rounded-lg border border-rose-200">
-              <div><strong>Detected Red Flags:</strong> <span class="bg-rose-200 text-rose-900 px-1.5 py-0.5 rounded font-mono text-[10px] font-bold">${redFlags}<</div>
-              <div><strong>Action Taken:</strong> <span class="text-rose-800 font-bold">SIP Warm Transfer Initiated &rarr; ${transferNum}<</div>
+              <div><strong>Detected Red Flags:</strong> <span class="bg-rose-200 text-rose-900 px-1.5 py-0.5 rounded font-mono text-[10px] font-bold">${redFlags}</span></div>
+              <div><strong>Action Taken:</strong> <span class="text-rose-800 font-bold">SIP Warm Transfer Initiated &rarr; ${transferNum}</span></div>
             </div>
             <div class="flex items-center justify-between text-[10px] font-mono text-rose-700 pt-0.5">
               <span>📟 WhatsApp Casualty Desk Alert: <strong class="text-emerald-700 font-bold">SENT</strong></span>
@@ -3809,12 +3835,12 @@
               <span class="flex items-center space-x-1.5">
                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
                 <span>👩‍💼 LIVE HUMAN HANDOFF ESCALATION (${data.escalation.priority} PRIORITY)</span>
-              <
+              </span>
               <span class="font-mono text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300 font-bold">#${data.escalation.handoffId}</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] font-medium bg-white/80 p-2 rounded-lg border border-amber-200">
               <div><strong>Reason:</strong> ${reasonLabel}</div>
-              <div><strong>Routing:</strong> <span class="font-semibold text-amber-900">${destination} (${transferNum})<</div>
+              <div><strong>Routing:</strong> <span class="font-semibold text-amber-900">${destination} (${transferNum})</span></div>
             </div>
             <details class="text-[10px] font-mono bg-white p-2 rounded-lg border border-amber-200 cursor-pointer">
               <summary class="font-bold text-amber-900 select-none">📋 View Human Agent Whisper Dossier (Pre-Transfer Briefing)</summary>
@@ -3839,7 +3865,7 @@
               <span class="flex items-center space-x-1.5">
                 <span class="w-2 h-2 rounded-full bg-[#52C41A] animate-ping"></span>
                 <span>✅ REAL BOOKING CONFIRMED & SAVED</span>
-              <
+              </span>
               <span class="font-mono text-[#52C41A] bg-[#FFFFFF] px-2 py-0.5 rounded-md border border-[#B7EB8F]">#${data.bookingRecord.tokenNumber || data.bookingRecord.id}</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[10px] text-[#595959] font-medium">
@@ -4093,7 +4119,7 @@
         return;
       }
 
-      msg.innerHTML = '<span class="text-amber-500 animate-pulse">Connecting to Telecom Gateway...<';
+      msg.innerHTML = '<span class="text-amber-500 animate-pulse">Connecting to Telecom Gateway...</span>';
 
       try {
         const res = await fetch('/api/calls/outbound-inception', {
@@ -4108,12 +4134,12 @@
 
         if (res.ok) {
           const data = await res.json();
-          msg.innerHTML = `<span class="text-emerald-600 font-bold">✅ Call dispatched! Call SID: ${data.callSid || 'SUCCESS'}<`;
+          msg.innerHTML = `<span class="text-emerald-600 font-bold">✅ Call dispatched! Call SID: ${data.callSid || 'SUCCESS'}</span>`;
           return;
         }
       } catch (e) {}
 
-      msg.innerHTML = `<span class="text-emerald-600 font-bold">✅ Call dispatched to +91 ${phone}! Check your handset in 10s.<`;
+      msg.innerHTML = `<span class="text-emerald-600 font-bold">✅ Call dispatched to +91 ${phone}! Check your handset in 10s.</span>`;
     }
 
     function updateStats() {
@@ -4560,7 +4586,7 @@
 
       const topBtn = document.getElementById('btn-top-action');
       if (topBtn) {
-        topBtn.innerHTML = `<span>${cfg.topActionLabel}<`;
+        topBtn.innerHTML = `<span>${cfg.topActionLabel}</span>`;
         topBtn.className = cfg.topActionClass;
       }
 
@@ -4675,21 +4701,30 @@
         // Switch theme & labels for the detected industry
         applyIndustryDashboardTheme(rawIndustry, orgName);
 
-        const menuEl = document.getElementById('tenant-menu');
-        if (menuEl && session?.memberships && session.memberships.length > 0) {
-          menuEl.innerHTML = `
-            <div class="px-2.5 py-1 text-[10px] uppercase font-bold text-[#8C8C8C] tracking-wider border-b border-[#F0F0F0] pb-1.5 mb-1">
-              Organizations & Workspaces
-            </div>
-            ` + session.memberships.map(m => `
-            <button onclick="switchTenant('${m.organizationId}')" class="w-full p-2 rounded-md hover:bg-[#F5F7FA] text-left transition-colors flex items-center space-x-2.5 ${m.organizationId === session.activeOrganizationId ? 'bg-[#E6F7FF] border border-[#91D5FF]' : 'border border-transparent hover:border-[#D9D9D9]'} cursor-pointer">
-              <div class="w-7 h-7 rounded-md bg-[#FFF7E6] border border-[#FFD591] text-[#D46B08] flex items-center justify-center font-bold text-xs shrink-0">&#127970;</div>
-              <div class="truncate">
-                <div class="font-bold text-[#22075E] text-xs">${m.organizationName}</div>
-                <div class="text-[10px] text-[#8C8C8C] font-mono">Role: ${m.role}</div>
-              </div>
-            </button>
-            `).join('');
+        // Update elements safely without destroying #tenant-menu
+        const crumbEl = document.getElementById('breadcrumb-org') || document.getElementById('crumb-org-name');
+        if (crumbEl) crumbEl.innerText = orgName;
+
+        const subTenantEl = document.getElementById('sidebar-tenant-sub');
+        if (subTenantEl) {
+          subTenantEl.innerText = rawIndustry === 'AGENCY' ? 'Digital Marketing • AI Reseller' : (rawIndustry.includes('HOSPITAL') ? 'Healthcare • Clinical OS' : 'Real Estate & Plots');
+        }
+
+        const customNameEl = document.getElementById('tenant-custom-name');
+        if (customNameEl) customNameEl.innerText = orgName;
+
+        const customSubEl = document.getElementById('tenant-custom-sub');
+        if (customSubEl) {
+          customSubEl.innerText = 'Your Active Business • ' + (rawIndustry === 'AGENCY' ? 'Agency' : (rawIndustry.includes('HOSPITAL') ? 'Healthcare' : 'Real Estate'));
+        }
+
+        const customAvatarEl = document.getElementById('tenant-custom-avatar');
+        if (customAvatarEl) customAvatarEl.innerText = orgName.charAt(0).toUpperCase() || 'A';
+
+        const userAvatarEl = document.getElementById('user-avatar');
+        if (userAvatarEl) {
+          const initials = userName.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase();
+          userAvatarEl.innerText = initials || 'AD';
         }
       } catch(err) {
         console.error('Session sync error:', err);
@@ -4765,7 +4800,7 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="animate-pulse">Synthesizing Butter-Smooth Voice...<';
+        btn.innerHTML = '<span class="animate-pulse">Synthesizing Butter-Smooth Voice...</span>';
       }
 
       try {
@@ -4799,7 +4834,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg><span>Synthesize & Play<';
+          btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg><span>Synthesize & Play</span>';
         }
       }
     }
@@ -4877,7 +4912,7 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="animate-pulse">Applying Sovereign Engine Config...<';
+        btn.innerHTML = '<span class="animate-pulse">Applying Sovereign Engine Config...</span>';
       }
 
       try {
@@ -4894,7 +4929,7 @@
         if (data.success) {
           if (btn) {
             btn.className = 'w-full py-2 rounded-lg bg-emerald-600 text-white font-bold text-xs transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center space-x-1';
-            btn.innerHTML = '<span>✅ Configuration Active & Verified<';
+            btn.innerHTML = '<span>✅ Configuration Active & Verified</span>';
             setTimeout(() => {
               btn.className = 'w-full py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition-all shadow-md shadow-cyan-600/30';
               btn.innerHTML = 'Apply LLM Engine Configuration';
@@ -4925,7 +4960,7 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="animate-pulse">⚡ Benchmarking...<';
+        btn.innerHTML = '<span class="animate-pulse">⚡ Benchmarking...</span>';
       }
 
       try {
@@ -4950,7 +4985,7 @@
                 <span class="text-xs font-bold text-white">Full Turn Latency Waterfall</span>
                 <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${isPassed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
                   ${isPassed ? '⚡ SUB-750MS SLA PASSED' : '⚠️ HIGH LATENCY'}
-                <
+                </span>
               </div>
               <span class="text-xs font-bold text-cyan-300">${b.totalPipelineMs} ms TOTAL</span>
             </div>
@@ -4977,8 +5012,8 @@
 
             <!-- AI Response Content -->
             <div class="mt-2 p-2 rounded bg-white/[0.02] border border-white/[0.06] space-y-1">
-              <div class="text-[10px] text-slate-400">Prompt: <span class="text-slate-200">"${data.prompt}"<</div>
-              <div class="text-[10px] text-slate-400">AI Response: <span class="text-cyan-200 font-sans font-medium">"${data.replyText}"<</div>
+              <div class="text-[10px] text-slate-400">Prompt: <span class="text-slate-200">"${data.prompt}"</span></div>
+              <div class="text-[10px] text-slate-400">AI Response: <span class="text-cyan-200 font-sans font-medium">"${data.replyText}"</span></div>
             </div>
           `;
         }
@@ -5002,7 +5037,7 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="animate-pulse">Syncing Twenty CRM, Chatwoot & Cal.com...<';
+        btn.innerHTML = '<span class="animate-pulse">Syncing Twenty CRM, Chatwoot & Cal.com...</span>';
       }
 
       try {
@@ -5229,45 +5264,36 @@
   <!-- ======================================================================= -->
   <div id="profile-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
       <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div class="flex items-center gap-3">
           <div id="profile-modal-avatar" class="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center shadow-md shadow-indigo-500/20">
             A
           </div>
           <div>
-            <h3 id="profile-modal-title" class="font-bold text-base text-slate-900">Organization & Account Profile</h3>
-            <p class="text-xs text-slate-500 font-mono">Manage your business brand, dialect & AI agent configuration</p>
+            <h3 id="profile-modal-title" class="font-bold text-base text-slate-900">Organization &amp; Account Profile</h3>
+            <p class="text-xs text-slate-500 font-mono">Manage your business brand, dialect &amp; AI agent configuration</p>
           </div>
         </div>
-        <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+        <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <div class="p-6 space-y-4">
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        
+        <!-- User Full Name -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Business / Organization Name</label>
-          <input type="text" id="prof-org-name" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" placeholder="e.g. AuraDigital / Apollo Clinic" />
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Full Name (User / Admin)</label>
+          <input type="text" id="prof-user-name" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" placeholder="e.g. Priya Sharma / Rahul Gowda" />
         </div>
 
+        <!-- Work Email & Assigned Role -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Primary Industry Workspace</label>
-            <select id="prof-industry" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-indigo-600">
-              <option value="AGENCY">🚀 Digital Marketing Agency</option>
-              <option value="HEALTHCARE_HOSPITAL">🏥 Healthcare & Hospital</option>
-              <option value="REAL_ESTATE">🏢 Real Estate & PropTech</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Direct Alert Phone (WhatsApp)</label>
-            <input type="tel" id="prof-phone" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs text-slate-900 font-mono focus:outline-none focus:border-indigo-600" placeholder="+91 80 4719 2000" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Work Email (Admin)</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Work Email (Admin Login)</label>
             <input type="email" id="prof-email" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-indigo-600" placeholder="director@company.com" />
           </div>
           <div>
@@ -5276,11 +5302,49 @@
           </div>
         </div>
 
+        <!-- Business / Organization Name -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Business / Organization Name</label>
+          <input type="text" id="prof-org-name" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" placeholder="e.g. AuraDigital / Apollo Clinic / Ballari Layouts" />
+        </div>
+
+        <!-- Primary Industry Workspace & Alert Phone -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Primary Industry Workspace</label>
+            <select id="prof-industry" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-indigo-600">
+              <option value="AGENCY">🚀 Digital Marketing Agency</option>
+              <option value="HEALTHCARE_HOSPITAL">🏥 Healthcare &amp; Hospital</option>
+              <option value="REAL_ESTATE">🏡 Real Estate, Plots &amp; Layouts</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Direct Alert Phone / WhatsApp</label>
+            <input type="tel" id="prof-phone" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs text-slate-900 font-mono focus:outline-none focus:border-indigo-600" placeholder="+91 80 4719 2000" />
+          </div>
+        </div>
+
+        <!-- Autonomous AI Staff Persona Name -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">Autonomous AI Staff Persona Name</label>
           <input type="text" id="prof-agent-name" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-indigo-600" placeholder="Sahana / Kavya" />
         </div>
 
+        <!-- Industry Offer / Pricing Summary -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Industry Offer / Pricing Summary (From Knowledge Brain)</label>
+          <textarea id="prof-custom-offer" rows="2" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-indigo-600 font-mono leading-relaxed" placeholder="e.g. OPD Consultation Fee &amp; Hours / Plot Starting Price / Agency Retainer Margin"></textarea>
+        </div>
+
+        <!-- Full Wizard Link -->
+        <div class="pt-1">
+          <a href="/app/onboarding" class="w-full py-2.5 px-3.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-semibold text-xs flex items-center justify-between transition-colors no-underline">
+            <span>🔄 Configure Full Industry Onboarding Wizard</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+
+        <!-- Deployment Status HUD -->
         <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
           <div>
             <div class="font-bold text-slate-800">Deployment Status</div>
@@ -5288,21 +5352,24 @@
           </div>
           <span class="px-2.5 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold font-mono text-[10px]">ENTERPRISE v2.4</span>
         </div>
+
       </div>
 
+      <!-- Modal Footer -->
       <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-        <button onclick="handleLogout()" class="px-4 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors">
-          Log Out
+        <button type="button" onclick="handleConsoleLogout()" class="px-4 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer">
+          Sign Out
         </button>
         <div class="flex items-center gap-2">
-          <button onclick="closeProfileModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-colors">
+          <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-colors cursor-pointer">
             Cancel
           </button>
-          <button onclick="saveProfileChanges()" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition-all">
+          <button type="button" onclick="saveProfileChanges()" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer">
             Save Changes
           </button>
         </div>
       </div>
+
     </div>
   </div>
 
