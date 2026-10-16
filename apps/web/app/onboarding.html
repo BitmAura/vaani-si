@@ -75,7 +75,7 @@
   
   <main style="flex: 1; max-width: 760px; margin: 40px auto; padding: 0 24px; width: 100%; box-sizing: border-box;">
     
-    <div style="margin-bottom: 28px;">
+    <div style="margin-bottom: 24px;">
       <div id="onboarding-industry-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(37, 99, 235, 0.08); border-radius: 9999px; color: #2563EB; font-size: 11px; font-weight: 700; margin-bottom: 12px; font-family: var(--vanni-font-mono); border: 1px solid rgba(37, 99, 235, 0.2);">
         SPECIALIZED ONBOARDING
       </div>
@@ -83,9 +83,28 @@
       <p id="onboarding-sub" style="font-size: 14px; color: #64748B; margin: 0; line-height: 1.5;">Teach your autonomous AI employee your industry operational details, offerings, and call handling rules.</p>
     </div>
 
+    <!-- Interactive 3-Industry Switcher Pills -->
+    <div style="margin-bottom: 24px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+        <span>Select Onboarding Industry Flow</span>
+        <span style="font-size: 10px; background: #EEF2F6; color: #334155; padding: 2px 8px; border-radius: 9999px; font-weight: 600;">Switch Any Time</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+        <button type="button" id="ob-pill-agency" onclick="selectOnboardingIndustry('AGENCY')" style="padding: 10px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid #E2E8F0; background: #F8FAFC; color: #475569; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+          <span>🚀 Digital Marketing Agency</span>
+        </button>
+        <button type="button" id="ob-pill-realestate" onclick="selectOnboardingIndustry('REAL_ESTATE')" style="padding: 10px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid #E2E8F0; background: #F8FAFC; color: #475569; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+          <span>🏡 Real Estate &amp; Layouts</span>
+        </button>
+        <button type="button" id="ob-pill-hospital" onclick="selectOnboardingIndustry('HEALTHCARE_HOSPITAL')" style="padding: 10px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid #E2E8F0; background: #F8FAFC; color: #475569; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+          <span>🏥 Healthcare &amp; Hospital</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Dynamic Industry Container -->
     <div id="industry-steps-container">
-      <!-- Injected dynamically via detectAndHydrateIndustry() -->
+      <!-- Injected dynamically via renderIndustrySteps() -->
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
@@ -94,7 +113,7 @@
         <span>Isolated Row-Level Security Enabled</span>
       </div>
       <button type="button" id="btn-complete-setup" onclick="completeOnboarding()" style="background: #0F172A; color: #FFFFFF; padding: 12px 28px; border-radius: 12px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(15,23,42,0.15);">
-        <span>Complete Setup & Open Dashboard &rarr;</span>
+        <span>Complete Setup &amp; Open Dashboard &rarr;</span>
       </button>
     </div>
 
@@ -107,20 +126,19 @@
     const INDUSTRY_TEMPLATES = {
       AGENCY: {
         badge: '📱 DIGITAL MARKETING AGENCY RESELLER',
-        badgeColor: 'text-purple-600 bg-purple-50 border-purple-200',
         title: 'Configure Your Agency Command Center',
         subtitle: 'Configure your reseller brand, sub-client margins, Meta speed-to-lead autodial rules, and outbound B2B sales rep.',
         step1Title: 'Agency Reseller Brand & Margins',
         step1Sub: 'How you package and monetize AI voice for your marketing clients',
-        step1Html: `
+        getStep1Html: (brandName, phone) => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
               <label class="vanni-label">Agency Brand / DBA Name</label>
-              <input type="text" id="ob-brand-name" value="Creative Digital Marketing Agency" class="vanni-input" />
+              <input type="text" id="ob-brand-name" value="` + escapeHtml(brandName || 'Apex Growth Marketing Agency') + `" class="vanni-input" />
             </div>
             <div>
               <label class="vanni-label">Agency Alert WhatsApp (Owner)</label>
-              <input type="tel" id="ob-whatsapp" placeholder="+91 98450 XXXXX" value="+91 98450 11223" class="vanni-input" />
+              <input type="tel" id="ob-whatsapp" placeholder="+91 98450 XXXXX" value="` + escapeHtml(phone || '+91 80 4719 2000') + `" class="vanni-input" />
             </div>
           </div>
           <div style="margin-top: 14px;">
@@ -134,7 +152,7 @@
         `,
         step2Title: 'Meta & Google Lead Autodial (Speed-to-Lead)',
         step2Sub: 'Trigger an immediate Kannada phone call the second a lead hits Meta Instant Forms',
-        step2Html: `
+        getStep2Html: () => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
               <label class="vanni-label">Speed-to-Lead Dial Window</label>
@@ -160,7 +178,7 @@
         `,
         step3Title: 'Outbound B2B Sales Persona (Sahana)',
         step3Sub: 'Autonomous agent that calls Karnataka business directors to pitch voice automation',
-        step3Html: `
+        getStep3Html: () => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
               <label class="vanni-label">AI Pitch Rep Name</label>
@@ -183,20 +201,23 @@
       },
       HEALTHCARE_HOSPITAL: {
         badge: '🏥 HOSPITAL & CLINICAL PRACTICE ONBOARDING',
-        badgeColor: 'text-blue-600 bg-blue-50 border-blue-200',
         title: 'Configure Your Clinical Reception Desk',
         subtitle: 'Teach your autonomous receptionist OPD doctor schedules, consultation fees, and emergency triage protocols.',
-        step1Title: 'Hospital Hours & Emergency Escalation',
+        step1Title: 'Hospital Identity, Hours & Emergency Escalation',
         step1Sub: 'Triage rules for patient care and casualty line transfers',
-        step1Html: `
+        getStep1Html: (hospitalName, phone) => `
+          <div style="margin-bottom: 14px;">
+            <label class="vanni-label">Hospital / Clinic / Practice Name</label>
+            <input type="text" id="ob-hospital-name" value="` + escapeHtml(hospitalName || 'Apollo Specialty Clinic') + `" class="vanni-input" />
+          </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
-              <label class="vanni-label">OPD & Consultation Timings</label>
+              <label class="vanni-label">OPD &amp; Consultation Timings</label>
               <input type="text" id="ob-timings" value="8:00 AM - 8:00 PM (Monday - Saturday)" class="vanni-input" />
             </div>
             <div>
               <label class="vanni-label">Emergency Casualty WhatsApp Number</label>
-              <input type="tel" id="ob-whatsapp" placeholder="+91 99801 XXXXX" value="+91 99801 22334" class="vanni-input" />
+              <input type="tel" id="ob-whatsapp" placeholder="+91 99801 XXXXX" value="` + escapeHtml(phone || '+91 80 4719 2002') + `" class="vanni-input" />
             </div>
           </div>
           <div style="margin-top: 14px;">
@@ -209,7 +230,7 @@
         `,
         step2Title: 'Doctor Roster & OPD Consultation Fees',
         step2Sub: 'Doctor availability and appointment scheduling rates',
-        step2Html: `
+        getStep2Html: () => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
               <label class="vanni-label">Primary Specialties</label>
@@ -227,7 +248,7 @@
         `,
         step3Title: 'Patient Care Receptionist (Kavya)',
         step3Sub: 'Empathetic regional voice reassuring patients and confirming tokens',
-        step3Html: `
+        getStep3Html: () => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
               <label class="vanni-label">AI Receptionist Name</label>
@@ -250,37 +271,36 @@
       },
       REAL_ESTATE: {
         badge: '🏢 REAL ESTATE & PROPTECH SALES ONBOARDING',
-        badgeColor: 'text-amber-600 bg-amber-50 border-amber-200',
         title: 'Configure Your Layout Sales & Site Visit Brain',
         subtitle: 'Configure plot dimensions, DC conversion approvals, starting prices, and Sunday free cab visits.',
         step1Title: 'Project Details & Layout Approvals',
         step1Sub: 'Key credentials prospective property buyers ask first',
-        step1Html: `
+        getStep1Html: (projectName, phone) => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
               <label class="vanni-label">Layout / Project Name</label>
-              <input type="text" id="ob-project-name" value="Ballari Residential Layouts (Siruguppa Bypass)" class="vanni-input" />
+              <input type="text" id="ob-project-name" value="` + escapeHtml(projectName || 'Ballari Residential Layouts') + `" class="vanni-input" />
             </div>
             <div>
               <label class="vanni-label">Sales Director WhatsApp (Hot Leads)</label>
-              <input type="tel" id="ob-whatsapp" placeholder="+91 97412 XXXXX" value="+91 97412 33445" class="vanni-input" />
+              <input type="tel" id="ob-whatsapp" placeholder="+91 97412 XXXXX" value="` + escapeHtml(phone || '+91 80 4719 2001') + `" class="vanni-input" />
             </div>
           </div>
           <div style="margin-top: 14px;">
-            <label class="vanni-label">Legal Approvals & Khata Status</label>
+            <label class="vanni-label">Legal Approvals &amp; Khata Status</label>
             <input type="text" id="ob-approvals" value="DC Converted with A-Khata, RERA Approved, Clear Title Deeds" class="vanni-input" />
           </div>
         `,
         step2Title: 'Plot Dimensions & Pricing Inventory',
         step2Sub: 'Exact plot sizes and starting budgets Sahana explains to buyers',
-        step2Html: `
+        getStep2Html: () => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
-              <label class="vanni-label">Standard Dimension & Starting Price</label>
+              <label class="vanni-label">Standard Dimension &amp; Starting Price</label>
               <input type="text" id="ob-pricing-std" value="30x40 DC Converted plots starting ₹18 Lakhs" class="vanni-input" />
             </div>
             <div>
-              <label class="vanni-label">Premium Dimension & Starting Price</label>
+              <label class="vanni-label">Premium Dimension &amp; Starting Price</label>
               <input type="text" id="ob-pricing-prem" value="40x60 DC Converted plots starting ₹35 Lakhs" class="vanni-input" />
             </div>
           </div>
@@ -291,7 +311,7 @@
         `,
         step3Title: 'Sunday Free Cab Site Visit Schedule',
         step3Sub: 'Driving buyers directly to physical site visits every weekend',
-        step3Html: `
+        getStep3Html: () => `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
               <label class="vanni-label">AI Sales Manager Name</label>
@@ -314,7 +334,46 @@
       }
     };
 
-    function renderIndustrySteps(industryKey, companyName) {
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function updatePillHighlight(indKey) {
+      const pillAgency = document.getElementById('ob-pill-agency');
+      const pillReal = document.getElementById('ob-pill-realestate');
+      const pillHosp = document.getElementById('ob-pill-hospital');
+
+      const defaultStyle = { border: '2px solid #E2E8F0', background: '#F8FAFC', color: '#475569' };
+      [pillAgency, pillReal, pillHosp].forEach(p => {
+        if (p) {
+          p.style.border = defaultStyle.border;
+          p.style.background = defaultStyle.background;
+          p.style.color = defaultStyle.color;
+        }
+      });
+
+      if (indKey === 'AGENCY' && pillAgency) {
+        pillAgency.style.border = '2px solid #7C3AED';
+        pillAgency.style.background = '#F5F3FF';
+        pillAgency.style.color = '#5B21B6';
+      } else if (indKey === 'HEALTHCARE_HOSPITAL' && pillHosp) {
+        pillHosp.style.border = '2px solid #0891B2';
+        pillHosp.style.background = '#ECFEFF';
+        pillHosp.style.color = '#0E7490';
+      } else if (pillReal) {
+        pillReal.style.border = '2px solid #D97706';
+        pillReal.style.background = '#FFFBEB';
+        pillReal.style.color = '#92400E';
+      }
+    }
+
+    function renderIndustrySteps(industryKey, companyName, phone) {
       const template = INDUSTRY_TEMPLATES[industryKey] || INDUSTRY_TEMPLATES.REAL_ESTATE;
 
       // Update Header & Badge
@@ -333,11 +392,11 @@
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
             <div style="width: 28px; height: 28px; border-radius: 8px; background: #2563EB; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">1</div>
             <div>
-              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">${template.step1Title}</h2>
-              <div style="font-size: 12px; color: #64748B;">${template.step1Sub}</div>
+              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">` + template.step1Title + `</h2>
+              <div style="font-size: 12px; color: #64748B;">` + template.step1Sub + `</div>
             </div>
           </div>
-          ${template.step1Html}
+          ` + template.getStep1Html(companyName, phone) + `
         </div>
 
         <!-- Step 2 -->
@@ -345,11 +404,11 @@
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
             <div style="width: 28px; height: 28px; border-radius: 8px; background: #2563EB; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">2</div>
             <div>
-              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">${template.step2Title}</h2>
-              <div style="font-size: 12px; color: #64748B;">${template.step2Sub}</div>
+              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">` + template.step2Title + `</h2>
+              <div style="font-size: 12px; color: #64748B;">` + template.step2Sub + `</div>
             </div>
           </div>
-          ${template.step2Html}
+          ` + template.getStep2Html() + `
         </div>
 
         <!-- Step 3 -->
@@ -357,34 +416,64 @@
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
             <div style="width: 28px; height: 28px; border-radius: 8px; background: #2563EB; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">3</div>
             <div>
-              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">${template.step3Title}</h2>
-              <div style="font-size: 12px; color: #64748B;">${template.step3Sub}</div>
+              <h2 style="font-size: 16px; font-weight: 700; margin: 0;">` + template.step3Title + `</h2>
+              <div style="font-size: 12px; color: #64748B;">` + template.step3Sub + `</div>
             </div>
           </div>
-          ${template.step3Html}
+          ` + template.getStep3Html() + `
         </div>
       `;
     }
 
+    function selectOnboardingIndustry(indKey) {
+      detectedIndustry = indKey;
+      localStorage.setItem('vanni_industry', indKey);
+
+      const orgName = activeSession?.activeOrganizationName || 
+                      activeSession?.memberships?.[0]?.organizationName || 
+                      localStorage.getItem('vanni_org_name') || 
+                      'Your Business';
+      const phone = activeSession?.user?.phone || 
+                    localStorage.getItem('vanni_phone') || 
+                    '+91 98450 XXXXX';
+
+      renderIndustrySteps(indKey, orgName, phone);
+      updatePillHighlight(indKey);
+    }
+
     async function initOnboarding() {
-      let session = null;
+      activeSession = null;
       try {
         const res = await fetch('/api/auth/session');
         if (res.ok) {
           const data = await res.json();
-          if (data.authenticated) session = data.session;
+          if (data.authenticated && data.session) {
+            activeSession = data.session;
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('API session fetch failed:', e);
+      }
 
-      if (!session) {
+      if (!activeSession) {
         try {
           const raw = localStorage.getItem('vanni_session');
-          if (raw) session = JSON.parse(raw);
+          if (raw) activeSession = JSON.parse(raw);
         } catch(e) {}
       }
 
-      const orgName = session?.activeOrganizationName || session?.memberships?.[0]?.organizationName || localStorage.getItem('vanni_org_name') || 'Your Business';
-      const rawIndustry = session?.memberships?.[0]?.industry || localStorage.getItem('vanni_industry') || 'REAL_ESTATE';
+      const orgName = activeSession?.activeOrganizationName || 
+                      activeSession?.memberships?.[0]?.organizationName || 
+                      localStorage.getItem('vanni_org_name') || 
+                      'Your Business';
+
+      const userPhone = activeSession?.user?.phone || 
+                        localStorage.getItem('vanni_phone') || 
+                        '+91 98450 XXXXX';
+
+      const rawIndustry = activeSession?.memberships?.[0]?.industry || 
+                          localStorage.getItem('vanni_industry') || 
+                          '';
 
       const orgBadge = document.getElementById('header-org-badge');
       if (orgBadge) orgBadge.innerText = orgName;
@@ -400,7 +489,8 @@
         detectedIndustry = 'REAL_ESTATE';
       }
 
-      renderIndustrySteps(detectedIndustry, orgName);
+      renderIndustrySteps(detectedIndustry, orgName, userPhone);
+      updatePillHighlight(detectedIndustry);
     }
 
     async function completeOnboarding() {
@@ -410,55 +500,176 @@
         btn.innerHTML = '<span class="animate-pulse">Saving Knowledge Brain...</span>';
       }
 
-      // Collect inputs from onboarding steps
-      const brandInput = document.querySelector('input[placeholder*="Digital Marketing Agency"], input[id*="agency-brand"], input[name*="brand"]');
-      const brandName = brandInput?.value?.trim() || activeSession?.activeOrganizationName || localStorage.getItem('vanni_org_name') || 'AuraDigital';
-      
-      const phoneInput = document.querySelector('input[type="tel"]');
-      const phoneVal = phoneInput?.value?.trim() || localStorage.getItem('vanni_phone') || '+91 80 4719 2000';
+      let onboardingData = {};
+      let resolvedBrandName = '';
+      let resolvedWhatsapp = '';
+      let resolvedAgentName = '';
+      let resolvedDialect = '';
 
-      const ind = detectedIndustry || localStorage.getItem('vanni_industry') || 'AGENCY';
-      const tenantKey = ind === 'AGENCY' ? 'agency' : (ind.includes('HOSPITAL') ? 'hospital' : 'real_estate');
+      if (detectedIndustry === 'AGENCY') {
+        resolvedBrandName = document.getElementById('ob-brand-name')?.value?.trim() || activeSession?.activeOrganizationName || localStorage.getItem('vanni_org_name') || 'Apex Growth Marketing Agency';
+        resolvedWhatsapp = document.getElementById('ob-whatsapp')?.value?.trim() || localStorage.getItem('vanni_phone') || '+91 80 4719 2000';
+        const margin = document.getElementById('ob-margin')?.value || 'MARKUP_100';
+        const dialSpeed = document.getElementById('ob-dial-speed')?.value || '5_SEC';
+        const retryPolicy = document.getElementById('ob-retry-policy')?.value || '3_RETRIES';
+        resolvedAgentName = document.getElementById('ob-agent-name')?.value?.trim() || 'Sahana';
+        resolvedDialect = document.getElementById('ob-dialect')?.value || 'KANGLISH_BUSINESS';
+        const goal = document.getElementById('ob-goal')?.value?.trim() || '';
+
+        onboardingData = {
+          industry: 'AGENCY',
+          brandName: resolvedBrandName,
+          whatsapp: resolvedWhatsapp,
+          margin,
+          dialSpeed,
+          retryPolicy,
+          agentName: resolvedAgentName,
+          dialect: resolvedDialect,
+          goal,
+          completedAt: new Date().toISOString()
+        };
+      } else if (detectedIndustry === 'HEALTHCARE_HOSPITAL') {
+        resolvedBrandName = document.getElementById('ob-hospital-name')?.value?.trim() || activeSession?.activeOrganizationName || localStorage.getItem('vanni_org_name') || 'Apollo Specialty Clinic';
+        resolvedWhatsapp = document.getElementById('ob-whatsapp')?.value?.trim() || localStorage.getItem('vanni_phone') || '+91 80 4719 2002';
+        const timings = document.getElementById('ob-timings')?.value?.trim() || '';
+        const emergencyAction = document.getElementById('ob-emergency-action')?.value || 'INSTANT_TRANSFER';
+        const specialties = document.getElementById('ob-specialties')?.value?.trim() || '';
+        const fee = document.getElementById('ob-fee')?.value?.trim() || '';
+        const doctorInfo = document.getElementById('ob-doctor-info')?.value?.trim() || '';
+        resolvedAgentName = document.getElementById('ob-agent-name')?.value?.trim() || 'Kavya';
+        resolvedDialect = document.getElementById('ob-dialect')?.value || 'KANNADA_STANDARD_POLITE';
+
+        onboardingData = {
+          industry: 'HEALTHCARE_HOSPITAL',
+          hospitalName: resolvedBrandName,
+          brandName: resolvedBrandName,
+          whatsapp: resolvedWhatsapp,
+          timings,
+          emergencyAction,
+          specialties,
+          fee,
+          doctorInfo,
+          agentName: resolvedAgentName,
+          dialect: resolvedDialect,
+          completedAt: new Date().toISOString()
+        };
+      } else {
+        // REAL_ESTATE
+        resolvedBrandName = document.getElementById('ob-project-name')?.value?.trim() || activeSession?.activeOrganizationName || localStorage.getItem('vanni_org_name') || 'Ballari Residential Layouts';
+        resolvedWhatsapp = document.getElementById('ob-whatsapp')?.value?.trim() || localStorage.getItem('vanni_phone') || '+91 80 4719 2001';
+        const approvals = document.getElementById('ob-approvals')?.value?.trim() || '';
+        const pricingStd = document.getElementById('ob-pricing-std')?.value?.trim() || '';
+        const pricingPrem = document.getElementById('ob-pricing-prem')?.value?.trim() || '';
+        const bankLoans = document.getElementById('ob-bank-loans')?.value?.trim() || '';
+        resolvedAgentName = document.getElementById('ob-agent-name')?.value?.trim() || 'Sahana';
+        resolvedDialect = document.getElementById('ob-dialect')?.value || 'KANGLISH_BUSINESS';
+        const siteVisit = document.getElementById('ob-site-visit')?.value?.trim() || '';
+
+        onboardingData = {
+          industry: 'REAL_ESTATE',
+          projectName: resolvedBrandName,
+          brandName: resolvedBrandName,
+          whatsapp: resolvedWhatsapp,
+          approvals,
+          pricingStd,
+          pricingPrem,
+          bankLoans,
+          agentName: resolvedAgentName,
+          dialect: resolvedDialect,
+          siteVisit,
+          completedAt: new Date().toISOString()
+        };
+      }
+
+      const tenantKey = detectedIndustry === 'AGENCY' ? 'agency' : (detectedIndustry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
+      const orgId = activeSession?.activeOrganizationId || localStorage.getItem('vanni_active_tenant') || ('org_' + Date.now());
+
+      // Save all collected fields into localStorage
+      localStorage.setItem('vanni_onboarding_data', JSON.stringify(onboardingData));
+      localStorage.setItem('vanni_org_name', resolvedBrandName);
+      localStorage.setItem('vanni_phone', resolvedWhatsapp);
+      localStorage.setItem('vanni_agent_name', resolvedAgentName);
+      localStorage.setItem('vanni_dialect', resolvedDialect);
+      localStorage.setItem('vanni_industry', detectedIndustry);
+      localStorage.setItem('vanni_active_tenant', orgId);
+      localStorage.setItem('dhwani_active_tenant', tenantKey);
+      localStorage.setItem('vanni_onboarding_completed', 'true');
+
+      // Update vanni_session in localStorage
+      let userEmail = localStorage.getItem('vanni_email') || 'admin@vanni.ai';
+      let userName = resolvedBrandName;
 
       const sessionObj = activeSession || {
-        user: { id: 'usr_admin', email: 'director@auradigital.com', name: 'AuraDigital Admin' },
-        activeOrganizationId: tenantKey,
-        activeOrganizationName: brandName,
+        user: { id: 'usr_' + Date.now(), email: userEmail, name: userName },
+        userId: 'usr_' + Date.now(),
+        email: userEmail,
+        fullName: userName,
+        activeOrganizationId: orgId,
+        activeOrganizationName: resolvedBrandName,
         role: 'owner',
         activeRole: 'ORGANIZATION OWNER',
         memberships: [{
-          organizationId: tenantKey,
-          organizationName: brandName,
-          industry: ind,
+          organizationId: orgId,
+          organizationName: resolvedBrandName,
+          industry: detectedIndustry,
           role: 'owner'
         }]
       };
 
-      sessionObj.activeOrganizationName = brandName;
-      sessionObj.activeOrganizationId = tenantKey;
+      sessionObj.activeOrganizationName = resolvedBrandName;
+      sessionObj.activeOrganizationId = orgId;
       if (sessionObj.memberships && sessionObj.memberships[0]) {
-        sessionObj.memberships[0].organizationName = brandName;
-        sessionObj.memberships[0].industry = ind;
+        sessionObj.memberships[0].organizationName = resolvedBrandName;
+        sessionObj.memberships[0].industry = detectedIndustry;
+        sessionObj.memberships[0].onboardingStatus = 'ready';
+      }
+      if (sessionObj.user?.email) userEmail = sessionObj.user.email;
+      localStorage.setItem('vanni_session', JSON.stringify(sessionObj));
+
+      // Update vanni_accounts_db[email] in localStorage with onboardingCompleted: true and onboardingData
+      try {
+        let accountsDb = {};
+        const rawDb = localStorage.getItem('vanni_accounts_db');
+        if (rawDb) accountsDb = JSON.parse(rawDb) || {};
+        const lowerEmail = userEmail.toLowerCase();
+        if (!accountsDb[lowerEmail]) {
+          accountsDb[lowerEmail] = {
+            user: sessionObj.user || { id: sessionObj.userId, email: userEmail, name: userName },
+            organizationId: orgId,
+            organizationName: resolvedBrandName,
+            industry: detectedIndustry,
+            phone: resolvedWhatsapp,
+            email: userEmail,
+            onboardingCompleted: true,
+            onboardingData: onboardingData
+          };
+        } else {
+          accountsDb[lowerEmail].organizationName = resolvedBrandName;
+          accountsDb[lowerEmail].industry = detectedIndustry;
+          accountsDb[lowerEmail].phone = resolvedWhatsapp;
+          accountsDb[lowerEmail].onboardingCompleted = true;
+          accountsDb[lowerEmail].onboardingData = onboardingData;
+        }
+        localStorage.setItem('vanni_accounts_db', JSON.stringify(accountsDb));
+      } catch(err) {
+        console.warn('Could not update vanni_accounts_db:', err);
       }
 
-      localStorage.setItem('vanni_session', JSON.stringify(sessionObj));
-      localStorage.setItem('vanni_org_name', brandName);
-      localStorage.setItem('vanni_phone', phoneVal);
-      localStorage.setItem('vanni_industry', ind);
-      localStorage.setItem('vanni_active_tenant', tenantKey);
-      localStorage.setItem('dhwani_active_tenant', tenantKey);
-      localStorage.setItem('vanni_onboarding_completed', 'true');
-
+      // Also POST the onboarding data to /api/orgs/orgId/onboarding so backend Business Brain has exact data
       try {
-        if (activeSession) {
-          const orgId = activeSession.activeOrganizationId;
-          await fetch(`/api/orgs/${orgId}/onboarding`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'ready', industry: ind, brandName })
-          });
-        }
-      } catch(e) {}
+        await fetch('/api/orgs/' + encodeURIComponent(orgId) + '/onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'ready',
+            industry: detectedIndustry,
+            brandName: resolvedBrandName,
+            onboardingData: onboardingData
+          })
+        });
+      } catch(apiErr) {
+        console.warn('Onboarding API POST non-blocking notice (running edge/static):', apiErr);
+      }
 
       window.location.href = '/app/dashboard';
     }
