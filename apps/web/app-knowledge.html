@@ -127,7 +127,14 @@
         <p class="text-[11px] text-slate-500">Authoritative facts, pricing, policies, and hours used by conversational AI</p>
       </div>
 
-      <div class="flex items-center space-x-2.5">
+      <div class="flex items-center space-x-3">
+        <!-- Active Org & Industry Badge -->
+        <div id="header-org-badge-container" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+          <span class="text-slate-400 font-medium text-[11px]">Org:</span>
+          <span id="header-org-name" class="font-bold text-slate-800 max-w-[160px] truncate">My Organization</span>
+          <span id="header-industry-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-blue-700">AGENCY</span>
+        </div>
+
         <div class="relative w-64">
           <input type="text" id="query-input" placeholder="Test knowledge lookup..." onkeydown="if(event.key==='Enter') testKnowledgeQuery()" class="w-full pl-3 pr-8 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-500">
           <button onclick="testKnowledgeQuery()" class="absolute right-2 top-2 text-slate-400 hover:text-blue-600 text-xs font-bold">→</button>
@@ -450,6 +457,71 @@
 
   <script>
     let activeBrainData = null;
+
+    async function checkAuthSession() {
+      let session = null;
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.authenticated) {
+            session = data;
+          }
+        }
+      } catch (e) {
+        console.warn('API session check failed, falling back to localStorage', e);
+      }
+
+      if (!session) {
+        const local = localStorage.getItem('vanni_session');
+        if (local) {
+          try {
+            const parsed = JSON.parse(local);
+            if (parsed && (parsed.authenticated || parsed.user)) {
+              session = parsed;
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (!session) {
+        window.location.href = '/login';
+        return null;
+      }
+
+      const orgName = localStorage.getItem('vanni_org_name') || session.organization?.name || session.activeMembership?.organizationName || 'My Business';
+      const industry = localStorage.getItem('vanni_industry') || session.organization?.industry || 'AGENCY';
+
+      hydrateOrgAndProfile(orgName, industry);
+      return session;
+    }
+
+    function hydrateOrgAndProfile(orgName, industry) {
+      const headerOrgEl = document.getElementById('header-org-name');
+      const headerIndEl = document.getElementById('header-industry-badge');
+      const currentOrgEl = document.getElementById('current-org-name');
+      const bizLegalEl = document.getElementById('biz-legal-name');
+      const bizIndEl = document.getElementById('biz-industry');
+
+      if (headerOrgEl) headerOrgEl.innerText = orgName;
+      if (headerIndEl) {
+        headerIndEl.innerText = industry;
+        if (industry === 'HEALTHCARE_HOSPITAL') {
+          headerIndEl.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800';
+        } else if (industry === 'REAL_ESTATE') {
+          headerIndEl.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-100 text-purple-800';
+        } else {
+          headerIndEl.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-blue-800';
+        }
+      }
+      if (currentOrgEl) currentOrgEl.innerText = orgName;
+      if (bizLegalEl && (!bizLegalEl.innerText || bizLegalEl.innerText.includes('Ballari') || bizLegalEl.innerText === 'Loading...')) {
+        bizLegalEl.innerText = orgName;
+      }
+      if (bizIndEl && (!bizIndEl.innerText || bizIndEl.innerText.includes('REAL_ESTATE') || bizIndEl.innerText === 'Loading...')) {
+        bizIndEl.innerText = industry;
+      }
+    }
     let activeSnapshot = null;
     let activeSources = [];
     let activeDocuments = [];
@@ -512,9 +584,18 @@
     function renderBrainOverview() {
       if (!activeBrainData) return;
       const b = activeBrainData;
-      document.getElementById('current-org-name').innerText = b.organization.name;
-      document.getElementById('biz-legal-name').innerText = b.organization.name;
-      document.getElementById('biz-industry').innerText = b.organization.industry;
+      const storedOrg = localStorage.getItem('vanni_org_name');
+      const storedInd = localStorage.getItem('vanni_industry');
+      const effectiveOrg = storedOrg || b.organization.name;
+      const effectiveInd = storedInd || b.organization.industry;
+
+      document.getElementById('current-org-name').innerText = effectiveOrg;
+      document.getElementById('biz-legal-name').innerText = effectiveOrg;
+      document.getElementById('biz-industry').innerText = effectiveInd;
+      const hOrg = document.getElementById('header-org-name');
+      if (hOrg) hOrg.innerText = effectiveOrg;
+      const hInd = document.getElementById('header-industry-badge');
+      if (hInd) hInd.innerText = effectiveInd;
       
       const loc = b.locations[0];
       if (loc) {
@@ -936,7 +1017,8 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      await checkAuthSession();
       loadBusinessBrain();
     });
   </script>

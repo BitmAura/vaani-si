@@ -111,6 +111,12 @@
         <span id="breadcrumb-subtitle" class="text-xs text-slate-500 font-medium">Enterprise Workforce Directory</span>
       </div>
       <div class="flex items-center space-x-3">
+        <!-- Active Org & Industry Badge -->
+        <div id="header-org-badge-container" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+          <span class="text-slate-400 font-medium text-[11px]">Org:</span>
+          <span id="header-org-name" class="font-bold text-slate-800 max-w-[160px] truncate">My Organization</span>
+          <span id="header-industry-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-blue-700">AGENCY</span>
+        </div>
         <button onclick="startCreationWizard()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center space-x-1.5">
           <span>+ Create AI Employee</span>
         </button>
@@ -576,8 +582,70 @@
     let activeOrgId = 'a0000000-0000-0000-0000-000000000001';
     let activeOrgIndustry = 'REAL_ESTATE';
 
+    async function checkAuthSession() {
+      let session = null;
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.authenticated) {
+            session = data;
+          }
+        }
+      } catch (e) {
+        console.warn('API session check failed, checking localStorage fallback', e);
+      }
+
+      if (!session) {
+        const local = localStorage.getItem('vanni_session');
+        if (local) {
+          try {
+            const parsed = JSON.parse(local);
+            if (parsed && (parsed.authenticated || parsed.user)) {
+              session = parsed;
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (!session) {
+        window.location.href = '/login';
+        return null;
+      }
+
+      const orgName = localStorage.getItem('vanni_org_name') || session.organization?.name || session.activeMembership?.organizationName || 'My Business';
+      const industry = localStorage.getItem('vanni_industry') || session.organization?.industry || 'AGENCY';
+
+      hydrateOrgAndProfile(orgName, industry);
+      return session;
+    }
+
+    function hydrateOrgAndProfile(orgName, industry) {
+      const headerOrgEl = document.getElementById('header-org-name');
+      const headerIndEl = document.getElementById('header-industry-badge');
+      const sidebarOrgEl = document.getElementById('org-name');
+      const sidebarIndEl = document.getElementById('org-industry');
+      const sidebarBadgeEl = document.getElementById('org-badge');
+
+      if (headerOrgEl) headerOrgEl.innerText = orgName;
+      if (headerIndEl) {
+        headerIndEl.innerText = industry;
+        if (industry === 'HEALTHCARE_HOSPITAL') {
+          headerIndEl.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800';
+        } else if (industry === 'REAL_ESTATE') {
+          headerIndEl.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-100 text-purple-800';
+        } else {
+          headerIndEl.className = 'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-blue-800';
+        }
+      }
+      if (sidebarOrgEl) sidebarOrgEl.innerText = orgName;
+      if (sidebarIndEl) sidebarIndEl.innerText = industry;
+      if (sidebarBadgeEl) sidebarBadgeEl.innerText = industry.split('_')[0].toUpperCase();
+    }
+
     // Initialization
     window.addEventListener('DOMContentLoaded', async () => {
+      await checkAuthSession();
       await fetchActiveOrg();
       await loadAgents();
       
@@ -603,14 +671,20 @@
           const data = await res.json();
           if (data.organization) {
             activeOrgId = data.organization.id;
-            activeOrgIndustry = data.organization.industry || 'REAL_ESTATE';
-            document.getElementById('org-name').innerText = data.organization.name;
-            document.getElementById('org-industry').innerText = activeOrgIndustry;
-            document.getElementById('org-badge').innerText = activeOrgId.slice(0, 8).toUpperCase();
+            const storedOrg = localStorage.getItem('vanni_org_name');
+            const storedInd = localStorage.getItem('vanni_industry');
+            activeOrgIndustry = storedInd || data.organization.industry || 'REAL_ESTATE';
+            const effectiveOrg = storedOrg || data.organization.name;
+            hydrateOrgAndProfile(effectiveOrg, activeOrgIndustry);
           }
         }
       } catch (e) {
         console.warn('Org lookup failed', e);
+        const storedOrg = localStorage.getItem('vanni_org_name');
+        const storedInd = localStorage.getItem('vanni_industry');
+        if (storedOrg || storedInd) {
+          hydrateOrgAndProfile(storedOrg || 'My Business', storedInd || 'AGENCY');
+        }
       }
     }
 

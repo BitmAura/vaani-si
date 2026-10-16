@@ -2516,6 +2516,12 @@ export async function buildServer() {
       pace?: number;
       pitch?: number;
       history?: Array<{ role: 'user' | 'model'; content: string }>;
+      customContext?: {
+        orgName?: string;
+        agentName?: string;
+        ownerPhone?: string;
+        onboardingData?: Record<string, any>;
+      };
     };
 
     if (!body?.text || !body.text.trim()) {
@@ -2536,7 +2542,77 @@ export async function buildServer() {
       else resolvedOrgId = 'a0000000-0000-0000-0000-000000000001';
     }
 
-    const tenant = DEMO_TENANTS[resolvedTenantKey || 'real_estate'] || DEMO_TENANTS.real_estate;
+    const baseTenant = DEMO_TENANTS[resolvedTenantKey || 'real_estate'] || DEMO_TENANTS.real_estate;
+    const tenant: Tenant = JSON.parse(JSON.stringify(baseTenant));
+
+    // Custom Context Overrides (Profile & Business Name)
+    if (body.customContext) {
+      if (body.customContext.orgName && body.customContext.orgName.trim()) {
+        const customOrg = body.customContext.orgName.trim();
+        tenant.name = customOrg;
+        if (tenant.knowledge) {
+          tenant.knowledge.companyName = customOrg;
+        }
+      }
+      if (body.customContext.ownerPhone && body.customContext.ownerPhone.trim()) {
+        tenant.ownerWhatsAppNumber = body.customContext.ownerPhone.trim();
+      }
+    }
+
+    // Format Onboarding Data Facts
+    let onboardingSnippet = '';
+    if (body.customContext?.onboardingData && typeof body.customContext.onboardingData === 'object' && Object.keys(body.customContext.onboardingData).length > 0) {
+      const ob = body.customContext.onboardingData;
+
+      // Update tenant knowledge catalogSummary directly with verified facts
+      if (tenant.knowledge) {
+        if (ob.catalogSummary || ob.customOffer || ob.offerSummary) {
+          tenant.knowledge.catalogSummary = ob.catalogSummary || ob.customOffer || ob.offerSummary;
+        } else if (ob.startingPrice) {
+          tenant.knowledge.catalogSummary = `Plots starting at ${ob.startingPrice}${ob.plotSizes ? ` for dimensions ${ob.plotSizes}` : ''}${ob.projectName ? ` in ${ob.projectName}` : ''}.`;
+        } else if (ob.retainerFee || ob.monthlyBudget) {
+          tenant.knowledge.catalogSummary = `Performance digital marketing retainers starting at ${ob.retainerFee || ob.monthlyBudget}.`;
+        } else if (ob.opdFee || ob.consultationFee) {
+          tenant.knowledge.catalogSummary = `OPD consultations at ₹${ob.opdFee || ob.consultationFee}. Timings: ${ob.opdTimings || ob.doctorTimings || 'Regular hours'}.`;
+        }
+      }
+      const lines: string[] = ['### VERIFIED CUSTOM BUSINESS ONBOARDING FACTS:'];
+      if (body.customContext.orgName) lines.push(`- Organization / Company Name: ${body.customContext.orgName}`);
+      if (body.customContext.agentName) lines.push(`- AI Persona / Executive Name: ${body.customContext.agentName}`);
+      if (body.customContext.ownerPhone) lines.push(`- Direct Contact / WhatsApp: ${body.customContext.ownerPhone}`);
+
+      if (ob.industry) lines.push(`- Industry: ${ob.industry}`);
+      if (ob.brandName || ob.projectName || ob.hospitalName || ob.companyName) {
+        lines.push(`- Brand / Facility / Project: ${ob.brandName || ob.projectName || ob.hospitalName || ob.companyName}`);
+      }
+      if (ob.retainerFee || ob.monthlyBudget) {
+        lines.push(`- Agency Retainer / Ad Budget: ${ob.retainerFee || ob.monthlyBudget}`);
+      }
+      if (ob.startingPrice || ob.plotPrice || ob.plotSizes) {
+        lines.push(`- Plot Starting Price & Dimensions: ${ob.startingPrice || ob.plotPrice || ''} ${ob.plotSizes ? `(Sizes: ${ob.plotSizes})` : ''}`);
+      }
+      if (ob.opdFee || ob.consultationFee) {
+        lines.push(`- OPD Consultation Fee: ₹${ob.opdFee || ob.consultationFee}`);
+      }
+      if (ob.opdTimings || ob.doctorTimings || ob.officeTimings) {
+        lines.push(`- Timings & Hours: ${ob.opdTimings || ob.doctorTimings || ob.officeTimings}`);
+      }
+      if (ob.doctors || ob.specialties || ob.services) {
+        lines.push(`- Offerings / Specialties: ${JSON.stringify(ob.doctors || ob.specialties || ob.services)}`);
+      }
+      if (ob.offerSummary || ob.customOffer || ob.catalogSummary) {
+        lines.push(`- Pricing & Offer Summary: ${ob.offerSummary || ob.customOffer || ob.catalogSummary}`);
+      }
+
+      for (const [k, v] of Object.entries(ob)) {
+        if (!['industry', 'brandName', 'projectName', 'hospitalName', 'companyName', 'retainerFee', 'monthlyBudget', 'startingPrice', 'plotPrice', 'plotSizes', 'opdFee', 'consultationFee', 'opdTimings', 'doctorTimings', 'officeTimings', 'doctors', 'specialties', 'services', 'offerSummary', 'customOffer', 'catalogSummary'].includes(k)) {
+          if (v !== undefined && v !== null && v !== '') {
+            lines.push(`- ${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`);
+          }
+        }
+      }
+      onboardingSnippet = lines.join('\n');
+    }
 
     // 0. Episodic Caller Memory Recognition (L6 Caller Dossier)
     const callerPhone = body.callerPhone?.trim();
@@ -2608,11 +2684,27 @@ export async function buildServer() {
       }
     }
 
+    // Enrich RAG with custom onboarding facts
+    if (onboardingSnippet) {
+      ragContext = ragContext ? `${ragContext}\n\n${onboardingSnippet}` : onboardingSnippet;
+    }
+
     // Build system prompt for this tenant
-    const systemPrompt = PromptEngine.buildSystemPrompt({
+    let systemPrompt = PromptEngine.buildSystemPrompt({
       tenant,
       isSelfSellingInception: resolvedTenantKey === 'inception',
     });
+
+    // Custom Persona Name Override
+    if (body.customContext?.agentName && body.customContext.agentName.trim()) {
+      const activePersona = body.customContext.agentName.trim();
+      systemPrompt = systemPrompt.replace(/You are "Sahana"/g, `You are "${activePersona}"`);
+    }
+
+    // Append custom onboarding facts directly into system instructions
+    if (onboardingSnippet) {
+      systemPrompt = `${systemPrompt}\n\n${onboardingSnippet}\nCRITICAL INSTRUCTION: You represent ${tenant.name}. Always refer to this business by its exact name and accurately quote the verified onboarding pricing, timings, and services listed above.`;
+    }
 
     // Uses shared root llmService instance with active engine config
     const history = (body.history || []).map(h => ({

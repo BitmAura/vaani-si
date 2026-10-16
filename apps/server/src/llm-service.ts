@@ -622,7 +622,7 @@ EXAMPLE RESPONSES:
     // =========================================================================
     // 2. REAL ESTATE & PLOTTED DEVELOPER SITUATIONAL INTELLIGENCE
     // =========================================================================
-    if (systemPrompt.includes('Ballari') || systemPrompt.includes('REAL_ESTATE') || systemPrompt.includes('Layout') || systemPrompt.includes('Plot')) {
+    if (systemPrompt.includes('Industry: REAL_ESTATE') || systemPrompt.includes('REAL_ESTATE') || systemPrompt.includes('Ballari Residential Layouts')) {
       // Objection: Rate is too high / costly
       if (text.includes('jasti') || text.includes('costly') || text.includes('expensive') || text.includes('kammi madi') || text.includes('discount') || text.includes('high rate') || text.includes('rate swalpa')) {
         if (lang === 'en-IN') {
@@ -671,6 +671,11 @@ EXAMPLE RESPONSES:
 
       // Dimensions & Rate General
       if (text.includes('rate') || text.includes('price') || text.includes('eshtu') || text.includes('cost') || text.includes('30 40') || text.includes('30x40') || text.includes('40 60') || text.includes('dimension') || text.includes('sqft') || text.includes('how much') || text.includes('size')) {
+        const customPriceMatch = systemPrompt.match(/Plot Starting Price & Dimensions:\s*([^\n\r]+)/i) || systemPrompt.match(/Plots starting at\s*([^\n\r.]+)/i);
+        if (customPriceMatch) {
+          const customPrice = customPriceMatch[1].trim();
+          return `Sir, namma plots ${customPrice} inda start aaguththe. Nimma budget range mathu dimension yavudhu plan madtidira sir?`;
+        }
         if (lang === 'en-IN') {
           return 'Sir, our 30x40 plots start from ₹18 Lakhs, and 40x60 plots are ₹35 Lakhs. May I know your preferred budget range or dimensions so I can guide you to the best plot?';
         }
@@ -700,7 +705,7 @@ EXAMPLE RESPONSES:
     // =========================================================================
     // 3. HEALTHCARE & HOSPITAL CLINICAL INTELLIGENCE
     // =========================================================================
-    if (systemPrompt.includes('Apollo') || systemPrompt.includes('HEALTHCARE') || systemPrompt.includes('Hospital') || systemPrompt.includes('Manipal') || systemPrompt.includes('Clinic')) {
+    if (systemPrompt.includes('Industry: HEALTHCARE_HOSPITAL') || systemPrompt.includes('HEALTHCARE_HOSPITAL') || systemPrompt.includes('Apollo Specialty Clinic')) {
       // Critical: Emergency Triage Red Flags!
       if (text.includes('emergency') || text.includes('chest pain') || text.includes('heart') || text.includes('heart attack') || text.includes('breath') || text.includes('bleeding') || text.includes('accident') || text.includes('unconscious') || text.includes('stroke') || text.includes('urgent')) {
         return 'Sir, idhu emergency aaguththe! Dayavittu immediately 108 ambulance call madi athva casualty emergency ward ge rush madi sir. Casualty duty doctor 24/7 ready irthare!';
@@ -723,7 +728,9 @@ EXAMPLE RESPONSES:
 
       // OPD Consultation Fees
       if (text.includes('opd fee') || text.includes('fee') || text.includes('charge') || text.includes('cost') || text.includes('eshtu fee') || text.includes('consultation')) {
-        return 'General specialist OPD consultation fee ₹750 aaguththe sir. Naale beligge token number book madla sir?';
+        const customOpdMatch = systemPrompt.match(/OPD Consultation Fee:\s*₹?([^\n\r]+)/i);
+        const opdVal = customOpdMatch ? customOpdMatch[1].trim() : '750';
+        return `General specialist OPD consultation fee ₹${opdVal} aaguththe sir. Naale beligge token number book madla sir?`;
       }
 
       // Health Insurance / Cashless / Ayushman Bharat
@@ -781,7 +788,9 @@ EXAMPLE RESPONSES:
 
       // Retainers & Pricing
       if (text.includes('fee') || text.includes('charges') || text.includes('retainer') || text.includes('cost') || text.includes('pricing') || text.includes('monthly') || text.includes('eshtu rate') || text.includes('package')) {
-        return 'Sir, monthly performance retainer ₹25,000 inda start aaguththe. Zero setup fee, ad spend nimma own ad account nalle direct agi control madbahudu sir.';
+        const customAgencyMatch = systemPrompt.match(/Agency Retainer \/ Ad Budget:\s*([^\n\r]+)/i);
+        const retVal = customAgencyMatch ? customAgencyMatch[1].trim() : '₹25,000';
+        return `Sir, monthly performance retainer ${retVal} inda start aaguththe. Zero setup fee, ad spend nimma own ad account nalle direct agi control madbahudu sir.`;
       }
 
       // Call with Agency Director

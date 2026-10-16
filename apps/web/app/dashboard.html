@@ -3696,6 +3696,20 @@
 
       try {
         const ind = currentIndustryKey || 'real_estate';
+
+        let onboardingData = {};
+        try {
+          const rawOb = localStorage.getItem('vanni_onboarding_data');
+          if (rawOb) onboardingData = JSON.parse(rawOb);
+        } catch (e) {}
+
+        const customContext = {
+          orgName: localStorage.getItem('vanni_org_name') || '',
+          agentName: localStorage.getItem('vanni_agent_name') || '',
+          ownerPhone: localStorage.getItem('vanni_phone') || '',
+          onboardingData
+        };
+
         const res = await fetch('/api/voice/turn', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3704,7 +3718,8 @@
             tenantKey: ind,
             callerPhone: '+91 98450 77889',
             dialect: currentDialect,
-            history: conversationHistory.slice(-6)
+            history: conversationHistory.slice(-6),
+            customContext
           })
         });
 
