@@ -74,11 +74,35 @@
   
   <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
     <div class="auth-card">
-      <div style="margin-bottom: 24px;">
+      <div style="margin-bottom: 20px;">
         <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 6px 0;">Sign in to VANNI</h1>
         <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Access your organization dashboard and AI voice telemetry.</p>
       </div>
 
+      <!-- 3 One-Click Instant Industry Demo Login Pills -->
+      <div style="margin-bottom: 20px; background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); padding: 12px;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--vanni-text-muted); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+          <span>Instant Industry Demo Login</span>
+          <span style="font-size: 10px; background: #DBEAFE; color: #1E40AF; padding: 2px 6px; border-radius: 4px; font-weight: 600;">1-Click</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+          <button type="button" onclick="loginAsDemo('AGENCY')" class="vanni-button vanni-button-secondary" style="padding: 8px 4px; font-size: 11px; font-weight: 600; justify-content: center; text-align: center; border-radius: 6px; border: 1px solid var(--vanni-border); background: var(--vanni-surface); cursor: pointer;" title="Log in as Digital Marketing Agency &amp; Reseller">
+            🚀 Digital Agency
+          </button>
+          <button type="button" onclick="loginAsDemo('REAL_ESTATE')" class="vanni-button vanni-button-secondary" style="padding: 8px 4px; font-size: 11px; font-weight: 600; justify-content: center; text-align: center; border-radius: 6px; border: 1px solid var(--vanni-border); background: var(--vanni-surface); cursor: pointer;" title="Log in as Real Estate, Plots &amp; Developers">
+            🏡 Real Estate
+          </button>
+          <button type="button" onclick="loginAsDemo('HEALTHCARE_HOSPITAL')" class="vanni-button vanni-button-secondary" style="padding: 8px 4px; font-size: 11px; font-weight: 600; justify-content: center; text-align: center; border-radius: 6px; border: 1px solid var(--vanni-border); background: var(--vanni-surface); cursor: pointer;" title="Log in as Healthcare, Hospital &amp; Clinics">
+            🏥 Healthcare
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; margin: 16px 0; color: var(--vanni-text-muted); font-size: 11px;">
+        <div style="flex: 1; height: 1px; background: var(--vanni-border);"></div>
+        <span style="padding: 0 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">or sign in with email</span>
+        <div style="flex: 1; height: 1px; background: var(--vanni-border);"></div>
+      </div>
 
       <div id="login-error" class="auth-alert-error"></div>
 
@@ -108,6 +132,72 @@
   </main>
 
   <script>
+    function loginAsDemo(industry) {
+      const demos = {
+        AGENCY: {
+          org: 'Apex Growth Marketing Agency',
+          email: 'agency.demo@vanni.ai',
+          phone: '+91 80 4719 2000',
+          tenantKey: 'agency',
+          name: 'Aditya Rao (Agency Director)'
+        },
+        REAL_ESTATE: {
+          org: 'Ballari Residential Layouts',
+          email: 'realestate.demo@vanni.ai',
+          phone: '+91 80 4719 2001',
+          tenantKey: 'real_estate',
+          name: 'Suresh Patil (Managing Partner)'
+        },
+        HEALTHCARE_HOSPITAL: {
+          org: 'Apollo Specialty Clinic & Hospital',
+          email: 'healthcare.demo@vanni.ai',
+          phone: '+91 80 4719 2002',
+          tenantKey: 'hospital',
+          name: 'Dr. Ramesh Kumar (Medical Director)'
+        }
+      };
+
+      const d = demos[industry] || demos.REAL_ESTATE;
+      const orgId = 'org_demo_' + industry.toLowerCase();
+      const userId = 'usr_demo_' + industry.toLowerCase();
+
+      const userObj = {
+        id: userId,
+        email: d.email,
+        name: d.name,
+        fullName: d.name,
+        phone: d.phone
+      };
+
+      const sess = {
+        userId: userId,
+        email: d.email,
+        fullName: d.name,
+        activeOrganizationId: orgId,
+        activeOrganizationName: d.org,
+        role: 'owner',
+        activeRole: 'ORGANIZATION OWNER',
+        memberships: [{
+          organizationId: orgId,
+          organizationName: d.org,
+          industry: industry,
+          role: 'owner'
+        }]
+      };
+
+      localStorage.setItem('vanni_session', JSON.stringify(sess));
+      localStorage.setItem('vanni_user', JSON.stringify(userObj));
+      localStorage.setItem('vanni_org_name', d.org);
+      localStorage.setItem('vanni_industry', industry);
+      localStorage.setItem('vanni_phone', d.phone);
+      localStorage.setItem('vanni_email', d.email);
+      localStorage.setItem('vanni_active_tenant', orgId);
+      localStorage.setItem('dhwani_active_tenant', d.tenantKey);
+      localStorage.setItem('vanni_onboarding_completed', 'true');
+
+      window.location.href = '/app/dashboard';
+    }
+
     async function quickLogin(email, password) {
       document.getElementById('login-email').value = email;
       document.getElementById('login-password').value = password;
@@ -122,13 +212,15 @@
       btn.disabled = true;
       btn.innerHTML = '<span>Verifying credentials...</span>';
 
-      const email = document.getElementById('login-email').value;
+      const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
+      const lowerEmail = email.toLowerCase();
 
       try {
         let loggedIn = false;
-        
-        // 1. Try Fastify backend API
+        let matchedAccount = null;
+
+        // 1. First try POST /api/auth/login
         try {
           const res = await fetch('/api/auth/login', {
             method: 'POST',
@@ -139,86 +231,182 @@
             const data = await res.json();
             if (data.session) {
               localStorage.setItem('vanni_session', JSON.stringify(data.session));
-              localStorage.setItem('vanni_user', JSON.stringify(data.user));
+              if (data.user) localStorage.setItem('vanni_user', JSON.stringify(data.user));
               loggedIn = true;
             }
           }
-        } catch(apiErr) {
-          console.warn('Backend API login unreachable, attempting direct Supabase auth:', apiErr);
+        } catch (apiErr) {
+          console.warn('Backend API login unreachable, attempting registry check:', apiErr);
         }
 
-        // 2. Direct Supabase / Client-side fallback if on static CDN (Vercel)
-        if (!loggedIn) {
-          try {
-            const supabaseUrl = 'https://qwmxgqpmcbuvkhrsbibz.supabase.co';
-            const anonKey = 'sb_publishable_DRuRSnMq009Fw96ND4sNAQ_6OpM0fkm';
-            const supaRes = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-              method: 'POST',
-              headers: {
-                'apikey': anonKey,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ email, password })
-            });
-            if (supaRes.ok) {
-              const supaData = await supaRes.json();
-              const sess = {
-                user: { id: supaData.user?.id || 'usr_prod_1', email: email, name: email.split('@')[0] },
-                activeOrganizationId: 'a0000000-0000-0000-0000-000000000001',
-                role: 'owner',
-                memberships: [{ organizationId: 'a0000000-0000-0000-0000-000000000001', role: 'owner' }]
-              };
-              localStorage.setItem('vanni_session', JSON.stringify(sess));
-              localStorage.setItem('vanni_user', JSON.stringify(sess.user));
-              localStorage.setItem('supabase_token', supaData.access_token);
-              loggedIn = true;
+        // 2. Next, check localStorage.getItem('vanni_accounts_db') for a matching email
+        let accountsDb = {};
+        try {
+          accountsDb = JSON.parse(localStorage.getItem('vanni_accounts_db') || '{}');
+        } catch(e) {
+          accountsDb = {};
+        }
+
+        if (accountsDb && accountsDb[lowerEmail]) {
+          matchedAccount = accountsDb[lowerEmail];
+          // If not already authenticated via server, check passwordHash
+          if (!loggedIn) {
+            if (matchedAccount.passwordHash && matchedAccount.passwordHash !== btoa(password)) {
+              throw new Error('Incorrect password. Please verify your credentials.');
             }
-          } catch(supaErr) {
-            console.warn('Direct Supabase fetch fallback warning:', supaErr);
           }
-        }
 
-        // 3. Smart fallback: check if a signup session already exists for this email
-        //    If so, reuse it (preserves industry + org from signup flow)
-        if (!loggedIn) {
+          // Restore that user's exact { user, activeOrganizationId, activeOrganizationName, industry, phone, onboardingCompleted, onboardingData }!
+          const orgId = matchedAccount.organizationId || ('org_' + Date.now());
+          const orgName = matchedAccount.organizationName || 'My Organization';
+          const industry = matchedAccount.industry || 'AGENCY';
+          const phone = matchedAccount.phone || '';
+          const tenantKey = industry === 'AGENCY' ? 'agency' : (industry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
+
+          const restoredUser = matchedAccount.user || {
+            id: 'usr_' + Date.now(),
+            email: email,
+            name: email.split('@')[0],
+            fullName: email.split('@')[0],
+            phone: phone
+          };
+
+          const sess = {
+            userId: restoredUser.id,
+            email: email,
+            fullName: restoredUser.fullName || restoredUser.name || email.split('@')[0],
+            activeOrganizationId: orgId,
+            activeOrganizationName: orgName,
+            role: 'owner',
+            activeRole: 'ORGANIZATION OWNER',
+            memberships: [{
+              organizationId: orgId,
+              organizationName: orgName,
+              industry: industry,
+              role: 'owner'
+            }]
+          };
+
+          localStorage.setItem('vanni_session', JSON.stringify(sess));
+          localStorage.setItem('vanni_user', JSON.stringify(restoredUser));
+          localStorage.setItem('vanni_org_name', orgName);
+          localStorage.setItem('vanni_industry', industry);
+          localStorage.setItem('vanni_phone', phone);
+          localStorage.setItem('vanni_email', email);
+          localStorage.setItem('vanni_active_tenant', orgId);
+          localStorage.setItem('dhwani_active_tenant', tenantKey);
+
+          const isCompleted = matchedAccount.onboardingCompleted === true;
+          localStorage.setItem('vanni_onboarding_completed', isCompleted ? 'true' : 'false');
+
+          if (matchedAccount.onboardingData) {
+            localStorage.setItem('vanni_onboarding_data', JSON.stringify(matchedAccount.onboardingData));
+          }
+
+          loggedIn = true;
+        } else {
+          // Check existing vanni_session / vanni_email in localStorage
           let existingSession = null;
           try {
-            const rawExisting = localStorage.getItem('vanni_session');
-            if (rawExisting) existingSession = JSON.parse(rawExisting);
+            const raw = localStorage.getItem('vanni_session');
+            if (raw) existingSession = JSON.parse(raw);
           } catch(e) {}
 
-          const emailMatchesSignup = existingSession && existingSession.user && existingSession.user.email === email;
+          const storedEmail = localStorage.getItem('vanni_email');
+          const emailMatchesSession = existingSession && (
+            (existingSession.user?.email && existingSession.user.email.toLowerCase() === lowerEmail) ||
+            (existingSession.email && existingSession.email.toLowerCase() === lowerEmail)
+          );
+          const emailMatchesStored = storedEmail && storedEmail.toLowerCase() === lowerEmail;
 
-          if (emailMatchesSignup) {
-            // Reuse existing signup session - industry/org already set
-            loggedIn = true;
-          } else {
-            // New login from this browser - build minimal session
-            // Will redirect to onboarding if org not configured
-            const existingIndustry = localStorage.getItem('vanni_industry') || 'REAL_ESTATE';
-            const existingOrg = localStorage.getItem('vanni_org_name') || '';
-            const existingOrgId = localStorage.getItem('vanni_active_tenant') || ('org_' + Date.now());
-            const sess = {
-              user: { id: 'usr_' + Date.now(), email: email, name: email.split('@')[0] || 'Admin' },
+          if (emailMatchesSession || emailMatchesStored) {
+            // Restore from existing session in localStorage
+            const existingOrg = localStorage.getItem('vanni_org_name') || existingSession?.activeOrganizationName || 'My Organization';
+            const existingIndustry = localStorage.getItem('vanni_industry') || existingSession?.memberships?.[0]?.industry || 'AGENCY';
+            const existingPhone = localStorage.getItem('vanni_phone') || existingSession?.user?.phone || '';
+            const existingOrgId = localStorage.getItem('vanni_active_tenant') || existingSession?.activeOrganizationId || ('org_' + Date.now());
+            const tenantKey = existingIndustry === 'AGENCY' ? 'agency' : (existingIndustry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
+
+            const sess = existingSession || {
+              userId: 'usr_' + Date.now(),
+              email: email,
+              fullName: email.split('@')[0],
               activeOrganizationId: existingOrgId,
-              activeOrganizationName: existingOrg || null,
+              activeOrganizationName: existingOrg,
               role: 'owner',
               activeRole: 'ORGANIZATION OWNER',
-              memberships: [{ organizationId: existingOrgId, organizationName: existingOrg || null, industry: existingIndustry, role: 'owner' }]
+              memberships: [{ organizationId: existingOrgId, organizationName: existingOrg, industry: existingIndustry, role: 'owner' }]
+            };
+
+            localStorage.setItem('vanni_session', JSON.stringify(sess));
+            localStorage.setItem('vanni_user', JSON.stringify(sess.user || { id: sess.userId, email, name: sess.fullName, phone: existingPhone }));
+            localStorage.setItem('vanni_org_name', existingOrg);
+            localStorage.setItem('vanni_industry', existingIndustry);
+            localStorage.setItem('vanni_phone', existingPhone);
+            localStorage.setItem('vanni_email', email);
+            localStorage.setItem('vanni_active_tenant', existingOrgId);
+            localStorage.setItem('dhwani_active_tenant', tenantKey);
+            loggedIn = true;
+          } else if (!loggedIn) {
+            // Direct Supabase fallback
+            try {
+              const supabaseUrl = 'https://qwmxgqpmcbuvkhrsbibz.supabase.co';
+              const anonKey = 'sb_publishable_DRuRSnMq009Fw96ND4sNAQ_6OpM0fkm';
+              const supaRes = await fetch(supabaseUrl + '/auth/v1/token?grant_type=password', {
+                method: 'POST',
+                headers: { 'apikey': anonKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+              });
+              if (supaRes.ok) {
+                const supaData = await supaRes.json();
+                localStorage.setItem('supabase_token', supaData.access_token);
+              }
+            } catch(e) {}
+
+            // Never overwrite an existing user's vanni_org_name, vanni_industry, or vanni_phone with 'Ballari Residential Layouts' unless no account exists for that email.
+            // If no account exists for this email, default session with onboarding required:
+            const orgId = 'org_' + Date.now();
+            const sess = {
+              user: { id: 'usr_' + Date.now(), email, name: email.split('@')[0] },
+              userId: 'usr_' + Date.now(),
+              email: email,
+              fullName: email.split('@')[0],
+              activeOrganizationId: orgId,
+              activeOrganizationName: 'My Organization',
+              role: 'owner',
+              activeRole: 'ORGANIZATION OWNER',
+              memberships: [{ organizationId: orgId, organizationName: 'My Organization', industry: 'AGENCY', role: 'owner' }]
             };
             localStorage.setItem('vanni_session', JSON.stringify(sess));
             localStorage.setItem('vanni_user', JSON.stringify(sess.user));
-            if (!existingOrg) {
-              localStorage.removeItem('vanni_onboarding_completed');
-            }
+            localStorage.setItem('vanni_org_name', 'My Organization');
+            localStorage.setItem('vanni_industry', 'AGENCY');
+            localStorage.setItem('vanni_phone', '');
+            localStorage.setItem('vanni_email', email);
+            localStorage.setItem('vanni_active_tenant', orgId);
+            localStorage.setItem('dhwani_active_tenant', 'agency');
+            localStorage.setItem('vanni_onboarding_completed', 'false');
             loggedIn = true;
           }
         }
 
+        // After login, if onboardingCompleted === false (or localStorage.getItem('vanni_onboarding_completed') === 'false'),
+        // redirect to /app/onboarding; otherwise redirect to /app/dashboard.
+        const storedOnboardingDone = localStorage.getItem('vanni_onboarding_completed');
+        const isCompleted = storedOnboardingDone !== 'false' && (matchedAccount ? matchedAccount.onboardingCompleted !== false : true);
+
         const params = new URLSearchParams(window.location.search);
-        let redirectUrl = params.get('redirect') || '/app/dashboard';
-        if (redirectUrl.includes('/console')) redirectUrl = '/app/dashboard';
+        let redirectUrl = isCompleted ? '/app/dashboard' : '/app/onboarding';
+
+        const customRedirect = params.get('redirect');
+        if (customRedirect && !customRedirect.includes('/console')) {
+          if (isCompleted) {
+            redirectUrl = customRedirect;
+          }
+        }
+
         window.location.href = redirectUrl;
+
       } catch (err) {
         errEl.innerText = err.message || 'An error occurred during login.';
         errEl.style.display = 'block';

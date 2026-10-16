@@ -111,38 +111,43 @@
 
       <form onsubmit="handleSignup(event)">
         <div class="vanni-form-group">
-          <label class="vanni-label">Company / Practice Name</label>
-          <input type="text" id="signup-company" placeholder="e.g. Apollo Clinic / Ballari Layouts" required class="vanni-input" />
+          <label class="vanni-label" for="signup-name">Full Name *</label>
+          <input type="text" id="signup-name" placeholder="Priya Sharma / Rahul Gowda" required class="vanni-input" autofocus />
         </div>
 
         <div class="vanni-form-group">
-          <label class="vanni-label">Work Email</label>
+          <label class="vanni-label" for="signup-company">Company / Practice Name *</label>
+          <input type="text" id="signup-company" placeholder="e.g. Apex Growth / Apollo Clinic / Ballari Layouts" required class="vanni-input" />
+        </div>
+
+        <div class="vanni-form-group">
+          <label class="vanni-label" for="signup-industry">Select Your Industry *</label>
+          <select id="signup-industry" required class="vanni-input vanni-select" onchange="document.getElementById('industry-error').style.display='none'" style="height: 42px; cursor: pointer;">
+            <option value="" disabled selected>Select Your Industry...</option>
+            <option value="AGENCY">🚀 Digital Marketing Agency &amp; Reseller</option>
+            <option value="REAL_ESTATE">🏡 Real Estate, Plots &amp; Developers</option>
+            <option value="HEALTHCARE_HOSPITAL">🏥 Healthcare, Hospital &amp; Clinics</option>
+          </select>
+          <div id="industry-error" style="display:none;color:#EF4444;font-size:11px;margin-top:5px;">⚠️ Please select your industry type to continue.</div>
+        </div>
+
+        <div class="vanni-form-group">
+          <label class="vanni-label" for="signup-email">Work Email *</label>
           <input type="email" id="signup-email" placeholder="director@company.com" required class="vanni-input" />
         </div>
 
         <div class="vanni-form-group">
-          <label class="vanni-label">Mobile Phone (For Admin Alerts)</label>
+          <label class="vanni-label" for="signup-phone">Mobile Phone (For Admin Alerts) *</label>
           <input type="tel" id="signup-phone" placeholder="+91 98450 XXXXX" required class="vanni-input" />
         </div>
 
         <div class="vanni-form-group">
-          <label class="vanni-label">Password</label>
-          <input type="password" id="signup-pass" placeholder="Create password" required class="vanni-input" />
-        </div>
-        <div class="vanni-form-group" style="margin-top: 4px;">
-          <label class="vanni-label">Your Industry / Business Type *</label>
-          <div style="display: flex; gap: 8px; margin-top: 6px;">
-            <button type="button" id="pill-agency" onclick="selectIndustryPill('AGENCY')" style="flex:1;padding:10px 8px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;color:#475569;text-align:center;line-height:1.4;">&#128640;<br>Digital Agency</button>
-            <button type="button" id="pill-health" onclick="selectIndustryPill('HEALTHCARE_HOSPITAL')" style="flex:1;padding:10px 8px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;color:#475569;text-align:center;line-height:1.4;">&#127973;<br>Healthcare</button>
-            <button type="button" id="pill-realestate" onclick="selectIndustryPill('REAL_ESTATE')" style="flex:1;padding:10px 8px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;color:#475569;text-align:center;line-height:1.4;">&#127970;<br>Real Estate</button>
-          </div>
-          <input type="hidden" id="signup-industry" value="" />
-          <div id="industry-error" style="display:none;color:#EF4444;font-size:11px;margin-top:5px;">&#9888; Please select your industry type to continue.</div>
+          <label class="vanni-label" for="signup-pass">Password *</label>
+          <input type="password" id="signup-pass" placeholder="Create password (min 6 chars)" required class="vanni-input" />
         </div>
 
-
-        <button type="submit" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 12px;">
-          Create Account & Access Console
+        <button type="submit" id="signup-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 14px;">
+          <span>Create Account &amp; Access Console</span>
         </button>
       </form>
 
@@ -224,46 +229,47 @@
   
 
     <script>
-    let _selectedIndustry = '';
-
-    function selectIndustryPill(key) {
-      _selectedIndustry = key;
-      document.getElementById('signup-industry').value = key;
-      document.getElementById('industry-error').style.display = 'none';
-      const pills = ['pill-agency', 'pill-health', 'pill-realestate'];
-      const colors = {
-        'AGENCY': { b: '#7C3AED', bg: '#F5F3FF', c: '#5B21B6' },
-        'HEALTHCARE_HOSPITAL': { b: '#0891B2', bg: '#ECFEFF', c: '#0E7490' },
-        'REAL_ESTATE': { b: '#D97706', bg: '#FFFBEB', c: '#92400E' }
-      };
-      const idMap = { 'AGENCY': 'pill-agency', 'HEALTHCARE_HOSPITAL': 'pill-health', 'REAL_ESTATE': 'pill-realestate' };
-      pills.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.style.borderColor = '#CBD5E1'; el.style.background = '#F8FAFC'; el.style.color = '#475569'; }
-      });
-      const active = document.getElementById(idMap[key]);
-      const c = colors[key];
-      if (active && c) { active.style.borderColor = c.b; active.style.background = c.bg; active.style.color = c.c; }
-    }
-
-    function handleSignup(e) {
+    async function handleSignup(e) {
       e.preventDefault();
+      const submitBtn = document.getElementById('signup-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Creating Organization Tenant...</span>';
+      }
+
+      const fullName = document.getElementById('signup-name').value.trim();
       const company = document.getElementById('signup-company').value.trim();
+      const industry = document.getElementById('signup-industry').value;
       const email = document.getElementById('signup-email').value.trim();
       const phone = document.getElementById('signup-phone').value.trim();
       const password = document.getElementById('signup-pass').value;
-      const industry = document.getElementById('signup-industry').value || _selectedIndustry;
 
       if (!industry) {
-        document.getElementById('industry-error').style.display = 'block';
+        const err = document.getElementById('industry-error');
+        if (err) err.style.display = 'block';
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Create Account &amp; Access Console</span>';
+        }
         return;
       }
 
       const orgId = 'org_' + Date.now();
+      const userId = 'usr_' + Date.now();
       const tenantKey = industry === 'AGENCY' ? 'agency' : (industry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
 
+      const userObj = {
+        id: userId,
+        email: email,
+        name: fullName || email.split('@')[0],
+        fullName: fullName || email.split('@')[0],
+        phone: phone
+      };
+
       const sessionObj = {
-        user: { id: 'usr_' + Date.now(), email: email, name: email.split('@')[0], phone: phone },
+        userId: userId,
+        email: email,
+        fullName: fullName || email.split('@')[0],
         activeOrganizationId: orgId,
         activeOrganizationName: company,
         role: 'owner',
@@ -276,23 +282,64 @@
         }]
       };
 
+      // 1. Attempt POST /api/auth/signup with { fullName, organizationName: company, email, phone, password, industry }
+      try {
+        fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName,
+            organizationName: company,
+            email,
+            phone,
+            password,
+            industry
+          })
+        }).catch(err => {
+          console.warn('Backend API signup non-blocking notice (running edge/static):', err);
+        });
+      } catch (err) {
+        console.warn('Signup fetch exception:', err);
+      }
+
+      // 2. Also save the account into a persistent localStorage registry (`vanni_accounts_db`, keyed by lowercase email)
+      // containing { user, organizationId, organizationName, industry, phone, email, passwordHash: btoa(password), onboardingCompleted: false, onboardingData: {} }
+      const accountEntry = {
+        user: userObj,
+        organizationId: orgId,
+        organizationName: company,
+        industry: industry,
+        phone: phone,
+        email: email,
+        passwordHash: btoa(password),
+        onboardingCompleted: false,
+        onboardingData: {}
+      };
+
+      try {
+        let accountsDb = {};
+        const rawDb = localStorage.getItem('vanni_accounts_db');
+        if (rawDb) {
+          try { accountsDb = JSON.parse(rawDb) || {}; } catch(e) { accountsDb = {}; }
+        }
+        accountsDb[email.toLowerCase()] = accountEntry;
+        localStorage.setItem('vanni_accounts_db', JSON.stringify(accountsDb));
+      } catch (err) {
+        console.warn('Failed to save to vanni_accounts_db:', err);
+      }
+
+      // 3. Set vanni_session, vanni_user, vanni_org_name, vanni_phone, vanni_email, vanni_industry, and vanni_onboarding_completed = 'false'
       localStorage.setItem('vanni_session', JSON.stringify(sessionObj));
-      localStorage.setItem('vanni_user', JSON.stringify(sessionObj.user));
+      localStorage.setItem('vanni_user', JSON.stringify(userObj));
       localStorage.setItem('vanni_active_tenant', orgId);
       localStorage.setItem('dhwani_active_tenant', tenantKey);
       localStorage.setItem('vanni_org_name', company);
       localStorage.setItem('vanni_phone', phone);
-      localStorage.setItem('vanni_industry', industry);
       localStorage.setItem('vanni_email', email);
-      localStorage.removeItem('vanni_onboarding_completed');
+      localStorage.setItem('vanni_industry', industry);
+      localStorage.setItem('vanni_onboarding_completed', 'false');
 
-      // Background API registration (non-blocking)
-      fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, fullName: email.split('@')[0], companyName: company })
-      }).catch(() => {});
-
+      // 4. Redirect to /app/onboarding
       window.location.href = '/app/onboarding';
     }
   </script>

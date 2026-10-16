@@ -570,7 +570,16 @@ export async function buildServer() {
   // 1.1 POST /api/auth/signup: Atomic User + Organization + Owner Membership
   fastify.post('/api/auth/signup', async (request, reply) => {
     try {
-      const { session, user, organization } = await identityService.signup(request.body);
+      const body = (request.body as any) || {};
+      const organizationName = body.organizationName || body.companyName || 'My Organization';
+      const fullName = body.fullName || (body.email ? body.email.split('@')[0] : 'Administrator');
+      const payload = {
+        ...body,
+        organizationName,
+        fullName,
+        industry: body.industry || 'REAL_ESTATE',
+      };
+      const { session, user, organization } = await identityService.signup(payload);
       const token = serializeSession(session);
       reply.setCookie(SESSION_COOKIE_NAME, token, DEFAULT_COOKIE_OPTIONS);
       return reply.send({ success: true, session, user, organization });
