@@ -73,9 +73,13 @@
       </nav>
 
       <!-- Desktop Action CTAs -->
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <a href="/login" class="vanni-button vanni-button-ghost" style="font-size: 13px;">Sign In</a>
-        <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary" style="font-size: 13px;">
+      <div style="display: flex; align-items: center; gap: 10px;" id="vanni-nav-ctas">
+        <a href="/login" id="nav-btn-signin" class="vanni-button vanni-button-ghost" style="font-size: 13px; font-weight: 500;">Sign In</a>
+        <a href="/signup" id="nav-btn-signup" class="vanni-button vanni-button-secondary" style="font-size: 13px; font-weight: 600;">Start Free</a>
+        <a href="/app/dashboard" id="nav-btn-dashboard" class="vanni-button vanni-button-primary" style="font-size: 13px; display: none;">
+          <span>Dashboard &rarr;</span>
+        </a>
+        <button type="button" id="nav-btn-demo" onclick="openDemoModal()" class="vanni-button vanni-button-primary" style="font-size: 13px;">
           <span>Talk to VANNI</span>
         </button>
         <!-- Mobile Nav Toggle -->
@@ -83,6 +87,23 @@
           &#9776;
         </button>
       </div>
+      <script>
+        (function() {
+          try {
+            var s = localStorage.getItem('vanni_session');
+            if (s && JSON.parse(s).user) {
+              var dashBtn = document.getElementById('nav-btn-dashboard');
+              var signInBtn = document.getElementById('nav-btn-signin');
+              var signUpBtn = document.getElementById('nav-btn-signup');
+              var demoBtn = document.getElementById('nav-btn-demo');
+              if (dashBtn) dashBtn.style.display = 'inline-flex';
+              if (signInBtn) signInBtn.style.display = 'none';
+              if (signUpBtn) signUpBtn.style.display = 'none';
+              if (demoBtn) demoBtn.style.display = 'none';
+            }
+          } catch(e) {}
+        })();
+      </script>
 
     </div>
 
