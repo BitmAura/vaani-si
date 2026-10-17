@@ -2000,12 +2000,18 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       const membership = session.memberships.find(
         (m) => m.organizationId === requested || m.organizationSlug === requested
       );
-      if (!membership || membership.status !== 'ACTIVE') {
-        return reply.status(403).send({
-          error: 'Cross-tenant access forbidden. You are not a member of this organization.',
-        });
+      if (membership && membership.status === 'ACTIVE') {
+        targetTenant = membership.organizationId;
+      } else {
+        const clientWs = await globalDb.getClientWorkspaceById(requested);
+        if (clientWs && session.memberships.some(m => m.organizationId === clientWs.organizationId)) {
+          targetTenant = clientWs.id;
+        } else {
+          return reply.status(403).send({
+            error: 'Cross-tenant access forbidden. You are not a member of this organization or client workspace.',
+          });
+        }
       }
-      targetTenant = membership.organizationId;
     }
 
     return db.getAllCalls(targetTenant);

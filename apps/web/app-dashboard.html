@@ -807,6 +807,18 @@
     <!-- Navigation Menu -->
     <nav class="sidebar-nav custom-scroll">
       
+      <!-- Agency Multi-Client Hub -->
+      <div id="agency-nav-group" style="display: none;">
+        <div class="nav-group-title">Agency Operations</div>
+        <button onclick="navigateToView('agency-overview')" id="nav-agency-overview" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>Client Businesses</span>
+          <span class="nav-badge" id="nav-badge-agency-clients-count">0</span>
+        </button>
+      </div>
+
       <!-- Group 1: Core Operations -->
       <div class="nav-group-title">Operations</div>
       
@@ -936,6 +948,9 @@
         <span>VANNI</span>
         <span>/</span>
         <span id="breadcrumb-org-name" style="color: var(--text-secondary); font-weight: 500;">Ballari Layouts</span>
+        <span id="breadcrumb-workspace-sep" style="display: none;">/</span>
+        <span id="breadcrumb-workspace-name" style="display: none; color: #1D4ED8; font-weight: 600;">Client Workspace</span>
+        <button id="btn-return-agency-hub" onclick="switchToAgencyHub()" class="btn-secondary" style="display: none; padding: 2px 8px; font-size: 11px; margin-left: 6px;">← Back to Agency Hub</button>
         <span>/</span>
         <span class="active" id="breadcrumb-section-name">Overview</span>
       </div>
@@ -966,6 +981,191 @@
     <!-- Scrollable Content Viewport -->
     <div class="dashboard-viewport custom-scroll">
       
+      <!-- =================================================================== -->
+      <!-- VIEW: AGENCY CLIENT DIRECTORY & DASHBOARD (PROMPT 04) -->
+      <!-- =================================================================== -->
+      <section id="view-agency-overview" class="content-container" style="display: none;">
+        
+        <!-- Agency Header -->
+        <div class="page-header-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h1 class="page-title" id="agency-page-title">Agency Client Hub</h1>
+              <span class="status-badge badge-blue">Multi-Client Mode</span>
+              <span class="status-badge badge-muted" style="font-size: 10px;">Karnataka & Pan-India</span>
+            </div>
+            <p class="page-subtitle" id="agency-page-subtitle">Manage client accounts, monitor AI employee activity, and oversee inbound lead outcomes.</p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="date-filter-group">
+              <button onclick="setAgencyDateRange('today')" class="date-filter-btn" id="btn-agency-filter-today">Today</button>
+              <button onclick="setAgencyDateRange('7d')" class="date-filter-btn" id="btn-agency-filter-7d">7 Days</button>
+              <button onclick="setAgencyDateRange('30d')" class="date-filter-btn" id="btn-agency-filter-30d">30 Days</button>
+              <button onclick="setAgencyDateRange('all')" class="date-filter-btn active" id="btn-agency-filter-all">All Time</button>
+            </div>
+
+            <button onclick="openAddClientModal()" class="btn-primary" id="btn-agency-add-client">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>+ Add Client</span>
+            </button>
+
+            <button onclick="loadAgencyOverview()" class="btn-secondary" title="Refresh Live Data" style="padding: 6px 10px;">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 6 Agency Summary Metrics -->
+        <div class="metrics-grid">
+          
+          <!-- Metric 1: Total Client Accounts -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Managed Clients</span>
+              <span class="metric-badge badge-blue" id="kpi-agency-badge-clients">Multi-Tenant</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-total-clients">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-clients-sub">0 Healthcare · 0 Real Estate</span>
+            </div>
+          </div>
+
+          <!-- Metric 2: Active AI Employees -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Active AI Employees</span>
+              <span class="metric-badge badge-confirmed" id="kpi-agency-badge-agents">Voice OS</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-active-agents">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-agents-sub">Kavya & Sahana voice agents</span>
+            </div>
+          </div>
+
+          <!-- Metric 3: Total Completed Calls -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Calls Completed</span>
+              <span class="metric-badge badge-blue">In Selected Period</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-completed-calls">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-calls-sub">Real duplex telephony sessions</span>
+            </div>
+          </div>
+
+          <!-- Metric 4: Qualified Inbound Leads -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Qualified Leads</span>
+              <span class="metric-badge badge-hot" id="kpi-agency-badge-leads">High Intent</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-qualified-leads">0</div>
+            <div class="metric-subtext">
+              <span>Hot & warm buyer inquiries</span>
+            </div>
+          </div>
+
+          <!-- Metric 5: Confirmed Appointments & Visits -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Bookings & Visits</span>
+              <span class="metric-badge badge-confirmed">Confirmed</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-bookings">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-bookings-sub">0 requested · 0 confirmed</span>
+            </div>
+          </div>
+
+          <!-- Metric 6: Total Recorded Voice Usage -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Recorded Voice Minutes</span>
+              <span class="metric-badge badge-muted">Audio Duration</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-voice-minutes">0</div>
+            <div class="metric-subtext">
+              <span>Actual billable audio minutes</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Managed Client Businesses Table Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Client Performance Directory</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">Live status, call volume, and lead generation across managed businesses</div>
+            </div>
+
+            <!-- Controls: Search & Industry Filter -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="text" id="agency-client-search" oninput="filterAgencyClients()" placeholder="Search business name, city..." style="padding: 4px 10px; font-size: 11.5px; border-radius: 5px; border: 1px solid var(--border); background: #FFFFFF; width: 200px; outline: none;">
+              
+              <select id="agency-client-industry-filter" onchange="filterAgencyClients()" style="padding: 4px 8px; font-size: 11.5px; border-radius: 5px; border: 1px solid var(--border); background: #FFFFFF; color: var(--text-secondary); outline: none;">
+                <option value="ALL">All Industries</option>
+                <option value="HEALTHCARE">Healthcare & Clinics</option>
+                <option value="REAL_ESTATE">Real Estate & Layouts</option>
+                <option value="DIGITAL_AGENCY">Marketing Agency</option>
+              </select>
+
+              <button onclick="openAddClientModal()" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px;">+ Add Client</button>
+            </div>
+          </div>
+
+          <!-- Clients Table -->
+          <div class="table-container">
+            <table class="vanni-table">
+              <thead>
+                <tr>
+                  <th>Client Business</th>
+                  <th>Industry & Type</th>
+                  <th>AI Employee</th>
+                  <th>Calls in Period</th>
+                  <th>Qualified Leads</th>
+                  <th>Appointments / Visits</th>
+                  <th>Needs Attention</th>
+                  <th>Voice Minutes</th>
+                  <th>Last Activity</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="agency-clients-table-body">
+                <!-- Dynamically hydrated from /api/agency/overview -->
+              </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div id="agency-clients-empty-state" class="empty-state-box" style="display: none;">
+              <div class="empty-state-icon">
+                <svg style="width: 20px; height: 20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div class="empty-title">No Client Businesses Added Yet</div>
+              <p class="empty-description">Add your first healthcare clinic or real estate layout client to configure their customized Kannada AI voice receptionist.</p>
+              <div style="margin-top: 8px;">
+                <button onclick="openAddClientModal()" class="btn-primary">+ Add First Client</button>
+              </div>
+            </div>
+
+            <!-- Search No Results State -->
+            <div id="agency-search-empty-state" class="empty-state-box" style="display: none;">
+              <span style="font-size: 12px; color: var(--text-muted);">No client businesses match your search filter.</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
       <!-- =================================================================== -->
       <!-- VIEW 1: HOME DASHBOARD / OVERVIEW -->
       <!-- =================================================================== -->
@@ -1457,7 +1657,39 @@
       // 1.2 Fetch Active Organization Details
       await loadOrganizationDetails();
 
-      // 1.3 Fetch Real Calls & Appointments
+      // 1.3 Check Active Workspace Context & Agency Hub
+      const activeWsCookie = document.cookie.split('; ').find(row => row.startsWith('vanni_active_workspace='))?.split('=')[1];
+      
+      if (activeIndustry === 'AGENCY') {
+        const agencyNav = document.getElementById('agency-nav-group');
+        if (agencyNav) agencyNav.style.display = 'block';
+
+        if (!activeWsCookie) {
+          // Default to Agency Overview Hub if no specific client workspace cookie
+          navigateToView('agency-overview');
+          await loadAgencyOverview();
+        } else {
+          // We are viewing a specific client workspace
+          const retBtn = document.getElementById('btn-return-agency-hub');
+          const wsSep = document.getElementById('breadcrumb-workspace-sep');
+          const wsName = document.getElementById('breadcrumb-workspace-name');
+          if (retBtn) retBtn.style.display = 'inline-flex';
+          if (wsSep) wsSep.style.display = 'inline';
+          if (wsName) {
+            wsName.style.display = 'inline';
+            // Fetch workspace name
+            try {
+              const wsRes = await fetch(`/api/workspaces/${encodeURIComponent(activeWsCookie)}`);
+              if (wsRes.ok) {
+                const wsData = await wsRes.json();
+                wsName.textContent = wsData.workspace?.name || 'Client Workspace';
+              }
+            } catch (e) {}
+          }
+        }
+      }
+
+      // 1.4 Fetch Real Calls & Appointments
       await loadCallsFromAPI();
       await loadAppointmentsFromAPI();
       await loadWhatsAppStatus();
@@ -2183,7 +2415,7 @@
 
   // 15. View Navigation & Routing
   function navigateToView(viewId) {
-    const sections = ['overview', 'calls-full', 'leads-full', 'appointments-full'];
+    const sections = ['agency-overview', 'overview', 'calls-full', 'leads-full', 'appointments-full'];
     sections.forEach(s => {
       const el = document.getElementById(`view-${s}`);
       if (el) el.style.display = s === viewId || (viewId === 'calls' && s === 'calls-full') || (viewId === 'leads' && s === 'leads-full') || (viewId === 'appointments' && s === 'appointments-full') ? 'flex' : 'none';
@@ -2221,7 +2453,387 @@
 
   // Run initial dashboard hydration on DOM ready
   window.addEventListener('DOMContentLoaded', initDashboard);
+
+  // =========================================================================
+  // AGENCY MULTI-CLIENT & OVERVIEW LOGIC (PROMPT 04)
+  // =========================================================================
+  let agencyOverviewData = null;
+  let agencyDatePeriod = 'all';
+
+  function onAddClientIndustryChange(industry) {
+    const subSelect = document.getElementById('add-client-subcategory');
+    if (!subSelect) return;
+    subSelect.innerHTML = '';
+
+    if (industry === 'HEALTHCARE') {
+      subSelect.innerHTML = `
+        <option value="DENTAL">Dental Clinic</option>
+        <option value="ORTHOPAEDICS">Orthopaedics & Joints</option>
+        <option value="IVF">IVF & Fertility</option>
+        <option value="HOSPITAL">General Hospital / Clinic</option>
+      `;
+    } else if (industry === 'REAL_ESTATE') {
+      subSelect.innerHTML = `
+        <option value="DEVELOPER">Layout Developer</option>
+        <option value="BROKERAGE">Real Estate Brokerage</option>
+        <option value="SALES">Sales & Follow-up Desk</option>
+      `;
+    } else {
+      subSelect.innerHTML = `
+        <option value="MARKETING_AGENCY">Digital Marketing Agency</option>
+      `;
+    }
+  }
+
+  function openAddClientModal() {
+    const modal = document.getElementById('modal-add-client');
+    const err = document.getElementById('add-client-error-banner');
+    if (err) err.style.display = 'none';
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+  }
+
+  function closeAddClientModal() {
+    const modal = document.getElementById('modal-add-client');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+  }
+
+  async function handleCreateClientSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-add-client');
+    const errBanner = document.getElementById('add-client-error-banner');
+    if (errBanner) errBanner.style.display = 'none';
+
+    const name = document.getElementById('add-client-name')?.value?.trim();
+    const industryCategory = document.getElementById('add-client-industry')?.value;
+    const subcategory = document.getElementById('add-client-subcategory')?.value;
+    const operatingLocation = document.getElementById('add-client-location')?.value?.trim();
+    const primaryPhone = document.getElementById('add-client-phone')?.value?.trim();
+    const primaryEmail = document.getElementById('add-client-email')?.value?.trim() || undefined;
+    const dialect = document.getElementById('add-client-dialect')?.value;
+
+    if (!name) return;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>Creating Client Workspace...</span>';
+    }
+
+    try {
+      const res = await fetch('/api/agency/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          industryCategory,
+          subcategory,
+          operatingLocation: operatingLocation || 'Karnataka, India',
+          primaryPhone: primaryPhone || '+91 80 4719 2000',
+          primaryEmail,
+          languagePreferences: {
+            primary: dialect === 'ENGLISH_INDIAN_CORPORATE' ? 'en-IN' : (dialect === 'KANGLISH_BUSINESS' ? 'kn-en' : 'kn-IN'),
+            conversationalStyle: 'POLITE_BUSINESS',
+            regionalDialect: dialect,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Failed to create client account');
+      }
+
+      closeAddClientModal();
+      document.getElementById('form-add-client')?.reset();
+
+      // Refresh agency overview and clients table
+      await loadAgencyOverview();
+      await renderOrgSwitcher();
+
+    } catch (err) {
+      if (errBanner) {
+        errBanner.textContent = err.message || 'Error creating client account';
+        errBanner.style.display = 'block';
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Create Client Account</span>';
+      }
+    }
+  }
+
+  function setAgencyDateRange(period) {
+    agencyDatePeriod = period;
+    ['today', '7d', '30d', 'all'].forEach(p => {
+      const b = document.getElementById(`btn-agency-filter-${p}`);
+      if (b) {
+        if (p === period) b.classList.add('active');
+        else b.classList.remove('active');
+      }
+    });
+    loadAgencyOverview();
+  }
+
+  async function loadAgencyOverview() {
+    try {
+      const res = await fetch(`/api/agency/overview?period=${agencyDatePeriod}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      agencyOverviewData = data;
+
+      // Update KPI cards
+      const summary = data.summary || {};
+      const elClients = document.getElementById('kpi-agency-total-clients');
+      const elAgents = document.getElementById('kpi-agency-active-agents');
+      const elCalls = document.getElementById('kpi-agency-completed-calls');
+      const elLeads = document.getElementById('kpi-agency-qualified-leads');
+      const elBookings = document.getElementById('kpi-agency-bookings');
+      const elMins = document.getElementById('kpi-agency-voice-minutes');
+      const navBadge = document.getElementById('nav-badge-agency-clients-count');
+
+      if (elClients) elClients.textContent = summary.totalClients || 0;
+      if (elAgents) elAgents.textContent = summary.activeAiEmployees || 0;
+      if (elCalls) elCalls.textContent = summary.completedCalls || 0;
+      if (elLeads) elLeads.textContent = summary.qualifiedLeads || 0;
+      if (elBookings) elBookings.textContent = summary.appointmentsConfirmed || 0;
+      if (elMins) elMins.textContent = summary.totalVoiceMinutes || 0;
+      if (navBadge) navBadge.textContent = summary.totalClients || 0;
+
+      const subBookings = document.getElementById('kpi-agency-bookings-sub');
+      if (subBookings) {
+        subBookings.textContent = `${summary.appointmentsRequested || 0} requested · ${summary.appointmentsConfirmed || 0} confirmed`;
+      }
+
+      renderAgencyClientsTable(data.clients || []);
+
+    } catch (e) {
+      console.warn('[Agency Overview Error]', e);
+    }
+  }
+
+  function filterAgencyClients() {
+    if (!agencyOverviewData || !agencyOverviewData.clients) return;
+    const q = document.getElementById('agency-client-search')?.value?.toLowerCase().trim() || '';
+    const ind = document.getElementById('agency-client-industry-filter')?.value || 'ALL';
+
+    const filtered = agencyOverviewData.clients.filter(c => {
+      const matchSearch = !q || c.name.toLowerCase().includes(q) || (c.operatingLocation && c.operatingLocation.toLowerCase().includes(q));
+      const matchIndustry = ind === 'ALL' || c.industryCategory === ind || c.subcategory === ind;
+      return matchSearch && matchIndustry;
+    });
+
+    renderAgencyClientsTable(filtered);
+  }
+
+  function renderAgencyClientsTable(clients) {
+    const tbody = document.getElementById('agency-clients-table-body');
+    const emptyBox = document.getElementById('agency-clients-empty-state');
+    const searchEmptyBox = document.getElementById('agency-search-empty-state');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (!clients || clients.length === 0) {
+      const q = document.getElementById('agency-client-search')?.value?.trim();
+      if (q && agencyOverviewData && agencyOverviewData.clients && agencyOverviewData.clients.length > 0) {
+        if (searchEmptyBox) searchEmptyBox.style.display = 'flex';
+        if (emptyBox) emptyBox.style.display = 'none';
+      } else {
+        if (emptyBox) emptyBox.style.display = 'flex';
+        if (searchEmptyBox) searchEmptyBox.style.display = 'none';
+      }
+      return;
+    }
+
+    if (emptyBox) emptyBox.style.display = 'none';
+    if (searchEmptyBox) searchEmptyBox.style.display = 'none';
+
+    clients.forEach(c => {
+      const tr = document.createElement('tr');
+      const m = c.metrics || {};
+      const indIcon = c.industryCategory === 'HEALTHCARE' ? '🏥' : (c.industryCategory === 'REAL_ESTATE' ? '🏡' : '🚀');
+      const indBadgeClass = c.industryCategory === 'HEALTHCARE' ? 'badge-blue' : (c.industryCategory === 'REAL_ESTATE' ? 'badge-warm' : 'badge-muted');
+
+      const aiStatus = c.aiEmployee?.status || 'DRAFT';
+      const aiStatusBadge = aiStatus === 'ACTIVE'
+        ? '<span class="status-badge badge-confirmed">Active · ' + (c.aiEmployee?.name || 'Agent') + '</span>'
+        : (aiStatus === 'READY'
+          ? '<span class="status-badge badge-blue">Ready · ' + (c.aiEmployee?.name || 'Agent') + '</span>'
+          : '<span class="status-badge badge-muted">Draft · ' + (c.aiEmployee?.name || 'Agent') + '</span>');
+
+      let lastActText = 'No activity';
+      if (m.lastActivity) {
+        const d = new Date(m.lastActivity);
+        lastActText = !isNaN(d.getTime()) ? d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) : 'Recent';
+      }
+
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight: 600; color: var(--text-primary); font-size: 12.5px;">${c.name}</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">${c.operatingLocation || 'Ballari, Karnataka'} · ${c.primaryPhone || ''}</div>
+        </td>
+        <td>
+          <span class="status-badge ${indBadgeClass}" style="gap: 4px;">
+            <span>${indIcon}</span>
+            <span>${c.subcategory || c.industryCategory}</span>
+          </span>
+        </td>
+        <td>${aiStatusBadge}</td>
+        <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${m.totalCalls || 0}</td>
+        <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #B91C1C;">${m.qualifiedLeads || 0}</td>
+        <td style="font-size: 11.5px;">
+          <span style="font-weight: 600; color: #047857;">${m.appointmentsConfirmed || 0} confirmed</span>
+          ${m.appointmentsRequested > 0 ? `<span style="color: var(--text-muted); font-size: 10.5px;"> (${m.appointmentsRequested} req)</span>` : ''}
+        </td>
+        <td>
+          ${m.followUpsRequiringAttention > 0
+            ? `<span class="status-badge badge-hot">${m.followUpsRequiringAttention} Hot / Urgent</span>`
+            : `<span style="color: var(--text-muted); font-size: 11.5px;">0 Pending</span>`}
+        </td>
+        <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">${m.totalVoiceMinutes || 0} min</td>
+        <td style="font-size: 11.5px; color: var(--text-muted);">${lastActText}</td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button onclick="openClientWorkspace('${c.id}')" class="btn-primary" style="padding: 4px 10px; font-size: 11px; margin-right: 4px;">
+            <span>Open Client</span>
+          </button>
+          <a href="/app/agents" class="btn-secondary" style="padding: 4px 8px; font-size: 11px; text-decoration: none;">AI Setup</a>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function openClientWorkspace(workspaceId) {
+    try {
+      const res = await fetch(`/api/agency/clients/${encodeURIComponent(workspaceId)}/switch`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error('[Open Client Workspace Error]', e);
+    }
+  }
+
+  async function switchToAgencyHub() {
+    // Clear active workspace cookie and refresh into agency overview
+    document.cookie = 'vanni_active_workspace=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    navigateToView('agency-overview');
+    await loadAgencyOverview();
+    const btn = document.getElementById('btn-return-agency-hub');
+    const wsName = document.getElementById('breadcrumb-workspace-name');
+    const wsSep = document.getElementById('breadcrumb-workspace-sep');
+    if (btn) btn.style.display = 'none';
+    if (wsName) wsName.style.display = 'none';
+    if (wsSep) wsSep.style.display = 'none';
+  }
+
 </script>
+
+
+  <!-- ========================================================================= -->
+  <!-- ADD CLIENT MODAL (PROMPT 04) -->
+  <!-- ========================================================================= -->
+  <div id="modal-add-client" class="drawer-overlay" style="display: none; align-items: center; justify-content: center; z-index: 100;">
+    <div style="background: #FFFFFF; border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 540px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden;" onclick="event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em;">Add Client Business Account</h2>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Create an isolated workspace with custom industry AI voice persona.</p>
+        </div>
+        <button onclick="closeAddClientModal()" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); padding: 4px;">
+          <svg style="width: 18px; height: 18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body / Form -->
+      <form id="form-add-client" onsubmit="handleCreateClientSubmit(event)" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Step 1: Business Identity -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Client Business Name *</label>
+          <input type="text" id="add-client-name" required placeholder="e.g. Ballari Multispecialty Dental / Tungabhadra Meadows" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none;">
+        </div>
+
+        <!-- Industry & Subcategory Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Industry *</label>
+            <select id="add-client-industry" onchange="onAddClientIndustryChange(this.value)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; background: #FFFFFF; outline: none;">
+              <option value="HEALTHCARE">🏥 Healthcare</option>
+              <option value="REAL_ESTATE">🏡 Real Estate</option>
+              <option value="DIGITAL_AGENCY">🚀 Digital Agency</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Subcategory *</label>
+            <select id="add-client-subcategory" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; background: #FFFFFF; outline: none;">
+              <!-- Dynamically populated based on selected industry -->
+              <option value="DENTAL">Dental Clinic</option>
+              <option value="ORTHOPAEDICS">Orthopaedics & Joints</option>
+              <option value="IVF">IVF & Fertility</option>
+              <option value="HOSPITAL">General Hospital / Clinic</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Location & Contact -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Operating Location *</label>
+            <input type="text" id="add-client-location" required placeholder="e.g. Ballari / Bengaluru" value="Ballari, Karnataka" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; outline: none;">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Hotline Phone *</label>
+            <input type="tel" id="add-client-phone" required placeholder="+91 80 4719 2000" value="+91 8392 240001" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; outline: none;">
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Client Notification Email</label>
+          <input type="email" id="add-client-email" placeholder="client-admin@business.in" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; outline: none;">
+        </div>
+
+        <!-- Dialect / Persona Selection -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Recommended Regional Dialect</label>
+          <select id="add-client-dialect" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; background: #FFFFFF; outline: none;">
+            <option value="KANGLISH_BUSINESS">Bilingual Kanglish (Commercial / Urban)</option>
+            <option value="KANNADA_STANDARD_POLITE">Standard Polite Kannada (OPD / Healthcare)</option>
+            <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka Kannada (Ballari / Hubballi)</option>
+            <option value="MYSORE_MANDYA_REGIONAL">Mysore / Mandya Regional</option>
+            <option value="ENGLISH_INDIAN_CORPORATE">Indian English Corporate</option>
+          </select>
+        </div>
+
+        <div id="add-client-error-banner" style="display: none; padding: 8px 12px; border-radius: 6px; background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; font-size: 12px;"></div>
+
+        <!-- Footer Actions -->
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">
+          <button type="button" onclick="closeAddClientModal()" class="btn-secondary" style="padding: 8px 16px;">Cancel</button>
+          <button type="submit" id="btn-submit-add-client" class="btn-primary" style="padding: 8px 18px;">
+            <span>Create Client Account</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
 
 </body>
 </html>
