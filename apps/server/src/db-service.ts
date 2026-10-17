@@ -1,3 +1,4 @@
+import { globalDb } from '@vanni/database';
 /**
  * Layer 1 & 5: Persistent Storage Engine
  * Dhwani SI — File-Backed Call Session & Lead Dossier Database
@@ -76,6 +77,26 @@ export class CallDatabaseService {
       list.unshift(record); // Prepend to top
     }
     this.writeRecords(list);
+
+    // Sync to globalDb durable store
+    globalDb.saveCall({
+      id: record.id,
+      tenantId: record.tenantId,
+      caller: record.caller,
+      phone: record.phone,
+      direction: record.direction === 'OUTBOUND' ? 'OUTBOUND' : 'INBOUND',
+      durationSeconds: record.durationSec,
+      intent: record.intent,
+      outcome: record.outcome,
+      leadRating: record.status === 'HOT_LEAD' ? 'HOT' : (record.status === 'WARM' ? 'WARM' : (record.status === 'COLD' ? 'COLD' : 'UNQUALIFIED')),
+      city: record.city,
+      transcript: Array.isArray(record.transcript) ? record.transcript.map(t => ({
+        speaker: t.speaker === 'AI' ? 'AI' : 'CUSTOMER',
+        text: t.text,
+        timestamp: t.time || new Date().toISOString(),
+      })) : [],
+      createdAt: record.time || new Date().toISOString(),
+    }).catch(() => {});
   }
 
   private writeRecords(records: StoredCallRecord[]): void {

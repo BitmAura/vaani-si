@@ -44,6 +44,12 @@ export class TelephonyRouter {
     const formattedPhone = req.targetPhoneNumber.replace(/\D/g, '');
 
     if (!this.apiKey || !this.accountSid) {
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          success: false,
+          message: 'Telephony provider is unconfigured in production. EXOTEL_ACCOUNT_SID and EXOTEL_API_KEY are required.',
+        };
+      }
       console.log(`[Telephony Gateway] Mock Outbound Cellular Call Dispatched to +91 ${formattedPhone}`);
       return {
         success: true,

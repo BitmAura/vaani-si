@@ -1,3 +1,4 @@
+import { PermissionService } from '@vanni/auth';
 /**
  * @vanni/api — Organization Management Routes
  *
@@ -12,8 +13,9 @@ import { globalDb } from '@vanni/database';
 import { logger } from '@vanni/observability';
 import crypto from 'node:crypto';
 
-function getOrgId(req: FastifyRequest): string {
-  return (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+function getOrgId(req: FastifyRequest): string | null {
+  const auth = PermissionService.resolveAuthContext(req.headers);
+  return auth.isAuthenticated ? auth.organizationId : null;
 }
 
 // Demo organization dataset for Karnataka
@@ -65,8 +67,18 @@ const DEMO_ORGS = [
 export async function registerOrganizationRoutes(fastify: FastifyInstance) {
   // GET /api/organization — Current org details (used by app-agents.html)
   fastify.get('/api/organization', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = getOrgId(req);
-    const org = DEMO_ORGS.find(o => o.id === orgId) || DEMO_ORGS[0];
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication required' });
+    }
+    const orgId = auth.organizationId;
+    const org = DEMO_ORGS.find(o => o.id === orgId) || await globalDb.getOrganizationById(orgId) || {
+      id: orgId,
+      name: 'Authenticated Organization',
+      slug: 'org',
+      industry: 'REAL_ESTATE',
+      status: 'ACTIVE',
+    };
 
     return reply.send({
       success: true,

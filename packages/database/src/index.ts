@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 /**
  * @vanni/database — Multi-Tenant Database Client & Business Brain Repository
  */
@@ -2728,4 +2731,187 @@ export class InMemoryDatabaseService implements IDatabaseService {
 }
 
 // Global Singleton for Development & Test Runtime
-export const globalDb: IDatabaseService = new InMemoryDatabaseService();
+
+export class DurableDatabaseService extends InMemoryDatabaseService {
+  private persistPath: string;
+  private callsFilePath: string;
+  private supabase: SupabaseClient | null = null;
+  private isWriting = false;
+
+  constructor() {
+    super();
+    const dataDir = path.resolve(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      try { fs.mkdirSync(dataDir, { recursive: true }); } catch {}
+    }
+    this.persistPath = path.join(dataDir, 'vanni_database.json');
+    this.callsFilePath = path.join(dataDir, 'calls.json');
+
+    // Supabase integration when credentials exist
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseKey) {
+      try {
+        this.supabase = createClient(supabaseUrl, supabaseKey);
+      } catch (err: any) {
+        console.warn('[DurableDatabaseService] Supabase client init error:', err.message);
+      }
+    }
+
+    this.loadInitialData();
+  }
+
+  private loadInitialData(): void {
+    if (fs.existsSync(this.persistPath)) {
+      try {
+        const raw = fs.readFileSync(this.persistPath, 'utf8');
+        const data = JSON.parse(raw);
+        if (Array.isArray(data.organizations)) {
+          for (const o of data.organizations) super.saveOrganization(o);
+        }
+        if (Array.isArray(data.calls)) {
+          for (const c of data.calls) super.saveCall(c);
+        }
+        if (Array.isArray(data.leads)) {
+          for (const l of data.leads) super.saveLead(l);
+        }
+        if (Array.isArray(data.appointments)) {
+          for (const a of data.appointments) super.saveAppointment(a);
+        }
+        if (Array.isArray(data.members)) {
+          for (const m of data.members) super.saveMember(m);
+        }
+        if (Array.isArray(data.subscriptions)) {
+          for (const s of data.subscriptions) super.saveSubscription(s);
+        }
+      } catch (err: any) {
+        console.warn('[DurableDatabaseService] Failed to load snapshot:', err.message);
+      }
+    }
+
+    // Unify with data/calls.json from telephony and WebSocket streams
+    if (fs.existsSync(this.callsFilePath)) {
+      try {
+        const raw = fs.readFileSync(this.callsFilePath, 'utf8');
+        const calls = JSON.parse(raw);
+        if (Array.isArray(calls)) {
+          for (const c of calls) {
+            super.saveCall({
+              id: c.id,
+              tenantId: c.tenantId || c.organizationId || 'a0000000-0000-0000-0000-000000000001',
+              caller: c.caller || 'Caller',
+              phone: c.phone || '',
+              direction: c.direction === 'OUTBOUND' ? 'OUTBOUND' : 'INBOUND',
+              durationSeconds: c.durationSec || 0,
+              intent: c.intent || '',
+              outcome: c.outcome || '',
+              leadRating: c.status || 'WARM',
+              city: c.city || 'Karnataka',
+              transcript: Array.isArray(c.transcript) ? c.transcript : [],
+              createdAt: c.time || new Date().toISOString(),
+            });
+          }
+        }
+      } catch {}
+    }
+  }
+
+  private persistSnapshot(): void {
+    if (this.isWriting) return;
+    this.isWriting = true;
+    try {
+      const data = {
+        savedAt: new Date().toISOString(),
+        organizations: Array.from((this as any).organizations.values()),
+        calls: Array.from((this as any).calls.values()),
+        leads: Array.from((this as any).leads.values()),
+        appointments: Array.from((this as any).appointments.values()),
+        members: Array.from((this as any).members.values()),
+        subscriptions: Array.from((this as any).subscriptions.values()),
+      };
+      const tempPath = `${this.persistPath}.${Date.now()}.tmp`;
+      fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
+      fs.renameSync(tempPath, this.persistPath);
+    } catch {
+      try {
+        fs.writeFileSync(this.persistPath, JSON.stringify({
+          savedAt: new Date().toISOString(),
+          calls: Array.from((this as any).calls.values()),
+          leads: Array.from((this as any).leads.values()),
+          appointments: Array.from((this as any).appointments.values()),
+        }, null, 2), 'utf8');
+      } catch {}
+    } finally {
+      this.isWriting = false;
+    }
+  }
+
+  override async saveCall(call: CallRecordDTO): Promise<void> {
+    await super.saveCall(call);
+    this.persistSnapshot();
+    if (this.supabase) {
+      this.supabase.from('calls').upsert({
+        id: call.id,
+        organization_id: call.tenantId,
+        direction: call.direction,
+        caller_phone: call.phone,
+        caller_name: call.caller,
+        duration_seconds: call.durationSeconds,
+        lead_rating: call.leadRating,
+        started_at: call.createdAt,
+        outcome: call.outcome,
+      }).then(() => {}, (err: any) => {
+        console.warn('[DurableDatabaseService] Supabase call sync error:', err.message);
+      });
+    }
+  }
+
+  override async saveLead(lead: LeadDossierDTO): Promise<void> {
+    await super.saveLead(lead);
+    this.persistSnapshot();
+    if (this.supabase) {
+      this.supabase.from('leads').upsert({
+        id: lead.id,
+        organization_id: lead.tenantId,
+        contact_phone: lead.callerPhone,
+        contact_name: lead.callerName,
+        rating: lead.leadRating,
+        intent: lead.requirementSummary,
+        budget: lead.budgetOrFee,
+      }).then(() => {}, () => {});
+    }
+  }
+
+  override async saveAppointment(appointment: AppointmentSlotDTO): Promise<void> {
+    await super.saveAppointment(appointment);
+    this.persistSnapshot();
+    if (this.supabase) {
+      this.supabase.from('appointments').upsert({
+        id: appointment.id,
+        organization_id: appointment.tenantId,
+        contact_phone: appointment.customerPhone,
+        contact_name: appointment.customerName,
+        appointment_time: appointment.scheduledTime,
+        status: appointment.status,
+      }).then(() => {}, () => {});
+    }
+  }
+
+  override async saveOrganization(org: OrganizationDTO): Promise<void> {
+    await super.saveOrganization(org);
+    this.persistSnapshot();
+  }
+
+  override async saveMember(member: OrganizationMemberDTO): Promise<void> {
+    await super.saveMember(member);
+    this.persistSnapshot();
+  }
+
+  override async saveSubscription(sub: SubscriptionDTO): Promise<void> {
+    await super.saveSubscription(sub);
+    this.persistSnapshot();
+  }
+}
+
+// Global Singleton for Development, Test & Production Runtime
+export const globalDb: IDatabaseService = new DurableDatabaseService();

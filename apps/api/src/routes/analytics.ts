@@ -12,13 +12,18 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { globalDb } from '@vanni/database';
 import { UsageMeteringEngine } from '@vanni/observability';
+import { PermissionService } from '@vanni/auth';
 
 const meteringEngine = new UsageMeteringEngine(globalDb);
 
 export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
   // 1. GET /api/analytics/overview
   fastify.get('/api/analytics/overview', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication required' });
+    }
+    const orgId = auth.organizationId;
     const query = req.query as { period?: string; startDate?: string; endDate?: string };
 
     const overview = await globalDb.getAnalyticsOverview(
@@ -33,7 +38,11 @@ export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
 
   // 2. GET /api/analytics/calls
   fastify.get('/api/analytics/calls', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication required' });
+    }
+    const orgId = auth.organizationId;
     const calls = await globalDb.getCalls(orgId);
 
     const total = calls.length;
@@ -60,7 +69,11 @@ export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
 
   // 3. GET /api/analytics/usage
   fastify.get('/api/analytics/usage', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication required' });
+    }
+    const orgId = auth.organizationId;
     const query = req.query as { billingPeriod?: string };
 
     const ledger = await globalDb.getUsageLedgerRecords(orgId, query.billingPeriod);
@@ -78,7 +91,11 @@ export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
 
   // 4. GET /api/analytics/export
   fastify.get('/api/analytics/export', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication required' });
+    }
+    const orgId = auth.organizationId;
     const query = req.query as { startDate?: string; endDate?: string };
 
     const csvContent = await meteringEngine.exportUsageCsv(orgId, query.startDate, query.endDate);

@@ -1,61 +1,109 @@
 -- =========================================================================
--- VANNI — 002_rls_policies.sql
--- PostgreSQL Row-Level Security Policies for Strict Tenant Data Isolation
+-- VANNI — 002_rls_policies.sql (Reconciled Multi-Tenant Security)
+-- PostgreSQL Row-Level Security Policies for Strict Organization Data Isolation
 -- =========================================================================
 
--- Enable RLS across all operational tables
-ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE calls ENABLE ROW LEVEL SECURITY;
-ALTER TABLE call_transcripts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE knowledge_bases ENABLE ROW LEVEL SECURITY;
-ALTER TABLE knowledge_documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE knowledge_chunks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tools ENABLE ROW LEVEL SECURITY;
-ALTER TABLE agent_tools ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaign_leads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE phone_numbers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
+-- Enable RLS across all operational tables defined in 001_initial_schema
+ALTER TABLE IF EXISTS public.organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.organization_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.agents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.agent_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.calls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.transcripts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.call_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.appointments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.business_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.business_hours ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.business_staff ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.business_services ENABLE ROW LEVEL SECURITY;
 
--- Helper function to extract tenant_id from JWT
-CREATE OR REPLACE FUNCTION current_tenant_id() RETURNS UUID AS $$
-  SELECT NULLIF(current_setting('request.jwt.claim.tenant_id', true), '')::UUID;
-$$ LANGUAGE SQL STABLE;
+-- Helper function to extract organization_id from JWT or active membership
+CREATE OR REPLACE FUNCTION public.current_org_id() RETURNS UUID AS $$
+BEGIN
+  -- Service role bypasses RLS for system operations
+  IF NULLIF(current_setting('request.jwt.claim.role', true), '') = 'service_role' THEN
+    RETURN NULL;
+  END IF;
+  RETURN NULLIF(current_setting('request.jwt.claim.organization_id', true), '')::UUID;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
--- 1. Tenants Policy
-CREATE POLICY tenant_isolation_tenants ON tenants
+-- Reusable predicate: is the current user an active member of target organization?
+CREATE OR REPLACE FUNCTION public.is_member_of_org(target_org_id UUID) RETURNS BOOLEAN AS $$
+BEGIN
+  IF NULLIF(current_setting('request.jwt.claim.role', true), '') = 'service_role' THEN
+    RETURN TRUE;
+  END IF;
+
+  RETURN EXISTS (
+    SELECT 1 FROM public.organization_members
+    WHERE organization_id = target_org_id
+      AND user_id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- 1. Organizations Policy: Members can view their own organization
+DROP POLICY IF EXISTS org_isolation_organizations ON public.organizations;
+CREATE POLICY org_isolation_organizations ON public.organizations
   FOR ALL
-  USING (id = current_tenant_id() OR current_setting('request.jwt.claim.role', true) = 'service_role');
+  USING (
+    public.is_member_of_org(id) OR
+    current_setting('request.jwt.claim.role', true) = 'service_role'
+  );
 
--- 2. Agents Policy
-CREATE POLICY tenant_isolation_agents ON agents
+-- 2. Organization Members Policy
+DROP POLICY IF EXISTS org_isolation_members ON public.organization_members;
+CREATE POLICY org_isolation_members ON public.organization_members
   FOR ALL
-  USING (tenant_id = current_tenant_id() OR current_setting('request.jwt.claim.role', true) = 'service_role');
+  USING (
+    public.is_member_of_org(organization_id) OR
+    user_id = auth.uid() OR
+    current_setting('request.jwt.claim.role', true) = 'service_role'
+  );
 
--- 3. Calls Policy
-CREATE POLICY tenant_isolation_calls ON calls
+-- 3. Agents Policy
+DROP POLICY IF EXISTS org_isolation_agents ON public.agents;
+CREATE POLICY org_isolation_agents ON public.agents
   FOR ALL
-  USING (tenant_id = current_tenant_id() OR current_setting('request.jwt.claim.role', true) = 'service_role');
+  USING (
+    public.is_member_of_org(organization_id) OR
+    current_setting('request.jwt.claim.role', true) = 'service_role'
+  );
 
--- 4. Call Transcripts Policy
-CREATE POLICY tenant_isolation_transcripts ON call_transcripts
+-- 4. Calls Policy
+DROP POLICY IF EXISTS org_isolation_calls ON public.calls;
+CREATE POLICY org_isolation_calls ON public.calls
   FOR ALL
-  USING (tenant_id = current_tenant_id() OR current_setting('request.jwt.claim.role', true) = 'service_role');
+  USING (
+    public.is_member_of_org(organization_id) OR
+    current_setting('request.jwt.claim.role', true) = 'service_role'
+  );
 
--- 5. Leads Policy
-CREATE POLICY tenant_isolation_leads ON leads
+-- 5. Transcripts Policy
+DROP POLICY IF EXISTS org_isolation_transcripts ON public.transcripts;
+CREATE POLICY org_isolation_transcripts ON public.transcripts
   FOR ALL
-  USING (tenant_id = current_tenant_id() OR current_setting('request.jwt.claim.role', true) = 'service_role');
+  USING (
+    public.is_member_of_org(organization_id) OR
+    current_setting('request.jwt.claim.role', true) = 'service_role'
+  );
 
--- 6. Appointments Policy
-CREATE POLICY tenant_isolation_appointments ON appointments
+-- 6. Leads Policy
+DROP POLICY IF EXISTS org_isolation_leads ON public.leads;
+CREATE POLICY org_isolation_leads ON public.leads
   FOR ALL
-  USING (tenant_id = current_tenant_id() OR current_setting('request.jwt.claim.role', true) = 'service_role');
+  USING (
+    public.is_member_of_org(organization_id) OR
+    current_setting('request.jwt.claim.role', true) = 'service_role'
+  );
 
--- 7. Knowledge Bases Policy
-CREATE POLICY tenant_isolation_knowledge ON knowledge_bases
+-- 7. Appointments Policy
+DROP POLICY IF EXISTS org_isolation_appointments ON public.appointments;
+CREATE POLICY org_isolation_appointments ON public.appointments
   FOR ALL
-  USING (tenant_id = current_tenant_id() OR current_setting('request.jwt.claim.role', true) = 'service_role');
+  USING (
+    public.is_member_of_org(organization_id) OR
+    current_setting('request.jwt.claim.role', true) = 'service_role'
+  );

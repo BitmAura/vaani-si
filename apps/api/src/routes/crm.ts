@@ -1,3 +1,4 @@
+import { PermissionService } from '@vanni/auth';
 /**
  * @vanni/api — CRM & Outbound Call Inception Routes
  *

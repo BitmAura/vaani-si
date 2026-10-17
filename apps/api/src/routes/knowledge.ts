@@ -17,20 +17,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { logger } from '@vanni/observability';
 import crypto from 'node:crypto';
-import { sessionStore } from './auth';
+import { PermissionService } from '@vanni/auth';
 
 function getOrgId(req: FastifyRequest): string {
-  // If explicitly provided
-  if (req.headers['x-organization-id']) {
-    return req.headers['x-organization-id'] as string;
-  }
-  // Check session token
-  const token = req.headers['x-session-token'] as string;
-  if (token) {
-    const session = sessionStore.get(token);
-    if (session?.activeOrganizationId) return session.activeOrganizationId;
-  }
-  return 'a0000000-0000-0000-0000-000000000001';
+  const auth = PermissionService.resolveAuthContext(req.headers);
+  return auth.organizationId || '';
 }
 
 // In-memory knowledge stores per org (clean empty state ready for real uploads)
@@ -42,6 +33,7 @@ export async function registerKnowledgeRoutes(fastify: FastifyInstance) {
   // GET /api/business-brain
   fastify.get('/api/business-brain', async (req: FastifyRequest, reply: FastifyReply) => {
     const orgId = getOrgId(req);
+    if (!orgId) return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
     const brain = businessBrainStore.get(orgId);
 
     if (!brain) {
@@ -65,6 +57,7 @@ export async function registerKnowledgeRoutes(fastify: FastifyInstance) {
   // GET /api/business-brain/snapshot
   fastify.get('/api/business-brain/snapshot', async (req: FastifyRequest, reply: FastifyReply) => {
     const orgId = getOrgId(req);
+    if (!orgId) return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
     const brain = businessBrainStore.get(orgId);
     const sources = knowledgeSourcesStore.get(orgId) || [];
     const docs = knowledgeDocsStore.get(orgId) || [];
@@ -86,6 +79,7 @@ export async function registerKnowledgeRoutes(fastify: FastifyInstance) {
   // POST /api/business-brain/compile
   fastify.post('/api/business-brain/compile', async (req: FastifyRequest, reply: FastifyReply) => {
     const orgId = getOrgId(req);
+    if (!orgId) return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
     const existing = businessBrainStore.get(orgId) || {};
 
     const updated = {

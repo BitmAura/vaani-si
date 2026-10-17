@@ -7,18 +7,22 @@
  * - Realtime voice minutes & token consumption
  * - Provider cost estimates vs actuals
  * - CSV usage export
+ *
+ * SECURITY: Tenant scope is strictly derived from the authenticated session.
+ * Client-supplied x-organization-id headers and query params are rejected.
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { globalDb } from '@vanni/database';
 import { UsageMeteringEngine } from '@vanni/observability';
+import { requireTenantContext } from '../http-auth.js';
 
 const meteringEngine = new UsageMeteringEngine(globalDb);
 
 export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
   // 1. GET /api/analytics/overview
   fastify.get('/api/analytics/overview', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const { tenantId: orgId } = requireTenantContext(req);
     const query = req.query as { period?: string; startDate?: string; endDate?: string };
 
     const overview = await globalDb.getAnalyticsOverview(
@@ -33,7 +37,7 @@ export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
 
   // 2. GET /api/analytics/calls
   fastify.get('/api/analytics/calls', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const { tenantId: orgId } = requireTenantContext(req);
     const calls = await globalDb.getCalls(orgId);
 
     const total = calls.length;
@@ -60,7 +64,7 @@ export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
 
   // 3. GET /api/analytics/usage
   fastify.get('/api/analytics/usage', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const { tenantId: orgId } = requireTenantContext(req);
     const query = req.query as { billingPeriod?: string };
 
     const ledger = await globalDb.getUsageLedgerRecords(orgId, query.billingPeriod);
@@ -78,7 +82,7 @@ export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
 
   // 4. GET /api/analytics/export
   fastify.get('/api/analytics/export', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const { tenantId: orgId } = requireTenantContext(req);
     const query = req.query as { startDate?: string; endDate?: string };
 
     const csvContent = await meteringEngine.exportUsageCsv(orgId, query.startDate, query.endDate);

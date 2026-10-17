@@ -12,7 +12,7 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { globalDb } from '@vanni/database';
-import { canManageBilling } from '@vanni/auth';
+import { canManageBilling, PermissionService } from '@vanni/auth';
 import { UserRole, SubscriptionDTO, PaymentRecordDTO } from '@vanni/shared';
 import { RazorpayBillingProvider, MockBillingProvider } from '@vanni/providers';
 import { IBillingProvider } from '@vanni/provider-sdk';
@@ -33,7 +33,11 @@ const billingProvider: IBillingProvider = (razorpayKeyId && razorpaySecret)
 export async function registerBillingRoutes(fastify: FastifyInstance) {
   // 1. GET /api/billing — Fetch Organization Billing Snapshot
   fastify.get('/api/billing', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
+    }
+    const orgId = auth.organizationId;
     const snapshot = await globalDb.getBillingSnapshot(orgId);
     return reply.send({ success: true, data: snapshot });
   });
@@ -46,8 +50,12 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
 
   // 3. POST /api/billing/checkout — Initiate Subscription Checkout
   fastify.post('/api/billing/checkout', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
-    const role = (req.headers['x-user-role'] as UserRole) || 'ADMIN';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
+    }
+    const orgId = auth.organizationId;
+    const role = auth.role;
 
     if (!canManageBilling(role)) {
       return reply.status(403).send({

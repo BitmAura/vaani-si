@@ -1,3 +1,4 @@
+import { PermissionService } from '@vanni/auth';
 /**
  * @vanni/api — Agent Management Routes
  *
@@ -16,7 +17,8 @@ import { INDUSTRY_TEMPLATES } from '@vanni/industry-templates';
 import { logger } from '@vanni/observability';
 
 function getOrgId(req: FastifyRequest): string {
-  return (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
+  const auth = PermissionService.resolveAuthContext(req.headers);
+  return auth.organizationId || '';
 }
 
 // In-memory agent store (seeded with 3 Karnataka businesses)
@@ -88,7 +90,11 @@ agentStore.set('a0000000-0000-0000-0000-000000000003', [
 export async function registerAgentRoutes(fastify: FastifyInstance) {
   // GET /api/agents
   fastify.get('/api/agents', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = getOrgId(req);
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
+    }
+    const orgId = auth.organizationId;
     const agents = agentStore.get(orgId) || [];
     return reply.send({
       success: true,
@@ -100,7 +106,11 @@ export async function registerAgentRoutes(fastify: FastifyInstance) {
 
   // POST /api/agents
   fastify.post('/api/agents', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = getOrgId(req);
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
+    }
+    const orgId = auth.organizationId;
     const body = req.body as any;
     if (!body?.name) {
       return reply.status(400).send({ success: false, error: 'MISSING_NAME' });

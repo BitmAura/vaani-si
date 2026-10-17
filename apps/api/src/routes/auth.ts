@@ -8,87 +8,44 @@
  * - GET  /api/auth/session     - Get current session (used by console & apps)
  * - POST /api/auth/switch-org  - Switch active organization
  * - POST /api/auth/logout      - Clear session
+ *
+ * SECURITY: All sessions use HMAC-SHA256 cryptographic signatures via serializeSession / deserializeSession.
+ * No hardcoded DEMO_SESSION fallback or unauthenticated backdoor exists.
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { IdentityService } from '@vanni/auth';
+import { IdentityService, deserializeSession, serializeSession, switchActiveOrganization, SESSION_COOKIE_NAME } from '@vanni/auth';
 import { logger } from '@vanni/observability';
+import { AuthSessionDTO } from '@vanni/shared';
 
 const identityService = new IdentityService();
 
-// In-memory session store (keyed by session token)
-// In production this would be Redis/Supabase
-export const sessionStore = new Map<string, any>();
+export function getSessionFromRequest(req: FastifyRequest): AuthSessionDTO | null {
+  let token: string | undefined;
 
-// Seed a default admin session so demo works without login
-const DEMO_SESSION = {
-  token: 'vanni-demo-admin-session-2026',
-  userId: 'u0000000-0000-0000-0000-000000000001',
-  email: 'admin@vanni.ai',
-  fullName: 'VANNI Administrator',
-  activeOrganizationId: 'a0000000-0000-0000-0000-000000000001',
-  activeRole: 'OWNER',
-  memberships: [
-    {
-      organizationId: 'a0000000-0000-0000-0000-000000000001',
-      organizationName: 'Ballari Residential Layouts',
-      organizationSlug: 'ballari-plots',
-      role: 'OWNER',
-      status: 'ACTIVE',
-      onboardingStatus: 'ready',
-    },
-    {
-      organizationId: 'a0000000-0000-0000-0000-000000000002',
-      organizationName: 'Apollo Specialty Clinic',
-      organizationSlug: 'apollo-clinic',
-      role: 'OWNER',
-      status: 'ACTIVE',
-      onboardingStatus: 'ready',
-    },
-    {
-      organizationId: 'a0000000-0000-0000-0000-000000000003',
-      organizationName: 'Creative Digital Agency',
-      organizationSlug: 'creative-agency',
-      role: 'OWNER',
-      status: 'ACTIVE',
-      onboardingStatus: 'ready',
-    },
-  ],
-  createdAt: new Date().toISOString(),
-};
-sessionStore.set(DEMO_SESSION.token, DEMO_SESSION);
-
-function getSessionFromRequest(req: FastifyRequest): any | null {
-  // Check Authorization Bearer header
+  // 1. Check Authorization Bearer header
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
-    const session = sessionStore.get(token);
-    if (session) return session;
+    token = authHeader.slice(7).trim();
   }
 
-  // Check X-Session-Token header (used by frontend apps)
-  const sessionToken = req.headers['x-session-token'] as string;
-  if (sessionToken) {
-    const session = sessionStore.get(sessionToken);
-    if (session) return session;
+  // 2. Check X-Session-Token header (used by frontend apps)
+  if (!token && req.headers['x-session-token']) {
+    token = (req.headers['x-session-token'] as string).trim();
   }
 
-  // Check Cookie
-  const cookieHeader = req.headers.cookie || '';
-  const tokenMatch = cookieHeader.match(/vanni_session=([^;]+)/);
-  if (tokenMatch) {
-    const token = decodeURIComponent(tokenMatch[1]);
-    const session = sessionStore.get(token);
-    if (session) return session;
+  // 3. Check Cookie
+  if (!token && req.headers.cookie) {
+    const cookieHeader = Array.isArray(req.headers.cookie) ? req.headers.cookie.join('; ') : req.headers.cookie;
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]+)`));
+    if (match && match[1]) {
+      token = decodeURIComponent(match[1]);
+    }
   }
 
-  // Fallback to demo session for development
-  if (process.env.NODE_ENV !== 'production') {
-    return DEMO_SESSION;
-  }
+  if (!token) return null;
 
-  return null;
+  return deserializeSession(token);
 }
 
 export async function registerAuthRoutes(fastify: FastifyInstance) {
@@ -98,33 +55,20 @@ export async function registerAuthRoutes(fastify: FastifyInstance) {
       const result = await identityService.login(req.body);
       logger.info('User successfully authenticated', { userId: result.user.id });
 
-      // Build session object — generate token independently (AuthSessionDTO has no token field)
-      const sessionToken = `vanni-session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const sessionData = {
-        token: sessionToken,
-        userId: result.user.id,
-        email: (req.body as any).email,
-        fullName: result.user.fullName,
-        activeOrganizationId: result.session.activeOrganizationId,
-        activeRole: result.session.activeRole || 'OWNER',
-        memberships: result.session.memberships || DEMO_SESSION.memberships,
-        createdAt: new Date().toISOString(),
-      };
+      const token = serializeSession(result.session);
 
-      // Store in session store
-      sessionStore.set(sessionData.token, sessionData);
-
-      // Set cookie for browser-based sessions
+      // Set secure signed cookie for browser-based sessions
+      const isProd = process.env.NODE_ENV === 'production';
       reply.header(
         'Set-Cookie',
-        `vanni_session=${encodeURIComponent(sessionData.token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`
+        `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${isProd ? '; Secure' : ''}`
       );
 
       return reply.send({
         success: true,
-        session: sessionData,
+        session: result.session,
         user: result.user,
-        token: sessionData.token,
+        token,
       });
     } catch (err: any) {
       logger.warn('Authentication failed', { error: err.message });
@@ -140,62 +84,56 @@ export async function registerAuthRoutes(fastify: FastifyInstance) {
   // POST /api/auth/signup
   fastify.post('/api/auth/signup', async (req: FastifyRequest, reply: FastifyReply) => {
     try {
-      const result = await identityService.signup(req.body);
+      const body = (req.body as any) || {};
+      const payload = {
+        ...body,
+        organizationName: body.organizationName || body.companyName || 'My Organization',
+        fullName: body.fullName || (body.email ? body.email.split('@')[0] : 'Administrator'),
+        industry: body.industry || 'REAL_ESTATE',
+      };
+
+      const result = await identityService.signup(payload);
       logger.info('User registered with organization', {
         userId: result.user.id,
         organizationId: result.organization.id,
       });
 
-      const sessionData = {
-        token: `vanni-session-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        userId: result.user.id,
-        email: (req.body as any).email,
-        fullName: result.user.fullName,
-        activeOrganizationId: result.organization.id,
-        activeRole: 'OWNER',
-        memberships: [
-          {
-            organizationId: result.organization.id,
-            organizationName: result.organization.name,
-            organizationSlug: result.organization.slug,
-            role: 'OWNER',
-            status: 'ACTIVE',
-            onboardingStatus: 'pending',
-          },
-        ],
-        createdAt: new Date().toISOString(),
-      };
+      const token = serializeSession(result.session);
 
-      sessionStore.set(sessionData.token, sessionData);
-
+      const isProd = process.env.NODE_ENV === 'production';
       reply.header(
         'Set-Cookie',
-        `vanni_session=${encodeURIComponent(sessionData.token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`
+        `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${isProd ? '; Secure' : ''}`
       );
 
       return reply.status(201).send({
         success: true,
-        session: sessionData,
+        session: result.session,
         user: result.user,
         organization: result.organization,
-        token: sessionData.token,
+        token,
       });
     } catch (err: any) {
-      logger.warn('Registration failed', { error: err.message });
+      logger.warn('Signup registration failed', { error: err.message });
       const status = err.statusCode || 400;
       return reply.status(status).send({
         success: false,
-        error: err.code || 'REGISTRATION_ERROR',
-        message: err.message || 'Registration could not be completed.',
+        error: err.code || 'VALIDATION_ERROR',
+        message: err.message || 'Signup failed.',
       });
     }
   });
 
-  // GET /api/auth/me — Bearer token based
+  // GET /api/auth/me — Bearer token or session based
   fastify.get('/api/auth/me', async (req: FastifyRequest, reply: FastifyReply) => {
     const session = getSessionFromRequest(req);
+
     if (!session) {
-      return reply.status(401).send({ success: false, error: 'MISSING_AUTHORIZATION' });
+      return reply.status(401).send({
+        success: false,
+        error: 'UNAUTHORIZED',
+        message: 'Valid session or Bearer token is required.',
+      });
     }
 
     return reply.send({
@@ -206,6 +144,7 @@ export async function registerAuthRoutes(fastify: FastifyInstance) {
         fullName: session.fullName,
       },
       activeOrganizationId: session.activeOrganizationId,
+      activeRole: session.activeRole,
     });
   });
 
@@ -222,14 +161,7 @@ export async function registerAuthRoutes(fastify: FastifyInstance) {
 
     return reply.send({
       authenticated: true,
-      session: {
-        userId: session.userId,
-        email: session.email,
-        fullName: session.fullName,
-        activeOrganizationId: session.activeOrganizationId,
-        activeRole: session.activeRole,
-        memberships: session.memberships,
-      },
+      session,
     });
   });
 
@@ -237,56 +169,45 @@ export async function registerAuthRoutes(fastify: FastifyInstance) {
   fastify.post('/api/auth/switch-org', async (req: FastifyRequest, reply: FastifyReply) => {
     const session = getSessionFromRequest(req);
     if (!session) {
-      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication required.' });
     }
 
     const { organizationId } = req.body as { organizationId: string };
     if (!organizationId) {
-      return reply.status(400).send({ success: false, error: 'MISSING_ORGANIZATION_ID' });
+      return reply.status(400).send({ success: false, error: 'MISSING_ORGANIZATION_ID', message: 'organizationId is required.' });
     }
 
-    // Verify the user is a member of the requested org
-    const membership = session.memberships?.find((m: any) => m.organizationId === organizationId);
-    if (!membership) {
-      return reply.status(403).send({ success: false, error: 'ACCESS_DENIED', message: 'You are not a member of this organization.' });
+    try {
+      const updated = switchActiveOrganization(session, organizationId);
+      const token = serializeSession(updated);
+
+      const isProd = process.env.NODE_ENV === 'production';
+      reply.header(
+        'Set-Cookie',
+        `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${isProd ? '; Secure' : ''}`
+      );
+
+      logger.info('Organization switched', { userId: session.userId, newOrgId: organizationId });
+
+      return reply.send({
+        success: true,
+        session: updated,
+        activeOrganizationId: updated.activeOrganizationId,
+        activeRole: updated.activeRole,
+      });
+    } catch (err: any) {
+      return reply.status(err.statusCode || 403).send({
+        success: false,
+        error: err.code || 'ACCESS_DENIED',
+        message: err.message,
+      });
     }
-
-    // Update session
-    session.activeOrganizationId = organizationId;
-    session.activeRole = membership.role;
-
-    // Persist updated session
-    if (session.token) {
-      sessionStore.set(session.token, session);
-    }
-
-    logger.info('Organization switched', { userId: session.userId, newOrgId: organizationId });
-
-    return reply.send({
-      success: true,
-      activeOrganizationId: organizationId,
-      activeRole: membership.role,
-      organizationName: membership.organizationName,
-    });
   });
 
   // POST /api/auth/logout
-  fastify.post('/api/auth/logout', async (req: FastifyRequest, reply: FastifyReply) => {
-    const cookieHeader = req.headers.cookie || '';
-    const tokenMatch = cookieHeader.match(/vanni_session=([^;]+)/);
-    if (tokenMatch) {
-      const token = decodeURIComponent(tokenMatch[1]);
-      sessionStore.delete(token);
-    }
-
-    const sessionToken = req.headers['x-session-token'] as string;
-    if (sessionToken) {
-      sessionStore.delete(sessionToken);
-    }
-
+  fastify.post('/api/auth/logout', async (_req: FastifyRequest, reply: FastifyReply) => {
     // Clear cookie
-    reply.header('Set-Cookie', 'vanni_session=; Path=/; Max-Age=0; HttpOnly');
-
+    reply.header('Set-Cookie', `${SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`);
     logger.info('User logged out');
     return reply.send({ success: true, message: 'Logged out successfully.' });
   });

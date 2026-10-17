@@ -1,24 +1,22 @@
 /**
- * @vanni/server — Billing, Plans, Subscriptions & Entitlements REST Endpoints
+ * @vanni/server — Billing & Entitlements REST Endpoints
  *
- * Provides tenant-isolated management of:
- * - GET  /api/billing (Comprehensive organization billing snapshot)
- * - GET  /api/billing/plans (Public plan catalog & feature matrices)
- * - POST /api/billing/checkout (Create checkout session / subscription token)
- * - POST /api/billing/subscription/cancel (Request cancellation at period end or immediately)
- * - POST /api/billing/subscription/change (Upgrade / Downgrade plan version)
- * - POST /api/billing/webhooks/razorpay (Authoritative HMAC-SHA256 verified webhook ingestion)
+ * Provides:
+ * - GET  /api/billing                      - Current tenant billing snapshot & usage
+ * - GET  /api/billing/plans                - Public subscription catalog
+ * - POST /api/billing/checkout             - Create checkout session (Razorpay order/subscription)
+ * - POST /api/billing/subscription/cancel  - Cancel active subscription
+ * - POST /api/billing/subscription/change  - Upgrade/downgrade subscription plan
+ * - POST /api/billing/webhooks/razorpay    - Ingest Razorpay billing events
+ *
+ * SECURITY: Tenant context and user role are strictly derived from the authenticated session.
+ * Client-supplied x-organization-id and x-user-role headers are rejected.
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { globalDb } from '@vanni/database';
-import { canManageBilling, deserializeSession, SESSION_COOKIE_NAME } from '@vanni/auth';
-
-function getSessionFromRequest(req: FastifyRequest) {
-  const cookieVal = req.cookies?.[SESSION_COOKIE_NAME];
-  if (!cookieVal) return null;
-  return deserializeSession(cookieVal);
-}
+import { canManageBilling, requireUser } from '@vanni/auth';
+import { getSessionFromRequest, requireTenantContext } from '../http-auth.js';
 import { UserRole, SubscriptionDTO, PaymentRecordDTO } from '@vanni/shared';
 import { RazorpayBillingProvider, MockBillingProvider } from '@vanni/providers';
 import { IBillingProvider } from '@vanni/provider-sdk';
@@ -39,12 +37,7 @@ const billingProvider: IBillingProvider = (razorpayKeyId && razorpaySecret)
 export async function registerBillingRoutes(fastify: FastifyInstance) {
   // 1. GET /api/billing — Fetch Organization Billing Snapshot
   fastify.get('/api/billing', async (req: FastifyRequest, reply: FastifyReply) => {
-    const session = getSessionFromRequest(req);
-    const orgId = (req.headers['x-organization-id'] as string)
-      || session?.activeOrganizationId
-      || (req.query as any)?.tenant
-      || (req.query as any)?.organizationId
-      || 'a0000000-0000-0000-0000-000000000001';
+    const { tenantId: orgId } = requireTenantContext(req);
     const snapshot = await globalDb.getBillingSnapshot(orgId);
     return reply.send({ success: true, data: snapshot });
   });
@@ -57,14 +50,9 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
 
   // 3. POST /api/billing/checkout — Initiate Subscription Checkout
   fastify.post('/api/billing/checkout', async (req: FastifyRequest, reply: FastifyReply) => {
-    const session = getSessionFromRequest(req);
-    const orgId = (req.headers['x-organization-id'] as string)
-      || session?.activeOrganizationId
-      || (req.body as any)?.organizationId
-      || 'a0000000-0000-0000-0000-000000000001';
-    const role = (req.headers['x-user-role'] as UserRole)
-      || session?.activeRole
-      || 'ADMIN';
+    const session = requireUser(getSessionFromRequest(req));
+    const orgId = session.activeOrganizationId;
+    const role = session.activeRole as UserRole;
 
     if (!canManageBilling(role)) {
       return reply.status(403).send({
@@ -77,104 +65,78 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
     const body = req.body as {
       planId: string;
       planVersionId?: string;
-      billingInterval?: 'MONTHLY' | 'ANNUAL';
+      billingPeriod?: 'MONTHLY' | 'ANNUAL';
     };
 
     if (!body?.planId) {
-      return reply.status(400).send({
-        success: false,
-        error: 'BAD_REQUEST',
-        message: 'planId is required for subscription checkout.',
-      });
+      return reply.status(400).send({ success: false, error: 'planId is required.' });
     }
 
-    const plans = await globalDb.getPlans('ALL');
-    const targetPlan = plans.find(p => p.id === body.planId || p.slug === body.planId);
-    if (!targetPlan) {
-      return reply.status(404).send({
-        success: false,
-        error: 'NOT_FOUND',
-        message: 'Plan not found.',
-      });
+    const plan = await globalDb.getPlanById(body.planId);
+    if (!plan) {
+      return reply.status(404).send({ success: false, error: 'PLAN_NOT_FOUND', message: 'Requested plan does not exist.' });
     }
 
-    const interval = body.billingInterval || 'MONTHLY';
-    const amount = interval === 'ANNUAL' ? targetPlan.annualPrice : targetPlan.monthlyPrice;
+    const org = await globalDb.getOrganizationById(orgId);
+    const orgName = org?.name || 'Vaani-Si Customer';
 
-    let account = await globalDb.getBillingAccount(orgId);
-    if (!account) {
-      account = {
-        id: `ba_${orgId.substring(0, 8)}`,
-        organizationId: orgId,
-        billingEmail: 'billing@example.com',
-        billingName: 'Organization Billing Admin',
-        currency: 'INR',
-        timezone: 'Asia/Kolkata',
-        status: 'ACTIVE',
-        provider: 'RAZORPAY',
-        providerCustomerId: `cust_${orgId.substring(0, 8)}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await globalDb.saveBillingAccount(account);
-    }
-
-    // Initialize subscription via provider abstraction
-    const subResult = await billingProvider.createSubscription({
+    // Call Provider to create subscription
+    const checkoutResult = await billingProvider.createSubscription({
       organizationId: orgId,
-      customerId: account.providerCustomerId || `cust_${orgId.substring(0, 8)}`,
-      planId: targetPlan.id,
-      planVersionId: body.planVersionId || targetPlan.activeVersion,
-      billingInterval: interval,
+      customerId: `cust_${orgId}`,
+      planId: plan.id,
+      planVersionId: body.planVersionId || plan.activeVersion,
+      billingInterval: (body.billingPeriod as 'MONTHLY' | 'ANNUAL') || 'MONTHLY',
     });
 
-    if (!subResult.success) {
-      return reply.status(502).send({
-        success: false,
-        error: 'PROVIDER_ERROR',
-        message: subResult.error || 'Failed to initialize subscription with billing provider.',
-      });
-    }
-
-    // Immediately activate subscription record for organization
-    const now = new Date();
-    const periodEnd = new Date(now.getTime() + (interval === 'ANNUAL' ? 365 : 30) * 24 * 60 * 60 * 1000);
+    const now = new Date().toISOString();
     const existingSub = await globalDb.getSubscription(orgId);
-    await globalDb.saveSubscription({
-      id: subResult.providerSubscriptionId || existingSub?.id || `sub_${Date.now()}`,
+
+    const subscriptionRecord: SubscriptionDTO = {
+      id: existingSub?.id || `sub_${Date.now()}`,
       organizationId: orgId,
-      billingAccountId: account.id,
-      planId: targetPlan.id,
-      planVersionId: body.planVersionId || targetPlan.activeVersion,
-      provider: 'RAZORPAY',
-      providerSubscriptionId: subResult.providerSubscriptionId,
+      billingAccountId: `ba_${orgId}`,
+      planId: plan.id,
+      planVersionId: body.planVersionId || plan.activeVersion,
+      billingInterval: (body.billingPeriod as 'MONTHLY' | 'ANNUAL') || 'MONTHLY',
       status: 'ACTIVE',
-      billingInterval: interval,
-      currentPeriodStart: now.toISOString(),
-      currentPeriodEnd: periodEnd.toISOString(),
+      currentPeriodStart: now,
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       cancelAtPeriodEnd: false,
-      createdAt: existingSub?.createdAt || now.toISOString(),
-      updatedAt: now.toISOString(),
+      provider: 'RAZORPAY',
+      providerSubscriptionId: checkoutResult.providerSubscriptionId,
+      createdAt: existingSub?.createdAt || now,
+      updatedAt: now,
+    };
+
+    await globalDb.saveSubscription(subscriptionRecord);
+
+    await globalDb.saveSubscriptionEvent({
+      id: `se_${Date.now()}`,
+      subscriptionId: subscriptionRecord.id,
+      organizationId: orgId,
+      eventType: 'UPGRADED',
+      previousPlanId: existingSub?.planId,
+      newPlanId: plan.id,
+      reason: 'Checkout completed by administrator',
+      occurredAt: now,
     });
 
     return reply.send({
       success: true,
       data: {
-        providerSubscriptionId: subResult.providerSubscriptionId,
-        shortUrl: subResult.shortUrl,
-        planName: targetPlan.name,
-        amount,
-        currency: targetPlan.currency,
-        billingInterval: interval,
-        keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_mock_public_key',
+        checkoutUrl: checkoutResult.shortUrl || '',
+        providerSubscriptionId: checkoutResult.providerSubscriptionId,
+        subscription: subscriptionRecord,
       },
     });
   });
 
   // 4. POST /api/billing/subscription/cancel — Request cancellation
   fastify.post('/api/billing/subscription/cancel', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
-    const role = (req.headers['x-user-role'] as UserRole) || 'ADMIN';
+    const session = requireUser(getSessionFromRequest(req));
+    const orgId = session.activeOrganizationId;
+    const role = session.activeRole as UserRole;
 
     if (!canManageBilling(role)) {
       return reply.status(403).send({
@@ -190,7 +152,6 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ success: false, error: 'NO_ACTIVE_SUBSCRIPTION' });
     }
 
-    // Call provider cancel abstraction
     if (sub.providerSubscriptionId) {
       await billingProvider.cancelSubscription({
         providerSubscriptionId: sub.providerSubscriptionId,
@@ -228,8 +189,9 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
 
   // 5. POST /api/billing/subscription/change — Upgrade or Downgrade Plan
   fastify.post('/api/billing/subscription/change', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
-    const role = (req.headers['x-user-role'] as UserRole) || 'ADMIN';
+    const session = requireUser(getSessionFromRequest(req));
+    const orgId = session.activeOrganizationId;
+    const role = session.activeRole as UserRole;
 
     if (!canManageBilling(role)) {
       return reply.status(403).send({
@@ -318,9 +280,15 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
     }
 
     const orgId = rawPayload?.payload?.subscription?.entity?.notes?.organization_id
-      || rawPayload?.payload?.payment?.entity?.notes?.organization_id
-      || (req.headers['x-organization-id'] as string)
-      || 'a0000000-0000-0000-0000-000000000001';
+      || rawPayload?.payload?.payment?.entity?.notes?.organization_id;
+
+    if (!orgId) {
+      return reply.status(400).send({
+        success: false,
+        error: 'MISSING_ORGANIZATION_ID',
+        message: 'Webhook payload notes must contain organization_id.',
+      });
+    }
 
     // Persist event in audit store
     await globalDb.saveBillingProviderEvent({
