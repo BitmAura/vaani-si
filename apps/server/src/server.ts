@@ -87,6 +87,8 @@ import { LLMConversationalService, CallerDossier } from './llm-service';
 import { KannadaFillerEngine } from './kannada-fillers';
 import { SarvamVoiceAdapter } from '../../../packages/voice-engine/src/sarvam-adapter';
 import { TelephonyMediaBridge } from '../../../packages/voice-engine/src/telephony/media-bridge';
+import { CallLifecycleManager } from '../../../packages/voice-engine/src/telephony/call-lifecycle';
+import { validateIndianPhoneNumber } from '@vanni/providers';
 import { EmergencyHandler, EmergencyDetectionResult } from './emergency-handler';
 import { agencyRoutes } from './routes/agency';
 import { doctorRoutes } from './routes/doctors';
@@ -304,6 +306,7 @@ export async function buildServer() {
   fastify.get('/health', healthHandler);
 
   const telephony = new TelephonyRouter();
+  const callLifecycle = new CallLifecycleManager(globalDb);
   const whatsapp = new WhatsAppLeadService();
   const db = new CallDatabaseService();
   const openSourceCRM = new OpenSourceCRMService();
@@ -2051,7 +2054,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     return db.getAllCalls(targetTenant);
   });
 
-  // 2.3 Telephony Call Detail Record (CDR) Webhook
+  // 2.3 Telephony Call Detail Record (CDR) Webhook with State Machine & Deduplication
   fastify.post('/api/telephony/cdr', async (request, reply) => {
     const secret = process.env.EXOTEL_WEBHOOK_SECRET || process.env.EXOTEL_API_TOKEN;
     const signature = request.headers['x-exotel-signature'] as string;
@@ -2084,9 +2087,30 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     }
 
     const body = request.body as any;
+    const callSid = body?.CallSid || `CALL-${Date.now().toString().slice(-4)}`;
     const durSec = Number(body?.RecordingDuration || body?.duration || 60);
+    const rawStatus = body?.Status || body?.CallStatus || 'completed';
+    const canonicalStatus = callLifecycle.mapProviderStatus(rawStatus);
+
+    // Transition via CallLifecycleManager (deduplication & terminal state safe)
+    const transitionRes = await callLifecycle.transition({
+      callId: callSid,
+      providerCallSid: callSid,
+      provider: 'exotel',
+      targetStatus: canonicalStatus,
+      providerEventId: body?.EventId || body?.SequenceNumber || `${callSid}_${canonicalStatus}`,
+      rawDurationSeconds: durSec,
+      costInr: (durSec / 60) * 0.85,
+      failureReason: body?.FailureReason || (canonicalStatus === 'FAILED' ? 'Provider call failed' : undefined),
+    });
+
+    if (transitionRes.isDuplicate) {
+      fastify.log.info({ callSid }, '[Exotel CDR] Duplicate webhook discarded cleanly');
+      return reply.send({ success: true, savedId: callSid, duplicate: true });
+    }
+
     const record = {
-      id: body?.CallSid || `CALL-${Date.now().toString().slice(-4)}`,
+      id: callSid,
       tenantId: body?.tenant || 'a0000000-0000-0000-0000-000000000001',
       time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
       timestampMs: Date.now(),
@@ -2101,10 +2125,16 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       status: 'HOT_LEAD' as const,
       intent: body?.intent || 'Inquiry Handled Autonomously',
       budget: body?.budget || 'Standard',
-      outcome: 'Dispatched to WhatsApp',
+      outcome: canonicalStatus === 'COMPLETED' ? 'Call Completed Successfully' : `Ended: ${canonicalStatus}`,
       audioRecordingUrl: body?.RecordingUrl,
       whatsappStatus: 'DELIVERED' as const,
       transcript: body?.transcript || [],
+      callStatus: canonicalStatus,
+      startedAt: transitionRes.session?.initiatedAt,
+      answeredAt: transitionRes.session?.answeredAt,
+      endedAt: transitionRes.session?.endedAt,
+      providerCallSid: callSid,
+      telephonyProvider: 'exotel',
     };
     db.saveCall(record);
 
@@ -2124,29 +2154,126 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       durationSeconds: durSec,
     }).catch(err => console.warn('[CRM Auto-Sync Warning]', err));
 
-    return reply.send({ success: true, savedId: record.id });
+    return reply.send({ success: true, savedId: record.id, callStatus: canonicalStatus });
   });
 
-  // 2.3.1 Outbound Cellular Dialer Dispatcher (Exotel / Twilio)
+  // 2.3.1 Outbound Cellular Dialer Dispatcher with Validation & State Machine
   fastify.post('/api/telephony/outbound', async (request, reply) => {
-    const body = request.body as InceptionCallRequest;
+    const body = request.body as InceptionCallRequest & { organizationId?: string };
     if (!body?.targetPhoneNumber) {
       return reply.status(400).send({ error: 'Missing targetPhoneNumber' });
     }
+
+    // Phone validation
+    const phoneVal = validateIndianPhoneNumber(body.targetPhoneNumber);
+    if (!phoneVal.isValid) {
+      return reply.status(400).send({ error: phoneVal.error });
+    }
+
     const host = request.headers.host || 'localhost:4000';
-    const callbackUrl = `http://${host}/api/telephony/inbound-webhook`;
+    const orgId = body.organizationId || 'a0000000-0000-0000-0000-000000000001';
+    const callbackUrl = `http://${host}/api/telephony/inbound-webhook?tenant=${orgId}`;
+
     const result = await telephony.dispatchOutboundCall(body, callbackUrl);
+
+    if (result.success && result.callSid) {
+      callLifecycle.initializeCall({
+        callId: result.callSid,
+        organizationId: orgId,
+        direction: 'OUTBOUND',
+        callerPhone: phoneVal.normalized,
+        providerCallSid: result.callSid,
+        telephonyProvider: 'exotel',
+      });
+    }
+
     return reply.send(result);
   });
 
-  // 2.3.2 Inbound Cellular Webhook / Stream Initiator (TwiML / Exotel Passthrough)
+  // 2.3.2 Inbound Cellular Webhook with Workspace Resolution & State Machine
   fastify.all('/api/telephony/inbound-webhook', async (request, reply) => {
     const q = (request.query || {}) as any;
     const b = (request.body || {}) as any;
     const callSid = b.CallSid || q.CallSid || `CALL_${Date.now()}`;
+    const calledNumber = b.Called || q.Called || b.To || q.To || '';
+    const callerNumber = b.Caller || q.Caller || b.From || q.From || '+919845012345';
     const host = request.headers.host || 'localhost:4000';
+
+    // Resolve tenant from query or mapped phone number
+    let tenantKey = q.tenant || 'real_estate';
+    try {
+      const workspaces = (globalDb as any).getClientWorkspacesByOrg
+        ? await (globalDb as any).getClientWorkspacesByOrg('a0000000-0000-0000-0000-000000000001')
+        : [];
+      const matched = (workspaces || []).find((w: any) => w.primaryPhone && calledNumber && calledNumber.includes(w.primaryPhone.replace(/\D/g, '')));
+      if (matched) {
+        tenantKey = matched.id;
+      }
+    } catch {}
+
+    // Initialize Inbound Call Lifecycle State
+    callLifecycle.initializeCall({
+      callId: callSid,
+      organizationId: tenantKey,
+      direction: 'INBOUND',
+      callerPhone: callerNumber,
+      destinationPhone: calledNumber,
+      providerCallSid: callSid,
+      telephonyProvider: 'exotel',
+    });
+
     const twiml = telephony.generateTelephonyStreamResponse(host, callSid);
     return reply.type('text/xml').send(twiml);
+  });
+
+  // 2.3.3 Telephony & Voice Pipeline Diagnostics
+  fastify.get('/api/telephony/diagnostics', async (request, reply) => {
+    const exotelConfigured = !!(process.env.EXOTEL_ACCOUNT_SID && process.env.EXOTEL_API_KEY);
+    const sarvamConfigured = !!process.env.SARVAM_API_KEY;
+    const azureConfigured = !!process.env.AZURE_SPEECH_KEY;
+    const geminiConfigured = !!process.env.GEMINI_API_KEY;
+
+    const allCalls = await globalDb.getCalls();
+    const recent = allCalls.slice(0, 10);
+
+    return reply.send({
+      timestamp: new Date().toISOString(),
+      telephony: {
+        provider: 'Exotel',
+        configured: exotelConfigured,
+        mode: exotelConfigured ? 'LIVE_PROVIDER' : 'MOCK_SIMULATED',
+        callerId: process.env.EXOTEL_CALLER_ID || '+918047192000',
+        webhookSignatureVerification: process.env.NODE_ENV === 'production',
+      },
+      speech: {
+        sttPrimary: 'Sarvam Saaras v3 (kn-IN)',
+        sttConfigured: sarvamConfigured,
+        ttsPrimary: 'Sarvam Bulbul v3 (kn-IN)',
+        ttsConfigured: sarvamConfigured,
+        speechFallback: 'Azure Cognitive Services (kn-IN-SapnaNeural)',
+        fallbackConfigured: azureConfigured,
+        activeEngine: sarvamConfigured ? 'sarvam_bulbul_v3' : (azureConfigured ? 'azure_speech' : 'mock_heuristic'),
+      },
+      llm: {
+        engine: process.env.LLM_ENGINE || (geminiConfigured ? 'gemini-2.5-flash' : 'contextual_heuristic'),
+        configured: geminiConfigured || !!process.env.OPENAI_API_KEY,
+      },
+      callLifecycle: {
+        allowedStates: ['INITIATED', 'RINGING', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'NO_ANSWER', 'BUSY', 'CANCELLED'],
+        totalCallsRecorded: allCalls.length,
+        recentCalls: recent.map((c: any) => ({
+          id: c.id,
+          direction: c.direction,
+          caller: c.caller,
+          phone: c.phone,
+          status: c.status || 'COMPLETED',
+          durationSeconds: c.durationSeconds,
+          outcome: c.outcome,
+          startedAt: c.startedAt || c.createdAt,
+          providerCallSid: c.providerCallSid,
+        })),
+      },
+    });
   });
 
   // 2.4 Open Source CRM & Stack Integration Status
@@ -3230,7 +3357,14 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     fastify.log.info(`[WebSocket Connected] Tenant: ${tenant.name}, Inception: ${isInception}, User: ${session?.userId || 'guest'}`);
 
-    const pipeline = new AudioConversationPipeline(tenant, isInception);
+    const pipeline = new AudioConversationPipeline(tenant, isInception, undefined, currentStreamSid || `call_${Date.now()}`, tenant.id);
+    if (currentStreamSid) {
+      callLifecycle.transition({
+        callId: currentStreamSid,
+        provider: 'exotel',
+        targetStatus: 'IN_PROGRESS',
+      }).catch(() => {});
+    }
     const mediaBridge = new TelephonyMediaBridge();
 
     const wsEvents = {
@@ -3251,6 +3385,9 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       },
       onEscalation: (escalation: any) => {
         socket.send(JSON.stringify({ type: 'ESCALATION_TRIGGERED', escalation }));
+      },
+      onToolExecuted: (toolName: string, success: boolean, result: any) => {
+        socket.send(JSON.stringify({ type: 'TOOL_EXECUTED', toolName, success, result }));
       },
       onAudioChunk: (base64Audio: string) => {
         socket.send(JSON.stringify({ type: 'AUDIO_CHUNK', audio: base64Audio }));
@@ -3325,6 +3462,13 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     socket.on('close', () => {
       fastify.log.info('[WebSocket Disconnected]');
+      if (currentStreamSid) {
+        callLifecycle.transition({
+          callId: currentStreamSid,
+          provider: 'exotel',
+          targetStatus: 'COMPLETED',
+        }).catch(() => {});
+      }
     });
   });
 

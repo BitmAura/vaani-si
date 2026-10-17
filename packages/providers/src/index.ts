@@ -3,7 +3,9 @@
  */
 
 export * from './stt/sarvam-saaras.js';
+export * from './stt/azure-speech.js';
 export * from './tts/sarvam-bulbul.js';
+export * from './tts/azure-speech.js';
 export * from './llm/gemini-flash.js';
 export * from './llm/qwen-local.js';
 export * from './telephony/exotel-gateway.js';

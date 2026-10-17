@@ -27,6 +27,12 @@ export interface StoredCallRecord {
   audioRecordingUrl?: string;
   whatsappStatus: 'DELIVERED' | 'FAILED' | 'PENDING';
   transcript: Array<{ speaker: string; time: string; text: string }>;
+  callStatus?: string;
+  startedAt?: string;
+  answeredAt?: string;
+  endedAt?: string;
+  providerCallSid?: string;
+  telephonyProvider?: string;
 }
 
 export class CallDatabaseService {
@@ -96,6 +102,13 @@ export class CallDatabaseService {
         timestamp: t.time || new Date().toISOString(),
       })) : [],
       createdAt: record.time || new Date().toISOString(),
+      status: (record.callStatus as any) || 'COMPLETED',
+      startedAt: record.startedAt,
+      answeredAt: record.answeredAt,
+      endedAt: record.endedAt,
+      providerCallSid: record.providerCallSid,
+      telephonyProvider: record.telephonyProvider || 'exotel',
+      costInr: record.costInr,
     }).catch(() => {});
   }
 

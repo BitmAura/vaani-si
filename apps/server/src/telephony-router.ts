@@ -1,13 +1,16 @@
 /**
  * Layer 4: Telephony Gateway Router
- * Dhwani SI — Exotel & Twilio Cellular Voice Webhook Adapter
+ * Dhwani SI — Exotel & Twilio Cellular Voice Webhook Adapter with E.164 Validation
  */
+
+import { validateIndianPhoneNumber } from '@vanni/providers';
 
 export interface InceptionCallRequest {
   targetPhoneNumber: string;
   businessName: string;
   industry: 'REAL_ESTATE' | 'HEALTHCARE_HOSPITAL' | 'AUTOMOTIVE_DEALER';
   directorName?: string;
+  organizationId?: string;
 }
 
 export class TelephonyRouter {
@@ -40,21 +43,32 @@ export class TelephonyRouter {
   /**
    * Places an outbound cellular phone call to an Indian mobile number (+91)
    */
-  public async dispatchOutboundCall(req: InceptionCallRequest, callbackUrl: string): Promise<{ success: boolean; callSid?: string; message: string }> {
-    const formattedPhone = req.targetPhoneNumber.replace(/\D/g, '');
+  public async dispatchOutboundCall(
+    req: InceptionCallRequest,
+    callbackUrl: string
+  ): Promise<{ success: boolean; callSid?: string; message: string }> {
+    const validation = validateIndianPhoneNumber(req.targetPhoneNumber);
+    if (!validation.isValid) {
+      return {
+        success: false,
+        message: validation.error || 'Invalid Indian phone number',
+      };
+    }
 
-    if (!this.apiKey || !this.accountSid) {
-      if (process.env.NODE_ENV === 'production') {
+    const formattedPhone = validation.normalized.replace('+', ''); // Exotel accepts standard 12-digit Indian number (91XXXXXXXXXX)
+
+    if (!this.apiKey || !this.accountSid || process.env.NODE_ENV === 'test') {
+      if (process.env.NODE_ENV === 'production' && !this.apiKey) {
         return {
           success: false,
           message: 'Telephony provider is unconfigured in production. EXOTEL_ACCOUNT_SID and EXOTEL_API_KEY are required.',
         };
       }
-      console.log(`[Telephony Gateway] Mock Outbound Cellular Call Dispatched to +91 ${formattedPhone}`);
+      const simSid = `MOCK_EXO_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       return {
         success: true,
-        callSid: `MOCK_EXO_${Date.now()}`,
-        message: `Simulated cellular call dispatched to +91 ${formattedPhone}. When answered, Sahana will converse in Kannada.`,
+        callSid: simSid,
+        message: `Simulated cellular call dispatched to ${validation.normalized}. When answered, Sahana will converse in Kannada.`,
       };
     }
 
@@ -86,7 +100,7 @@ export class TelephonyRouter {
       return {
         success: true,
         callSid: data.Call?.Sid,
-        message: `Live cellular call placed successfully via Exotel to +91 ${formattedPhone}`,
+        message: `Live cellular call placed successfully via Exotel to ${validation.normalized}`,
       };
     } catch (err: any) {
       return { success: false, message: `Telephony dispatch error: ${err.message}` };

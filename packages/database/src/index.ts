@@ -3156,8 +3156,13 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         caller_name: call.caller,
         duration_seconds: call.durationSeconds,
         lead_rating: call.leadRating,
-        started_at: call.createdAt,
+        started_at: call.startedAt || call.createdAt,
+        ended_at: call.endedAt,
+        status: call.status || 'COMPLETED',
         outcome: call.outcome,
+        telephony_provider: call.telephonyProvider || 'EXOTEL',
+        telephony_call_sid: call.providerCallSid,
+        cost_inr: call.costInr || 0,
       }).then(() => {}, (err: any) => {
         console.warn('[DurableDatabaseService] Supabase call sync error:', err.message);
       });
@@ -3511,6 +3516,12 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
       intent: row.summary || '',
       transcript: [],
       createdAt: row.started_at || row.created_at,
+      status: row.status || 'COMPLETED',
+      startedAt: row.started_at,
+      endedAt: row.ended_at,
+      providerCallSid: row.telephony_call_sid || row.provider_call_sid,
+      telephonyProvider: row.telephony_provider || 'EXOTEL',
+      costInr: row.cost_inr ? Number(row.cost_inr) : 0,
     }));
   }
 
@@ -3545,10 +3556,15 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
       caller_name: call.caller,
       duration_seconds: call.durationSeconds,
       lead_rating: call.leadRating,
-      started_at: call.createdAt,
+      started_at: call.startedAt || call.createdAt,
+      ended_at: call.endedAt,
+      status: call.status || 'COMPLETED',
       outcome: call.outcome,
       city: call.city,
       summary: call.intent,
+      telephony_provider: call.telephonyProvider || 'EXOTEL',
+      telephony_call_sid: call.providerCallSid,
+      cost_inr: call.costInr || 0,
     });
     if (error) throw new DatabaseOperationError(`Failed to save call: ${error.message}`, error);
     await super.saveCall(call);

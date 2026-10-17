@@ -290,13 +290,15 @@ export type RegionalDialect =
 export type CallDirection = 'INBOUND' | 'OUTBOUND';
 
 export type CallStatus =
+  | 'INITIATED'
   | 'RINGING'
   | 'IN_PROGRESS'
   | 'COMPLETED'
-  | 'BUSY'
   | 'FAILED'
-  | 'TRANSFERRED'
-  | 'NO_ANSWER';
+  | 'NO_ANSWER'
+  | 'BUSY'
+  | 'CANCELLED'
+  | 'TRANSFERRED';
 
 export type LeadRating = 'HOT' | 'WARM' | 'COLD' | 'UNQUALIFIED';
 
@@ -330,6 +332,15 @@ export interface CallRecordDTO {
   }>;
   audioRecordingUrl?: string;
   createdAt: string;
+  status?: CallStatus;
+  startedAt?: string;
+  answeredAt?: string;
+  endedAt?: string;
+  providerCallSid?: string;
+  telephonyProvider?: string;
+  failureReason?: string;
+  costInr?: number;
+  agentId?: string;
 }
 
 export interface LeadDossierDTO {
