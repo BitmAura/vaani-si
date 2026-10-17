@@ -80,6 +80,13 @@ export async function plotRoutes(fastify: FastifyInstance) {
     const { tenantId } = getContext(request);
 
     if (!supabase) {
+      if (process.env.NODE_ENV === 'production') {
+        return reply.status(503).send({
+          success: false,
+          error: 'DATABASE_UNAVAILABLE',
+          message: 'Production database is not configured. Mock fallback is disabled in production mode.',
+        });
+      }
       const filtered = MOCK_PLOTS.filter(p => p.tenant_id === tenantId);
       return reply.status(200).send({
         success: true,
@@ -120,6 +127,13 @@ export async function plotRoutes(fastify: FastifyInstance) {
     const { id } = request.params;
 
     if (!supabase) {
+      if (process.env.NODE_ENV === 'production') {
+        return reply.status(503).send({
+          success: false,
+          error: 'DATABASE_UNAVAILABLE',
+          message: 'Production database is not configured. Mock fallback is disabled in production mode.',
+        });
+      }
       const plot = MOCK_PLOTS.find(p => p.id === id || p.plot_number === id);
       if (!plot) {
         return reply.status(404).send({

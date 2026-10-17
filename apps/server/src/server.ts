@@ -260,13 +260,45 @@ export async function buildServer() {
   await fastify.register(registerWorkspaceRoutes);
 
   // Health check routes for Docker, Azure, and orchestration probes
+  fastify.get('/health/live', async (_req: FastifyRequest, reply: FastifyReply) => {
+    return reply.status(200).send({
+      status: 'UP',
+      uptime: process.uptime(),
+      service: 'vaani-server',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  fastify.get('/health/ready', async (_req: FastifyRequest, reply: FastifyReply) => {
+    const dbHealth = await globalDb.healthCheck();
+    const isReady = dbHealth.ok;
+    const statusCode = isReady ? 200 : 503;
+    return reply.status(statusCode).send({
+      status: isReady ? 'READY' : 'NOT_READY',
+      service: 'vaani-server',
+      database: {
+        ok: dbHealth.ok,
+        adapter: dbHealth.adapter,
+        latencyMs: dbHealth.latencyMs,
+        ...(dbHealth.error ? { error: dbHealth.error } : {}),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   const healthHandler = async (_req: FastifyRequest, reply: FastifyReply) => {
+    const dbHealth = await globalDb.healthCheck();
     return reply.status(200).send({
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       service: 'vaani-server',
       version: '1.0.0',
+      database: {
+        ok: dbHealth.ok,
+        adapter: dbHealth.adapter,
+      },
     });
   };
   fastify.get('/health', healthHandler);

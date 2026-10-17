@@ -143,11 +143,20 @@ export async function buildApiServer() {
     };
   });
 
-  fastify.get('/api/ready', async () => {
-    return MetricsCollector.getHealth(async () => {
-      // Ping in-memory DB or Supabase
-      const plans = await globalDb.getPlans('PUBLIC');
-      return Array.isArray(plans);
+  fastify.get('/api/ready', async (_req, reply) => {
+    const dbHealth = await globalDb.healthCheck();
+    const isReady = dbHealth.ok;
+    const statusCode = isReady ? 200 : 503;
+    return reply.status(statusCode).send({
+      status: isReady ? 'READY' : 'NOT_READY',
+      service: 'VANNI REST API Server',
+      database: {
+        ok: dbHealth.ok,
+        adapter: dbHealth.adapter,
+        latencyMs: dbHealth.latencyMs,
+        ...(dbHealth.error ? { error: dbHealth.error } : {}),
+      },
+      timestamp: new Date().toISOString(),
     });
   });
 

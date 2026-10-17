@@ -23,7 +23,7 @@ import {
   VoiceTokenVerification,
 } from '@vanni/voice-engine';
 import { ConversationOrchestrator, MockStructuredLLMProvider } from '@vanni/conversation-engine';
-import { InMemoryDatabaseService } from '@vanni/database';
+import { InMemoryDatabaseService, globalDb } from '@vanni/database';
 import {
   MockSTTProvider,
   MockTTSProvider,
@@ -37,7 +37,7 @@ import {
 import { AgentRuntimeConfig } from '@vanni/shared';
 
 // Initialize singleton mock or real services
-const db = new InMemoryDatabaseService();
+const db = globalDb;
 const orchestrator = new ConversationOrchestrator(db);
 const telephonyRepo = new InMemoryTelephonyRepository();
 const exotelProvider = process.env.EXOTEL_ACCOUNT_SID ? new ExotelTelephonyProvider() : new MockTelephonyProvider();

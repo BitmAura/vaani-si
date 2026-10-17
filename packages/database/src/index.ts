@@ -83,7 +83,46 @@ export interface AgentRecordDTO {
   updatedAt: string;
 }
 
+
+export interface DatabaseHealthStatus {
+  ok: boolean;
+  latencyMs: number;
+  adapter: 'supabase-postgresql' | 'durable-file' | 'in-memory-test';
+  error?: string;
+  details?: Record<string, unknown>;
+}
+
+export class DatabaseError extends Error {
+  constructor(message: string, public readonly cause?: any) {
+    super(message);
+    this.name = 'DatabaseError';
+  }
+}
+
+export class ProductionDatabaseConfigError extends DatabaseError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ProductionDatabaseConfigError';
+  }
+}
+
+export class DatabaseOperationError extends DatabaseError {
+  constructor(message: string, public readonly originalError?: any) {
+    super(message, originalError);
+    this.name = 'DatabaseOperationError';
+  }
+}
+
+export class RecordNotFoundError extends DatabaseError {
+  constructor(entity: string, id: string) {
+    super(`${entity} with id '${id}' not found`);
+    this.name = 'RecordNotFoundError';
+  }
+}
+
 export interface IDatabaseService {
+  healthCheck(): Promise<DatabaseHealthStatus>;
+
   // Profiles
   getProfileById(userId: string): Promise<UserProfileDTO | null>;
   saveProfile(profile: UserProfileDTO): Promise<void>;
@@ -345,6 +384,10 @@ export interface IDatabaseService {
 }
 
 export class InMemoryDatabaseService implements IDatabaseService {
+  async healthCheck(): Promise<DatabaseHealthStatus> {
+    return { ok: true, latencyMs: 0, adapter: 'in-memory-test' };
+  }
+
   protected clientWorkspaces: Map<string, ClientWorkspaceDTO> = new Map();
   protected properties: Map<string, PropertyDTO> = new Map();
 
@@ -2930,6 +2973,12 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
   private isWriting = false;
 
   constructor() {
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_FILE_DATABASE !== 'true') {
+      throw new ProductionDatabaseConfigError(
+        'CRITICAL SECURITY BLOCKER: DurableDatabaseService (file-backed JSON) cannot be used in production mode without explicit ALLOW_FILE_DATABASE=true. ' +
+        'Production must use Supabase PostgreSQL as the authoritative persistent database.'
+      );
+    }
     super();
     const dataDir = path.resolve(process.cwd(), 'data');
     if (!fs.existsSync(dataDir)) {
@@ -3199,5 +3248,750 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
   }
 }
 
-// Global Singleton for Development, Test & Production Runtime
-export const globalDb: IDatabaseService = new DurableDatabaseService();
+
+//
+
+// ==============================================================================
+// AUTHORITATIVE SUPABASE POSTGRESQL PRODUCTION ADAPTER
+// ==============================================================================
+
+export class SupabaseDatabaseService extends InMemoryDatabaseService {
+  protected supabaseClient: SupabaseClient;
+
+  constructor(supabaseUrl: string, supabaseKey: string) {
+    super();
+    if (!supabaseUrl || !supabaseKey) {
+      throw new ProductionDatabaseConfigError('Supabase URL and Service Key are required for SupabaseDatabaseService');
+    }
+    this.supabaseClient = createClient(supabaseUrl, supabaseKey);
+  }
+
+  override async healthCheck(): Promise<DatabaseHealthStatus> {
+    const start = Date.now();
+    try {
+      const { data, error } = await this.supabaseClient
+        .from('organizations')
+        .select('id')
+        .limit(1);
+
+      const latencyMs = Date.now() - start;
+      if (error) {
+        return {
+          ok: false,
+          latencyMs,
+          adapter: 'supabase-postgresql',
+          error: error.message,
+        };
+      }
+      return {
+        ok: true,
+        latencyMs,
+        adapter: 'supabase-postgresql',
+        details: { reachable: true },
+      };
+    } catch (err: any) {
+      return {
+        ok: false,
+        latencyMs: Date.now() - start,
+        adapter: 'supabase-postgresql',
+        error: err.message,
+      };
+    }
+  }
+
+  // --- Client Workspaces ---
+  override async saveClientWorkspace(workspace: ClientWorkspaceDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('client_workspaces').upsert({
+      id: workspace.id,
+      organization_id: workspace.organizationId,
+      name: workspace.name,
+      slug: workspace.slug,
+      model_type: workspace.modelType,
+      industry_category: workspace.industryCategory,
+      subcategory: workspace.subcategory,
+      operating_location: workspace.operatingLocation,
+      primary_phone: workspace.primaryPhone,
+      primary_email: workspace.primaryEmail,
+      timezone: workspace.timezone,
+      onboarding_step: workspace.onboardingStep,
+      onboarding_completed: workspace.onboardingCompleted,
+      config: {
+        languagePreferences: workspace.languagePreferences,
+        startingTemplateId: workspace.startingTemplateId,
+        aiEmployee: workspace.aiEmployee,
+        onboardingData: workspace.onboardingData,
+      },
+      clinic_config: (workspace as any).clinicConfig || {},
+      real_estate_config: (workspace as any).realEstateConfig || {},
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save client workspace: ${error.message}`, error);
+    await super.saveClientWorkspace(workspace);
+  }
+
+  override async getClientWorkspacesByOrg(organizationId: string): Promise<ClientWorkspaceDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('client_workspaces')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw new DatabaseOperationError(`Failed to get client workspaces: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      name: row.name,
+      slug: row.slug,
+      modelType: row.model_type,
+      industryCategory: row.industry_category,
+      subcategory: row.subcategory,
+      operatingLocation: row.operating_location,
+      primaryPhone: row.primary_phone,
+      primaryEmail: row.primary_email,
+      timezone: row.timezone,
+      onboardingStep: row.onboarding_step,
+      onboardingCompleted: row.onboarding_completed,
+      languagePreferences: row.config?.languagePreferences || { primaryLanguage: 'KN', secondaryLanguage: 'EN', mixedKannadaEnglish: true, preferredDialect: 'BANGALORE_KANNADA' },
+      startingTemplateId: row.config?.startingTemplateId || '',
+      aiEmployee: row.config?.aiEmployee || { employeeName: 'Sahana', personaRole: 'AI Assistant', defaultDialect: 'BANGALORE_KANNADA', voiceGender: 'FEMALE', speechPace: 1.05 },
+      onboardingData: row.config?.onboardingData || {},
+      clinicConfig: row.clinic_config,
+      realEstateConfig: row.real_estate_config,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  override async getClientWorkspaceById(id: string, organizationId?: string): Promise<ClientWorkspaceDTO | null> {
+    let q = this.supabaseClient.from('client_workspaces').select('*').eq('id', id);
+    if (organizationId) q = q.eq('organization_id', organizationId);
+    const { data, error } = await q.maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get client workspace by id: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      organizationId: data.organization_id,
+      name: data.name,
+      slug: data.slug,
+      modelType: data.model_type,
+      industryCategory: data.industry_category,
+      subcategory: data.subcategory,
+      operatingLocation: data.operating_location,
+      primaryPhone: data.primary_phone,
+      primaryEmail: data.primary_email,
+      timezone: data.timezone,
+      onboardingStep: data.onboarding_step,
+      onboardingCompleted: data.onboarding_completed,
+      languagePreferences: data.config?.languagePreferences || { primaryLanguage: 'KN', secondaryLanguage: 'EN', mixedKannadaEnglish: true, preferredDialect: 'BANGALORE_KANNADA' },
+      startingTemplateId: data.config?.startingTemplateId || '',
+      aiEmployee: data.config?.aiEmployee || { employeeName: 'Sahana', personaRole: 'AI Assistant', defaultDialect: 'BANGALORE_KANNADA', voiceGender: 'FEMALE', speechPace: 1.05 },
+      onboardingData: data.config?.onboardingData || {},
+      clinicConfig: data.clinic_config,
+      realEstateConfig: data.real_estate_config,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  override async updateClientWorkspace(
+    id: string,
+    updates: Partial<ClientWorkspaceDTO>,
+    organizationId?: string
+  ): Promise<ClientWorkspaceDTO> {
+    const existing = await this.getClientWorkspaceById(id, organizationId);
+    if (!existing) throw new RecordNotFoundError('ClientWorkspace', id);
+
+    const merged: ClientWorkspaceDTO = {
+      ...existing,
+      ...updates,
+      id: existing.id,
+      organizationId: existing.organizationId,
+      updatedAt: new Date().toISOString(),
+    };
+    await this.saveClientWorkspace(merged);
+    return merged;
+  }
+
+  override async deleteClientWorkspace(id: string, organizationId: string): Promise<boolean> {
+    const { error } = await this.supabaseClient
+      .from('client_workspaces')
+      .delete()
+      .eq('id', id)
+      .eq('organization_id', organizationId);
+
+    if (error) throw new DatabaseOperationError(`Failed to delete client workspace: ${error.message}`, error);
+    await super.deleteClientWorkspace(id, organizationId);
+    return true;
+  }
+
+  // --- Organizations ---
+  override async getOrganizations(): Promise<OrganizationDTO[]> {
+    const { data, error } = await this.supabaseClient.from('organizations').select('*');
+    if (error) throw new DatabaseOperationError(`Failed to get organizations: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      industry: row.industry_type || 'REAL_ESTATE',
+      timezone: 'Asia/Kolkata',
+      status: row.is_active ? 'ACTIVE' : 'SUSPENDED',
+      billingTier: row.billing_tier || 'STARTER',
+      onboardingStatus: 'ready',
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  override async getOrganizationById(id: string): Promise<OrganizationDTO | null> {
+    const { data, error } = await this.supabaseClient.from('organizations').select('*').eq('id', id).maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get organization: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      name: data.name,
+      slug: data.slug,
+      industry: data.industry_type || 'REAL_ESTATE',
+      timezone: 'Asia/Kolkata',
+      status: data.is_active ? 'ACTIVE' : 'SUSPENDED',
+      billingTier: data.billing_tier || 'STARTER',
+      onboardingStatus: 'ready',
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  override async getOrganizationBySlug(slug: string): Promise<OrganizationDTO | null> {
+    const { data, error } = await this.supabaseClient.from('organizations').select('*').eq('slug', slug).maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get organization by slug: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      name: data.name,
+      slug: data.slug,
+      industry: data.industry_type || 'REAL_ESTATE',
+      timezone: 'Asia/Kolkata',
+      status: data.is_active ? 'ACTIVE' : 'SUSPENDED',
+      billingTier: data.billing_tier || 'STARTER',
+      onboardingStatus: 'ready',
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  override async saveOrganization(org: OrganizationDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('organizations').upsert({
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      industry_type: org.industry,
+      is_active: org.status === 'ACTIVE',
+      billing_tier: org.billingTier,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save organization: ${error.message}`, error);
+    await super.saveOrganization(org);
+  }
+
+  // --- Calls ---
+  override async getCalls(organizationId?: string): Promise<CallRecordDTO[]> {
+    let q = this.supabaseClient.from('calls').select('*');
+    if (organizationId) q = q.eq('organization_id', organizationId);
+    const { data, error } = await q.order('created_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get calls: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      tenantId: row.organization_id,
+      direction: row.direction,
+      phone: row.caller_phone,
+      caller: row.caller_name || 'Caller',
+      durationSeconds: row.duration_seconds,
+      leadRating: row.lead_rating || 'WARM',
+      outcome: row.outcome || '',
+      city: row.city || 'Karnataka',
+      intent: row.summary || '',
+      transcript: [],
+      createdAt: row.started_at || row.created_at,
+    }));
+  }
+
+  override async getCallById(id: string, organizationId?: string): Promise<CallRecordDTO | null> {
+    let q = this.supabaseClient.from('calls').select('*').eq('id', id);
+    if (organizationId) q = q.eq('organization_id', organizationId);
+    const { data, error } = await q.maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get call: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      tenantId: data.organization_id,
+      direction: data.direction,
+      phone: data.caller_phone,
+      caller: data.caller_name || 'Caller',
+      durationSeconds: data.duration_seconds,
+      leadRating: data.lead_rating || 'WARM',
+      outcome: data.outcome || '',
+      city: data.city || 'Karnataka',
+      intent: data.summary || '',
+      transcript: [],
+      createdAt: data.started_at || data.created_at,
+    };
+  }
+
+  override async saveCall(call: CallRecordDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('calls').upsert({
+      id: call.id,
+      organization_id: call.tenantId,
+      direction: call.direction,
+      caller_phone: call.phone,
+      caller_name: call.caller,
+      duration_seconds: call.durationSeconds,
+      lead_rating: call.leadRating,
+      started_at: call.createdAt,
+      outcome: call.outcome,
+      city: call.city,
+      summary: call.intent,
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save call: ${error.message}`, error);
+    await super.saveCall(call);
+  }
+
+  // --- Leads ---
+  override async getLeads(organizationId?: string): Promise<LeadDossierDTO[]> {
+    let q = this.supabaseClient.from('leads').select('*');
+    if (organizationId) q = q.eq('organization_id', organizationId);
+    const { data, error } = await q.order('created_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get leads: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      callId: row.call_id || '',
+      tenantId: row.organization_id,
+      callerName: row.contact_name || '',
+      callerPhone: row.contact_phone,
+      confirmedOutcome: row.confirmed_outcome || '',
+      leadRating: row.rating || 'WARM',
+      requirementSummary: row.intent || '',
+      budgetOrFee: row.budget || '',
+      city: 'Karnataka',
+      propertyInterest: row.property_interest,
+      budgetMin: row.budget_min ? Number(row.budget_min) : undefined,
+      budgetMax: row.budget_max ? Number(row.budget_max) : undefined,
+      preferredLocation: row.preferred_location,
+      purchaseTimeline: row.purchase_timeline,
+      siteVisitInterest: row.site_visit_interest,
+      createdAt: row.created_at,
+    }));
+  }
+
+  override async saveLead(lead: LeadDossierDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('leads').upsert({
+      id: lead.id,
+      organization_id: lead.tenantId,
+      call_id: lead.callId || null,
+      contact_phone: lead.callerPhone,
+      contact_name: lead.callerName,
+      rating: lead.leadRating,
+      intent: lead.requirementSummary,
+      budget: lead.budgetOrFee,
+      confirmed_outcome: lead.confirmedOutcome,
+      property_interest: (lead as any).propertyInterest,
+      budget_min: (lead as any).budgetMin,
+      budget_max: (lead as any).budgetMax,
+      preferred_location: (lead as any).preferredLocation,
+      purchase_timeline: (lead as any).purchaseTimeline,
+      site_visit_interest: (lead as any).siteVisitInterest,
+      assigned_to: (lead as any).assignedTo,
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save lead: ${error.message}`, error);
+    await super.saveLead(lead);
+  }
+
+  // --- Appointments & Site Visits ---
+  override async getAppointments(organizationId?: string): Promise<AppointmentSlotDTO[]> {
+    let q = this.supabaseClient.from('appointments').select('*');
+    if (organizationId) {
+      q = q.or(`organization_id.eq.${organizationId},workspace_id.eq.${organizationId}`);
+    }
+    const { data, error } = await q.order('created_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get appointments: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      tenantId: row.workspace_id || row.organization_id,
+      workspaceId: row.workspace_id,
+      customerName: row.contact_name || '',
+      customerPhone: row.contact_phone,
+      serviceType: row.appointment_type || 'GENERAL',
+      durationMinutes: 30,
+      scheduledTime: row.scheduled_time || row.appointment_time,
+      status: row.status,
+      doctorId: row.doctor_id,
+      notes: row.notes,
+      cancellationReason: row.cancellation_reason,
+      propertyId: row.property_id,
+      visitorCount: row.visitor_count,
+      transportRequired: row.transport_required,
+      assignedAgent: row.assigned_agent,
+      appointmentType: row.appointment_type,
+      auditHistory: row.audit_history || [],
+      idempotencyKey: row.idempotency_key,
+    }));
+  }
+
+  override async getAppointmentById(id: string, organizationId?: string): Promise<AppointmentSlotDTO | null> {
+    let q = this.supabaseClient.from('appointments').select('*').eq('id', id);
+    const { data, error } = await q.maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get appointment: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      tenantId: data.workspace_id || data.organization_id,
+      workspaceId: data.workspace_id,
+      customerName: data.contact_name || '',
+      customerPhone: data.contact_phone,
+      serviceType: data.appointment_type || 'GENERAL',
+      durationMinutes: 30,
+      scheduledTime: data.scheduled_time || data.appointment_time,
+      status: data.status,
+      doctorId: data.doctor_id,
+      notes: data.notes,
+      cancellationReason: data.cancellation_reason,
+      propertyId: data.property_id,
+      visitorCount: data.visitor_count,
+      transportRequired: data.transport_required,
+      assignedAgent: data.assigned_agent,
+      appointmentType: data.appointment_type,
+      auditHistory: data.audit_history || [],
+      idempotencyKey: data.idempotency_key,
+    };
+  }
+
+  override async saveAppointment(appointment: AppointmentSlotDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('appointments').upsert({
+      id: appointment.id,
+      organization_id: (appointment as any).organizationId || appointment.tenantId,
+      workspace_id: appointment.workspaceId || appointment.tenantId,
+      contact_phone: appointment.customerPhone,
+      contact_name: appointment.customerName,
+      appointment_time: appointment.scheduledTime,
+      scheduled_time: appointment.scheduledTime,
+      status: appointment.status,
+      doctor_id: appointment.doctorId,
+      notes: appointment.notes,
+      cancellation_reason: appointment.cancellationReason,
+      property_id: appointment.propertyId,
+      visitor_count: appointment.visitorCount || 1,
+      transport_required: appointment.transportRequired || false,
+      assigned_agent: appointment.assignedAgent,
+      appointment_type: appointment.appointmentType || 'GENERAL',
+      audit_history: appointment.auditHistory || [],
+      idempotency_key: appointment.idempotencyKey,
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save appointment: ${error.message}`, error);
+    await super.saveAppointment(appointment);
+  }
+
+  override async updateAppointment(id: string, partial: Partial<AppointmentSlotDTO>, organizationId?: string): Promise<AppointmentSlotDTO | null> {
+    const existing = await this.getAppointmentById(id, organizationId);
+    if (!existing) return null;
+    const updated: AppointmentSlotDTO = { ...existing, ...partial };
+    await this.saveAppointment(updated);
+    return updated;
+  }
+
+  override async deleteAppointment(id: string, organizationId?: string): Promise<void> {
+    const { error } = await this.supabaseClient.from('appointments').delete().eq('id', id);
+    if (error) throw new DatabaseOperationError(`Failed to delete appointment: ${error.message}`, error);
+    await super.deleteAppointment(id, organizationId);
+  }
+
+  // --- Properties ---
+  override async getProperties(workspaceId?: string, filters?: any): Promise<PropertyDTO[]> {
+    let q = this.supabaseClient.from('properties').select('*');
+    if (workspaceId) q = q.eq('workspace_id', workspaceId);
+    if (filters?.propertyType) q = q.eq('property_type', filters.propertyType);
+    if (filters?.status) q = q.eq('status', filters.status);
+    const { data, error } = await q.order('created_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get properties: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      workspaceId: row.workspace_id,
+      organizationId: row.organization_id,
+      name: row.name,
+      referenceCode: row.reference_code,
+      propertyType: row.property_type,
+      subType: row.sub_type,
+      locality: row.locality,
+      address: row.address,
+      mapUrl: row.map_url,
+      dimensions: row.dimensions || {},
+      pricing: row.pricing || {},
+      status: row.status,
+      amenities: row.amenities || [],
+      description: row.description,
+      developerContact: row.developer_contact || {},
+      reraDetails: row.rera_details || { verificationStatus: 'PENDING' },
+      documents: row.documents || [],
+      verifiedBy: row.verified_by,
+      lastVerifiedAt: row.last_verified_at,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  override async getPropertyById(id: string, workspaceId?: string): Promise<PropertyDTO | null> {
+    let q = this.supabaseClient.from('properties').select('*').eq('id', id);
+    if (workspaceId) q = q.eq('workspace_id', workspaceId);
+    const { data, error } = await q.maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get property: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      workspaceId: data.workspace_id,
+      organizationId: data.organization_id,
+      name: data.name,
+      referenceCode: data.reference_code,
+      propertyType: data.property_type,
+      subType: data.sub_type,
+      locality: data.locality,
+      address: data.address,
+      mapUrl: data.map_url,
+      dimensions: data.dimensions || {},
+      pricing: data.pricing || {},
+      status: data.status,
+      amenities: data.amenities || [],
+      description: data.description,
+      developerContact: data.developer_contact || {},
+      reraDetails: data.rera_details || { verificationStatus: 'PENDING' },
+      documents: data.documents || [],
+      verifiedBy: data.verified_by,
+      lastVerifiedAt: data.last_verified_at,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  override async saveProperty(property: PropertyDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('properties').upsert({
+      id: property.id,
+      workspace_id: property.workspaceId,
+      organization_id: property.organizationId,
+      name: property.name,
+      reference_code: property.referenceCode,
+      property_type: property.propertyType,
+      sub_type: property.subType,
+      locality: property.locality,
+      address: property.address,
+      map_url: property.mapUrl,
+      dimensions: property.dimensions || {},
+      pricing: property.pricing || {},
+      status: property.status,
+      amenities: property.amenities || [],
+      description: property.description,
+      developer_contact: property.developerContact || {},
+      rera_details: property.reraDetails || {},
+      documents: property.documents || [],
+      verified_by: property.verifiedBy,
+      last_verified_at: property.lastVerifiedAt,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save property: ${error.message}`, error);
+    await super.saveProperty(property);
+  }
+
+  override async updateProperty(id: string, partial: Partial<PropertyDTO>, workspaceId?: string): Promise<PropertyDTO | null> {
+    const existing = await this.getPropertyById(id, workspaceId);
+    if (!existing) return null;
+    const updated: PropertyDTO = { ...existing, ...partial, updatedAt: new Date().toISOString() };
+    await this.saveProperty(updated);
+    return updated;
+  }
+
+  override async deleteProperty(id: string, workspaceId?: string): Promise<boolean> {
+    let q = this.supabaseClient.from('properties').delete().eq('id', id);
+    if (workspaceId) q = q.eq('workspace_id', workspaceId);
+    const { error } = await q;
+    if (error) throw new DatabaseOperationError(`Failed to delete property: ${error.message}`, error);
+    await super.deleteProperty(id, workspaceId);
+    return true;
+  }
+
+  // --- Staff & Healthcare Rosters ---
+  override async getStaff(organizationId: string): Promise<BusinessStaffDTO[]> {
+    const { data, error } = await this.supabaseClient.from('business_staff').select('*').eq('organization_id', organizationId);
+    if (error) throw new DatabaseOperationError(`Failed to get staff: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      fullName: row.full_name,
+      designation: row.designation,
+      specialization: row.specialization || '',
+      consultationFee: row.consultation_fee ? Number(row.consultation_fee) : 0,
+      availableDays: row.available_days || [1, 2, 3, 4, 5, 6],
+      isActive: row.is_active,
+      status: 'ACTIVE',
+      authority: 'AUTHORITATIVE',
+      shiftStart: row.shift_start || '09:00',
+      shiftEnd: row.shift_end || '17:00',
+      breakStart: row.break_start || '13:00',
+      breakEnd: row.break_end || '14:00',
+      slotDurationMinutes: row.slot_duration_minutes || 15,
+      bufferMinutes: row.buffer_minutes || 5,
+      leaves: row.leaves || [],
+      createdAt: row.created_at,
+      updatedAt: row.updated_at || row.created_at,
+    }));
+  }
+
+  override async getStaffById(id: string, organizationId?: string): Promise<BusinessStaffDTO | null> {
+    let q = this.supabaseClient.from('business_staff').select('*').eq('id', id);
+    if (organizationId) q = q.eq('organization_id', organizationId);
+    const { data, error } = await q.maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get staff by id: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      organizationId: data.organization_id,
+      fullName: data.full_name,
+      designation: data.designation,
+      specialization: data.specialization || '',
+      consultationFee: data.consultation_fee ? Number(data.consultation_fee) : 0,
+      availableDays: data.available_days || [1, 2, 3, 4, 5, 6],
+      isActive: data.is_active,
+      status: 'ACTIVE',
+      authority: 'AUTHORITATIVE',
+      shiftStart: data.shift_start || '09:00',
+      shiftEnd: data.shift_end || '17:00',
+      breakStart: data.break_start || '13:00',
+      breakEnd: data.break_end || '14:00',
+      slotDurationMinutes: data.slot_duration_minutes || 15,
+      bufferMinutes: data.buffer_minutes || 5,
+      leaves: data.leaves || [],
+      createdAt: data.created_at,
+      updatedAt: data.updated_at || data.created_at,
+    };
+  }
+
+  override async saveStaff(staff: BusinessStaffDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('business_staff').upsert({
+      id: staff.id,
+      organization_id: staff.organizationId,
+      full_name: staff.fullName,
+      designation: staff.designation,
+      specialization: staff.specialization,
+      consultation_fee: staff.consultationFee,
+      available_days: staff.availableDays,
+      is_active: staff.isActive,
+      shift_start: (staff as any).shiftStart || '09:00',
+      shift_end: (staff as any).shiftEnd || '17:00',
+      break_start: (staff as any).breakStart || '13:00',
+      break_end: (staff as any).breakEnd || '14:00',
+      slot_duration_minutes: (staff as any).slotDurationMinutes || 15,
+      buffer_minutes: (staff as any).bufferMinutes || 5,
+      leaves: (staff as any).leaves || [],
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save staff: ${error.message}`, error);
+    await super.saveStaff(staff);
+  }
+
+  override async updateStaff(id: string, partial: Partial<BusinessStaffDTO>, organizationId?: string): Promise<BusinessStaffDTO | null> {
+    const existing = await this.getStaffById(id, organizationId);
+    if (!existing) return null;
+    const updated: BusinessStaffDTO = { ...existing, ...partial, updatedAt: new Date().toISOString() };
+    await this.saveStaff(updated);
+    return updated;
+  }
+
+  override async deleteStaff(id: string, organizationId: string): Promise<void> {
+    const { error } = await this.supabaseClient.from('business_staff').delete().eq('id', id).eq('organization_id', organizationId);
+    if (error) throw new DatabaseOperationError(`Failed to delete staff: ${error.message}`, error);
+    await super.deleteStaff(id, organizationId);
+  }
+
+  // --- FAQs & Knowledge Base ---
+  override async getFAQs(organizationId: string): Promise<BusinessFAQDTO[]> {
+    const { data, error } = await this.supabaseClient.from('business_faqs').select('*').eq('organization_id', organizationId);
+    if (error) throw new DatabaseOperationError(`Failed to get FAQs: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      category: row.category || 'GENERAL',
+      question: row.question_english || row.question_kannada || '',
+      answer: row.answer_english || row.answer_kannada || '',
+      kannadaQuestion: row.question_kannada,
+      kannadaAnswer: row.answer_kannada,
+      language: 'KN',
+      status: 'ACTIVE',
+      authority: 'AUTHORITATIVE',
+      createdAt: row.created_at,
+      updatedAt: row.updated_at || row.created_at,
+    }));
+  }
+
+  override async saveFAQ(faq: BusinessFAQDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('business_faqs').upsert({
+      id: faq.id,
+      organization_id: faq.organizationId,
+      question_kannada: faq.kannadaQuestion || faq.question,
+      question_english: faq.question,
+      answer_kannada: faq.kannadaAnswer || faq.answer,
+      answer_english: faq.answer,
+      category: faq.category,
+      is_active: faq.status === 'ACTIVE',
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save FAQ: ${error.message}`, error);
+    await super.saveFAQ(faq);
+  }
+
+  override async deleteFAQ(id: string, organizationId: string): Promise<void> {
+    const { error } = await this.supabaseClient.from('business_faqs').delete().eq('id', id).eq('organization_id', organizationId);
+    if (error) throw new DatabaseOperationError(`Failed to delete FAQ: ${error.message}`, error);
+    await super.deleteFAQ(id, organizationId);
+  }
+}
+
+// ==============================================================================
+// DATABASE FACTORY & RUNTIME ACCESSOR
+// ==============================================================================
+
+export function createDatabaseService(): IDatabaseService {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+
+  if (isProduction) {
+    if (!supabaseUrl || !supabaseKey) {
+      if (process.env.ALLOW_FILE_DATABASE !== 'true') {
+        throw new ProductionDatabaseConfigError(
+          'CRITICAL PRODUCTION SECURITY BLOCKER: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured in production mode. ' +
+          'Silent file-backed or in-memory fallback is prohibited.'
+        );
+      }
+      console.warn('[database] Running in production with file-backed database because ALLOW_FILE_DATABASE=true.');
+      return new DurableDatabaseService();
+    }
+    return new SupabaseDatabaseService(supabaseUrl, supabaseKey);
+  }
+
+  if (process.env.FORCE_SUPABASE_DB === 'true' && supabaseUrl && supabaseKey) {
+    return new SupabaseDatabaseService(supabaseUrl, supabaseKey);
+  }
+
+  return new DurableDatabaseService();
+}
+
+let activeDb: IDatabaseService = createDatabaseService();
+
+export const globalDb: IDatabaseService = new Proxy({} as IDatabaseService, {
+  get(_target, prop) {
+    return (activeDb as any)[prop];
+  },
+});
+
+export function setGlobalDb(service: IDatabaseService): void {
+  if (service === (globalDb as any)) {
+    return;
+  }
+  activeDb = service;
+}
+
+export function getGlobalDb(): IDatabaseService {
+  return activeDb;
+}
