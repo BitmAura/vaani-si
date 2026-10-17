@@ -108,7 +108,13 @@ export interface IDatabaseService {
 
   // Appointments (Tenant Gated)
   getAppointments(organizationId?: string): Promise<AppointmentSlotDTO[]>;
+  getAppointmentById(id: string, organizationId?: string): Promise<AppointmentSlotDTO | null>;
   saveAppointment(appointment: AppointmentSlotDTO): Promise<void>;
+  updateAppointment(id: string, partial: Partial<AppointmentSlotDTO>, organizationId?: string): Promise<AppointmentSlotDTO | null>;
+  deleteAppointment(id: string, organizationId?: string): Promise<void>;
+
+  getStaffById(id: string, organizationId?: string): Promise<BusinessStaffDTO | null>;
+  updateStaff(id: string, partial: Partial<BusinessStaffDTO>, organizationId?: string): Promise<BusinessStaffDTO | null>;
 
   // Agents (Tenant Gated)
   getAgents(organizationId?: string): Promise<AgentRecordDTO[]>;
@@ -1680,8 +1686,41 @@ export class InMemoryDatabaseService implements IDatabaseService {
     if (organizationId) return all.filter(a => a.tenantId === organizationId);
     return all;
   }
+  async getAppointmentById(id: string, organizationId?: string): Promise<AppointmentSlotDTO | null> {
+    const apt = this.appointments.get(id) || null;
+    if (!apt) return null;
+    if (organizationId && apt.tenantId !== organizationId) return null;
+    return apt;
+  }
   async saveAppointment(appointment: AppointmentSlotDTO): Promise<void> {
     this.appointments.set(appointment.id, appointment);
+  }
+  async updateAppointment(id: string, partial: Partial<AppointmentSlotDTO>, organizationId?: string): Promise<AppointmentSlotDTO | null> {
+    const existing = await this.getAppointmentById(id, organizationId);
+    if (!existing) return null;
+    const updated = { ...existing, ...partial };
+    this.appointments.set(id, updated);
+    return updated;
+  }
+  async deleteAppointment(id: string, organizationId?: string): Promise<void> {
+    const existing = await this.getAppointmentById(id, organizationId);
+    if (existing) {
+      this.appointments.delete(id);
+    }
+  }
+
+  async getStaffById(id: string, organizationId?: string): Promise<BusinessStaffDTO | null> {
+    const st = this.staffMembers.get(id) || null;
+    if (!st) return null;
+    if (organizationId && st.organizationId !== organizationId) return null;
+    return st;
+  }
+  async updateStaff(id: string, partial: Partial<BusinessStaffDTO>, organizationId?: string): Promise<BusinessStaffDTO | null> {
+    const existing = await this.getStaffById(id, organizationId);
+    if (!existing) return null;
+    const updated = { ...existing, ...partial, updatedAt: new Date().toISOString() };
+    this.staffMembers.set(id, updated);
+    return updated;
   }
 
   // --- Agents ---
@@ -2843,6 +2882,12 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         if (Array.isArray(data.subscriptions)) {
           for (const s of data.subscriptions) super.saveSubscription(s);
         }
+        if (Array.isArray(data.staff)) {
+          for (const st of data.staff) super.saveStaff(st);
+        }
+        if (Array.isArray(data.faqs)) {
+          for (const f of data.faqs) super.saveFAQ(f);
+        }
       } catch (err: any) {
         console.warn('[DurableDatabaseService] Failed to load snapshot:', err.message);
       }
@@ -2888,6 +2933,8 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         members: Array.from((this as any).members.values()),
         subscriptions: Array.from((this as any).subscriptions.values()),
         clientWorkspaces: Array.from((this as any).clientWorkspaces.values()),
+        staff: Array.from((this as any).staffMembers.values()),
+        faqs: Array.from((this as any).faqs.values()),
       };
       const tempPath = `${this.persistPath}.${Date.now()}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
@@ -3009,6 +3056,43 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
 
   override async saveSubscription(sub: SubscriptionDTO): Promise<void> {
     await super.saveSubscription(sub);
+    this.persistSnapshot();
+  }
+
+  override async updateAppointment(id: string, partial: Partial<AppointmentSlotDTO>, organizationId?: string): Promise<AppointmentSlotDTO | null> {
+    const res = await super.updateAppointment(id, partial, organizationId);
+    if (res) this.persistSnapshot();
+    return res;
+  }
+
+  override async deleteAppointment(id: string, organizationId?: string): Promise<void> {
+    await super.deleteAppointment(id, organizationId);
+    this.persistSnapshot();
+  }
+
+  override async saveStaff(staff: BusinessStaffDTO): Promise<void> {
+    await super.saveStaff(staff);
+    this.persistSnapshot();
+  }
+
+  override async updateStaff(id: string, partial: Partial<BusinessStaffDTO>, organizationId?: string): Promise<BusinessStaffDTO | null> {
+    const res = await super.updateStaff(id, partial, organizationId);
+    if (res) this.persistSnapshot();
+    return res;
+  }
+
+  override async deleteStaff(id: string, organizationId: string): Promise<void> {
+    await super.deleteStaff(id, organizationId);
+    this.persistSnapshot();
+  }
+
+  override async saveFAQ(faq: BusinessFAQDTO): Promise<void> {
+    await super.saveFAQ(faq);
+    this.persistSnapshot();
+  }
+
+  override async deleteFAQ(id: string, organizationId: string): Promise<void> {
+    await super.deleteFAQ(id, organizationId);
     this.persistSnapshot();
   }
 }

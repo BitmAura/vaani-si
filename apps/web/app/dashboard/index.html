@@ -807,6 +807,44 @@
     <!-- Navigation Menu -->
     <nav class="sidebar-nav custom-scroll">
       
+      <!-- Healthcare Operations Hub -->
+      <div id="healthcare-nav-group" style="display: none;">
+        <div class="nav-group-title">Healthcare Operations</div>
+        <button onclick="navigateToView('healthcare-roster')" id="nav-healthcare-roster" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span>Doctor Roster & OPD</span>
+          <span class="nav-badge" id="nav-badge-doctors-count">0</span>
+        </button>
+        <button onclick="navigateToView('healthcare-faqs')" id="nav-healthcare-faqs" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span>Approved Knowledge</span>
+          <span class="nav-badge" id="nav-badge-faqs-count">0</span>
+        </button>
+        <button onclick="navigateToView('healthcare-config')" id="nav-healthcare-config" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>Clinic & Safeguards</span>
+        </button>
+      </div>
+
+      <!-- Agency Multi-Client Hub -->
+      <div id="agency-nav-group" style="display: none;">
+        <div class="nav-group-title">Agency Operations</div>
+        <button onclick="navigateToView('agency-overview')" id="nav-agency-overview" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>Client Businesses</span>
+          <span class="nav-badge" id="nav-badge-agency-clients-count">0</span>
+        </button>
+      </div>
+
       <!-- Group 1: Core Operations -->
       <div class="nav-group-title">Operations</div>
       
@@ -936,6 +974,9 @@
         <span>VANNI</span>
         <span>/</span>
         <span id="breadcrumb-org-name" style="color: var(--text-secondary); font-weight: 500;">Ballari Layouts</span>
+        <span id="breadcrumb-workspace-sep" style="display: none;">/</span>
+        <span id="breadcrumb-workspace-name" style="display: none; color: #1D4ED8; font-weight: 600;">Client Workspace</span>
+        <button id="btn-return-agency-hub" onclick="switchToAgencyHub()" class="btn-secondary" style="display: none; padding: 2px 8px; font-size: 11px; margin-left: 6px;">← Back to Agency Hub</button>
         <span>/</span>
         <span class="active" id="breadcrumb-section-name">Overview</span>
       </div>
@@ -966,6 +1007,191 @@
     <!-- Scrollable Content Viewport -->
     <div class="dashboard-viewport custom-scroll">
       
+      <!-- =================================================================== -->
+      <!-- VIEW: AGENCY CLIENT DIRECTORY & DASHBOARD (PROMPT 04) -->
+      <!-- =================================================================== -->
+      <section id="view-agency-overview" class="content-container" style="display: none;">
+        
+        <!-- Agency Header -->
+        <div class="page-header-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h1 class="page-title" id="agency-page-title">Agency Client Hub</h1>
+              <span class="status-badge badge-blue">Multi-Client Mode</span>
+              <span class="status-badge badge-muted" style="font-size: 10px;">Karnataka & Pan-India</span>
+            </div>
+            <p class="page-subtitle" id="agency-page-subtitle">Manage client accounts, monitor AI employee activity, and oversee inbound lead outcomes.</p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="date-filter-group">
+              <button onclick="setAgencyDateRange('today')" class="date-filter-btn" id="btn-agency-filter-today">Today</button>
+              <button onclick="setAgencyDateRange('7d')" class="date-filter-btn" id="btn-agency-filter-7d">7 Days</button>
+              <button onclick="setAgencyDateRange('30d')" class="date-filter-btn" id="btn-agency-filter-30d">30 Days</button>
+              <button onclick="setAgencyDateRange('all')" class="date-filter-btn active" id="btn-agency-filter-all">All Time</button>
+            </div>
+
+            <button onclick="openAddClientModal()" class="btn-primary" id="btn-agency-add-client">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>+ Add Client</span>
+            </button>
+
+            <button onclick="loadAgencyOverview()" class="btn-secondary" title="Refresh Live Data" style="padding: 6px 10px;">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 6 Agency Summary Metrics -->
+        <div class="metrics-grid">
+          
+          <!-- Metric 1: Total Client Accounts -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Managed Clients</span>
+              <span class="metric-badge badge-blue" id="kpi-agency-badge-clients">Multi-Tenant</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-total-clients">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-clients-sub">0 Healthcare · 0 Real Estate</span>
+            </div>
+          </div>
+
+          <!-- Metric 2: Active AI Employees -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Active AI Employees</span>
+              <span class="metric-badge badge-confirmed" id="kpi-agency-badge-agents">Voice OS</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-active-agents">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-agents-sub">Kavya & Sahana voice agents</span>
+            </div>
+          </div>
+
+          <!-- Metric 3: Total Completed Calls -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Calls Completed</span>
+              <span class="metric-badge badge-blue">In Selected Period</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-completed-calls">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-calls-sub">Real duplex telephony sessions</span>
+            </div>
+          </div>
+
+          <!-- Metric 4: Qualified Inbound Leads -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Qualified Leads</span>
+              <span class="metric-badge badge-hot" id="kpi-agency-badge-leads">High Intent</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-qualified-leads">0</div>
+            <div class="metric-subtext">
+              <span>Hot & warm buyer inquiries</span>
+            </div>
+          </div>
+
+          <!-- Metric 5: Confirmed Appointments & Visits -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Bookings & Visits</span>
+              <span class="metric-badge badge-confirmed">Confirmed</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-bookings">0</div>
+            <div class="metric-subtext">
+              <span id="kpi-agency-bookings-sub">0 requested · 0 confirmed</span>
+            </div>
+          </div>
+
+          <!-- Metric 6: Total Recorded Voice Usage -->
+          <div class="metric-card">
+            <div class="metric-label-row">
+              <span class="metric-label">Recorded Voice Minutes</span>
+              <span class="metric-badge badge-muted">Audio Duration</span>
+            </div>
+            <div class="metric-value" id="kpi-agency-voice-minutes">0</div>
+            <div class="metric-subtext">
+              <span>Actual billable audio minutes</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Managed Client Businesses Table Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Client Performance Directory</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">Live status, call volume, and lead generation across managed businesses</div>
+            </div>
+
+            <!-- Controls: Search & Industry Filter -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="text" id="agency-client-search" oninput="filterAgencyClients()" placeholder="Search business name, city..." style="padding: 4px 10px; font-size: 11.5px; border-radius: 5px; border: 1px solid var(--border); background: #FFFFFF; width: 200px; outline: none;">
+              
+              <select id="agency-client-industry-filter" onchange="filterAgencyClients()" style="padding: 4px 8px; font-size: 11.5px; border-radius: 5px; border: 1px solid var(--border); background: #FFFFFF; color: var(--text-secondary); outline: none;">
+                <option value="ALL">All Industries</option>
+                <option value="HEALTHCARE">Healthcare & Clinics</option>
+                <option value="REAL_ESTATE">Real Estate & Layouts</option>
+                <option value="DIGITAL_AGENCY">Marketing Agency</option>
+              </select>
+
+              <button onclick="openAddClientModal()" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px;">+ Add Client</button>
+            </div>
+          </div>
+
+          <!-- Clients Table -->
+          <div class="table-container">
+            <table class="vanni-table">
+              <thead>
+                <tr>
+                  <th>Client Business</th>
+                  <th>Industry & Type</th>
+                  <th>AI Employee</th>
+                  <th>Calls in Period</th>
+                  <th>Qualified Leads</th>
+                  <th>Appointments / Visits</th>
+                  <th>Needs Attention</th>
+                  <th>Voice Minutes</th>
+                  <th>Last Activity</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="agency-clients-table-body">
+                <!-- Dynamically hydrated from /api/agency/overview -->
+              </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div id="agency-clients-empty-state" class="empty-state-box" style="display: none;">
+              <div class="empty-state-icon">
+                <svg style="width: 20px; height: 20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div class="empty-title">No Client Businesses Added Yet</div>
+              <p class="empty-description">Add your first healthcare clinic or real estate layout client to configure their customized Kannada AI voice receptionist.</p>
+              <div style="margin-top: 8px;">
+                <button onclick="openAddClientModal()" class="btn-primary">+ Add First Client</button>
+              </div>
+            </div>
+
+            <!-- Search No Results State -->
+            <div id="agency-search-empty-state" class="empty-state-box" style="display: none;">
+              <span style="font-size: 12px; color: var(--text-muted);">No client businesses match your search filter.</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
       <!-- =================================================================== -->
       <!-- VIEW 1: HOME DASHBOARD / OVERVIEW -->
       <!-- =================================================================== -->
@@ -1251,7 +1477,273 @@
       </section>
 
     </div>
-  </main>
+  
+      <!-- ===================================================================== -->
+      <!-- VIEW: HEALTHCARE DOCTOR ROSTER & OPD APPOINTMENTS (PROMPT 05) -->
+      <!-- ===================================================================== -->
+      <section id="view-healthcare-roster" class="content-container" style="display: none;">
+        <div class="page-header-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="badge-blue" style="font-size: 11px; padding: 2px 8px; border-radius: 4px;">🏥 Healthcare Roster Engine</span>
+              <span style="font-size: 12px; color: var(--text-muted);" id="healthcare-clinic-subname">Multi-Specialty OPD & Surgery</span>
+            </div>
+            <h1 class="page-title">Doctor & Staff Roster Management</h1>
+            <p class="page-subtitle">Configure doctor availability, shift hours, lunch breaks, leave schedules, and verified consultation booking.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="openModal('modal-book-opd')" class="btn-secondary">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Book OPD Slot</span>
+            </button>
+            <button onclick="openModal('modal-add-doctor')" class="btn-primary">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>+ Add Doctor / Specialist</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+          <div class="kpi-card">
+            <span class="kpi-label">Active Doctors & Specialists</span>
+            <div class="kpi-value" id="kpi-hc-doctors-count">0</div>
+            <div class="kpi-subtext" style="color: var(--emerald-600);">Verified on Roster</div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Consultation Slots Today</span>
+            <div class="kpi-value" id="kpi-hc-slots-count">0</div>
+            <div class="kpi-subtext">Configured shift capacity</div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Confirmed OPD Appointments</span>
+            <div class="kpi-value" id="kpi-hc-appointments-count">0</div>
+            <div class="kpi-subtext">Backend validated slots</div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Emergency Safeguard</span>
+            <div class="kpi-value" style="font-size: 16px; color: var(--emerald-600); font-weight: 700; margin-top: 6px;">108 & Casualty</div>
+            <div class="kpi-subtext">Fail-safe protocol active</div>
+          </div>
+        </div>
+
+        <!-- Doctor Roster Table Panel -->
+        <div class="panel" style="margin-bottom: 24px;">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="panel-title">Clinic Doctors & Provider Roster</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Real-time availability calculation with break exclusions</div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Doctor & Specialty</th>
+                  <th>Kannada Name</th>
+                  <th>Shift Timings</th>
+                  <th>Lunch Break</th>
+                  <th>Consultation Fee</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Slot Availability</th>
+                </tr>
+              </thead>
+              <tbody id="healthcare-doctors-table-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">Loading doctor roster...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- OPD Bookings Calendar / List -->
+        <div class="panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="panel-title">Recent OPD Consultation Appointments</div>
+            <span class="badge-blue" id="healthcare-bookings-badge">0 Bookings</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Patient Name & Phone</th>
+                  <th>Doctor / Specialty</th>
+                  <th>Date & Time</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Audit / Notes</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="healthcare-appointments-table-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">No OPD appointments recorded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: HEALTHCARE APPROVED FAQS KNOWLEDGE BASE (PROMPT 05) -->
+      <!-- ===================================================================== -->
+      <section id="view-healthcare-faqs" class="content-container" style="display: none;">
+        <div class="page-header-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="badge-blue" style="font-size: 11px; padding: 2px 8px; border-radius: 4px;">🏥 Administrative Assistant Boundary</span>
+              <span style="font-size: 12px; color: var(--text-muted);">Non-Clinical FAQ Knowledge Base</span>
+            </div>
+            <h1 class="page-title">Approved Clinic Knowledge Base</h1>
+            <p class="page-subtitle">Administrative FAQs verified by clinic staff. The Kannada voice AI will only answer questions matching approved, published entries.</p>
+          </div>
+          <button onclick="openModal('modal-add-faq')" class="btn-primary">
+            <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>+ Add Approved FAQ</span>
+          </button>
+        </div>
+
+        <!-- Safeguard Notice -->
+        <div style="background: #F8FAFC; border: 1px solid var(--border); border-left: 4px solid #0284C7; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
+          <div style="font-weight: 600; font-size: 13px; color: var(--text-primary); margin-bottom: 4px;">Strict Clinical Boundary Notice</div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+            The voice agent is strictly an <strong>administrative assistant</strong>. It answers hours, clinic location, available treatments, appointment fees, and preparation guidelines. It will <strong>never diagnose symptoms, prescribe medications, or promise medical outcomes</strong>. Questions outside approved FAQs are automatically escalated to authorized human staff.
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="panel-title">Approved Question & Answer Entries</div>
+            <div style="display: flex; gap: 8px;">
+              <span class="badge-confirmed" id="hc-faqs-active-badge">0 Active</span>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Question (English / Kannada)</th>
+                  <th>Approved Response</th>
+                  <th>Language</th>
+                  <th>Status</th>
+                  <th>Reviewer</th>
+                </tr>
+              </thead>
+              <tbody id="healthcare-faqs-table-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 32px; color: var(--text-muted);">Loading knowledge base...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: HEALTHCARE CLINIC CONFIGURATION & SAFEGUARDS (PROMPT 05) -->
+      <!-- ===================================================================== -->
+      <section id="view-healthcare-config" class="content-container" style="display: none;">
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">Clinic Configuration & Emergency Safeguards</h1>
+            <p class="page-subtitle">Configure operating hours, consultation buffers, emergency casualty routing, and secure HMAC webhook notifications.</p>
+          </div>
+          <button onclick="saveClinicConfig()" class="btn-primary">
+            <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Save Configuration</span>
+          </button>
+        </div>
+
+        <!-- Emergency Safeguard Warning Card -->
+        <div style="background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span style="font-size: 24px;">🚨</span>
+            <div>
+              <div style="font-weight: 700; font-size: 14px; color: #991B1B; margin-bottom: 4px;">Emergency & Urgent Care Safeguard Protocol</div>
+              <div style="font-size: 12.5px; color: #7F1D1D; line-height: 1.5;">
+                When a caller mentions critical symptoms (e.g., severe chest pain, breathing difficulty, uncontrollable bleeding, loss of consciousness), the voice assistant immediately stops sales or routine booking, transfers/directs the caller to <strong>108 Ambulance Services</strong> and the clinic casualty contact, and records the escalation. It never fabricates an ambulance dispatch.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <!-- Left Column: Operating & Escalation Settings -->
+          <div class="panel" style="padding: 20px;">
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">OPD Scheduling & Timings</h3>
+            
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Default Consultation Duration (Minutes)</label>
+              <input type="number" id="hc-conf-slot-duration" class="form-input" value="20" min="10" max="60" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Buffer Between Appointments (Minutes)</label>
+              <input type="number" id="hc-conf-buffer" class="form-input" value="5" min="0" max="30" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Emergency Casualty Phone Number</label>
+              <input type="text" id="hc-conf-emergency-phone" class="form-input" placeholder="+91 8392 240108" />
+              <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Direct line for local emergency casualty</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Staff Escalation Contact Phone</label>
+              <input type="text" id="hc-conf-escalation-phone" class="form-input" placeholder="+91 94480 12345" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Staff Escalation Operating Hours</label>
+              <input type="text" id="hc-conf-escalation-hours" class="form-input" value="09:00 AM - 08:00 PM" />
+            </div>
+          </div>
+
+          <!-- Right Column: Webhook & CRM Integration -->
+          <div class="panel" style="padding: 20px;">
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">External System Webhooks & CRM</h3>
+            
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Appointment Webhook Endpoint URL</label>
+              <input type="url" id="hc-conf-webhook-url" class="form-input" placeholder="https://api.yourhospital.in/webhooks/appointments" />
+              <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Receives appointment.booked, rescheduled, cancelled events</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Webhook Shared Secret (HMAC-SHA256)</label>
+              <input type="password" id="hc-conf-webhook-secret" class="form-input" placeholder="Enter secure secret token" />
+              <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Payload is signed with X-Vanni-Signature header</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px;">
+                <input type="checkbox" id="hc-conf-webhook-enabled" />
+                <span>Enable Real-Time Webhook Forwarding</span>
+              </label>
+            </div>
+
+            <div style="padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span id="hc-webhook-test-status" style="font-size: 11.5px; color: var(--text-muted);">Unverified endpoint</span>
+              </div>
+              <button type="button" onclick="testWebhookEndpoint()" class="btn-secondary" style="font-size: 12px;">
+                <span>Test Webhook Ping</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+</main>
 
 </div>
 
@@ -1457,7 +1949,39 @@
       // 1.2 Fetch Active Organization Details
       await loadOrganizationDetails();
 
-      // 1.3 Fetch Real Calls & Appointments
+      // 1.3 Check Active Workspace Context & Agency Hub
+      const activeWsCookie = document.cookie.split('; ').find(row => row.startsWith('vanni_active_workspace='))?.split('=')[1];
+      
+      if (activeIndustry === 'AGENCY') {
+        const agencyNav = document.getElementById('agency-nav-group');
+        if (agencyNav) agencyNav.style.display = 'block';
+
+        if (!activeWsCookie) {
+          // Default to Agency Overview Hub if no specific client workspace cookie
+          navigateToView('agency-overview');
+          await loadAgencyOverview();
+        } else {
+          // We are viewing a specific client workspace
+          const retBtn = document.getElementById('btn-return-agency-hub');
+          const wsSep = document.getElementById('breadcrumb-workspace-sep');
+          const wsName = document.getElementById('breadcrumb-workspace-name');
+          if (retBtn) retBtn.style.display = 'inline-flex';
+          if (wsSep) wsSep.style.display = 'inline';
+          if (wsName) {
+            wsName.style.display = 'inline';
+            // Fetch workspace name
+            try {
+              const wsRes = await fetch(`/api/workspaces/${encodeURIComponent(activeWsCookie)}`);
+              if (wsRes.ok) {
+                const wsData = await wsRes.json();
+                wsName.textContent = wsData.workspace?.name || 'Client Workspace';
+              }
+            } catch (e) {}
+          }
+        }
+      }
+
+      // 1.4 Fetch Real Calls & Appointments
       await loadCallsFromAPI();
       await loadAppointmentsFromAPI();
       await loadWhatsAppStatus();
@@ -1510,36 +2034,104 @@
     }
   }
 
-  // 3. Render Workspace Switcher Dropdown
-  function renderOrgSwitcher(memberships) {
+  // 3. Render Workspace & Client Switcher Dropdown (Phase 6)
+  async function renderOrgSwitcher(memberships) {
     const list = document.getElementById('org-switcher-list');
     if (!list) return;
     list.innerHTML = '';
 
-    if (!memberships || memberships.length === 0) {
-      list.innerHTML = '<div style="padding: 6px 8px; font-size: 11px; color: var(--text-muted);">No other workspaces</div>';
-      return;
+    // Fetch Client Workspaces under active organization
+    let clientWorkspaces = [];
+    try {
+      const wsRes = await fetch('/api/workspaces');
+      if (wsRes.ok) {
+        const wsData = await wsRes.json();
+        clientWorkspaces = wsData.workspaces || [];
+      }
+    } catch (e) {
+      console.warn('[Workspace fetch warning]', e);
     }
 
-    memberships.forEach(m => {
-      const isActive = m.organizationId === activeOrgId;
-      const item = document.createElement('div');
-      item.className = `org-dropdown-item ${isActive ? 'active' : ''}`;
-      const icon = m.industry === 'HEALTHCARE_HOSPITAL' ? '🏥' : (m.industry === 'AGENCY' ? '🚀' : '🏡');
-      item.innerHTML = `
-        <span style="display: flex; align-items: center; gap: 6px; truncate;">
-          <span>${icon}</span>
-          <span style="font-weight: ${isActive ? '600' : '400'};">${m.organizationName || 'Workspace'}</span>
-        </span>
-        ${isActive ? '<span style="font-size: 10px; color: #1D4ED8;">✓</span>' : ''}
-      `;
-      item.onclick = async () => {
-        if (!isActive) {
-          await switchOrganization(m.organizationId);
-        }
-      };
-      list.appendChild(item);
-    });
+    // 1. Client Workspaces Section (for Agencies and Multi-Client accounts)
+    if (clientWorkspaces.length > 0) {
+      const wsHeader = document.createElement('div');
+      wsHeader.style.cssText = 'font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 6px 8px 4px; letter-spacing: 0.05em;';
+      wsHeader.textContent = 'Client Businesses / Workspaces';
+      list.appendChild(wsHeader);
+
+      const activeWsCookie = document.cookie.split('; ').find(row => row.startsWith('vanni_active_workspace='))?.split('=')[1];
+
+      clientWorkspaces.forEach(ws => {
+        const isActiveWs = activeWsCookie ? ws.id === activeWsCookie : ws === clientWorkspaces[0];
+        const item = document.createElement('div');
+        item.className = `org-dropdown-item ${isActiveWs ? 'active' : ''}`;
+        const icon = ws.industryCategory === 'HEALTHCARE' ? '🏥' : (ws.industryCategory === 'REAL_ESTATE' ? '🏡' : '🚀');
+        item.innerHTML = `
+          <span style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+            <span>${icon}</span>
+            <span style="font-weight: ${isActiveWs ? '600' : '400'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">${ws.name}</span>
+          </span>
+          <span style="font-size: 9px; padding: 1px 5px; border-radius: 4px; background: #EEF2F6; color: #475569; font-weight: 600;">${ws.subcategory || ws.industryCategory}</span>
+        `;
+        item.onclick = async () => {
+          if (!isActiveWs) {
+            await switchClientWorkspace(ws.id);
+          }
+        };
+        list.appendChild(item);
+      });
+
+      // Divider
+      const div = document.createElement('div');
+      div.style.cssText = 'height: 1px; background: var(--border); margin: 6px 0;';
+      list.appendChild(div);
+    }
+
+    // 2. Organization Accounts Section
+    const orgHeader = document.createElement('div');
+    orgHeader.style.cssText = 'font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 4px 8px 4px; letter-spacing: 0.05em;';
+    orgHeader.textContent = 'Organizations';
+    list.appendChild(orgHeader);
+
+    if (!memberships || memberships.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding: 4px 8px; font-size: 11px; color: var(--text-muted);';
+      empty.textContent = 'No other organizations';
+      list.appendChild(empty);
+    } else {
+      memberships.forEach(m => {
+        const isActive = m.organizationId === activeOrgId;
+        const item = document.createElement('div');
+        item.className = `org-dropdown-item ${isActive ? 'active' : ''}`;
+        const icon = m.industry === 'HEALTHCARE_HOSPITAL' ? '🏥' : (m.industry === 'AGENCY' ? '🚀' : '🏡');
+        item.innerHTML = `
+          <span style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+            <span>${icon}</span>
+            <span style="font-weight: ${isActive ? '600' : '400'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">${m.organizationName || 'Workspace'}</span>
+          </span>
+          ${isActive ? '<span style="font-size: 10px; color: #1D4ED8;">✓</span>' : ''}
+        `;
+        item.onclick = async () => {
+          if (!isActive) {
+            await switchOrganization(m.organizationId);
+          }
+        };
+        list.appendChild(item);
+      });
+    }
+  }
+
+  async function switchClientWorkspace(workspaceId) {
+    try {
+      const res = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/switch`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error('[Switch Workspace Error]', err);
+    }
   }
 
   function toggleOrgSwitcher(e) {
@@ -2115,7 +2707,7 @@
 
   // 15. View Navigation & Routing
   function navigateToView(viewId) {
-    const sections = ['overview', 'calls-full', 'leads-full', 'appointments-full'];
+    const sections = ['agency-overview', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'overview', 'calls-full', 'leads-full', 'appointments-full'];
     sections.forEach(s => {
       const el = document.getElementById(`view-${s}`);
       if (el) el.style.display = s === viewId || (viewId === 'calls' && s === 'calls-full') || (viewId === 'leads' && s === 'leads-full') || (viewId === 'appointments' && s === 'appointments-full') ? 'flex' : 'none';
@@ -2153,7 +2745,1087 @@
 
   // Run initial dashboard hydration on DOM ready
   window.addEventListener('DOMContentLoaded', initDashboard);
+
+  // =========================================================================
+  // AGENCY MULTI-CLIENT & OVERVIEW LOGIC (PROMPT 04)
+  // =========================================================================
+  let agencyOverviewData = null;
+  let agencyDatePeriod = 'all';
+
+  function onAddClientIndustryChange(industry) {
+    const subSelect = document.getElementById('add-client-subcategory');
+    if (!subSelect) return;
+    subSelect.innerHTML = '';
+
+    if (industry === 'HEALTHCARE') {
+      subSelect.innerHTML = `
+        <option value="DENTAL">Dental Clinic</option>
+        <option value="ORTHOPAEDICS">Orthopaedics & Joints</option>
+        <option value="IVF">IVF & Fertility</option>
+        <option value="HOSPITAL">General Hospital / Clinic</option>
+      `;
+    } else if (industry === 'REAL_ESTATE') {
+      subSelect.innerHTML = `
+        <option value="DEVELOPER">Layout Developer</option>
+        <option value="BROKERAGE">Real Estate Brokerage</option>
+        <option value="SALES">Sales & Follow-up Desk</option>
+      `;
+    } else {
+      subSelect.innerHTML = `
+        <option value="MARKETING_AGENCY">Digital Marketing Agency</option>
+      `;
+    }
+  }
+
+  function openAddClientModal() {
+    const modal = document.getElementById('modal-add-client');
+    const err = document.getElementById('add-client-error-banner');
+    if (err) err.style.display = 'none';
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+  }
+
+  function closeAddClientModal() {
+    const modal = document.getElementById('modal-add-client');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+  }
+
+  async function handleCreateClientSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-add-client');
+    const errBanner = document.getElementById('add-client-error-banner');
+    if (errBanner) errBanner.style.display = 'none';
+
+    const name = document.getElementById('add-client-name')?.value?.trim();
+    const industryCategory = document.getElementById('add-client-industry')?.value;
+    const subcategory = document.getElementById('add-client-subcategory')?.value;
+    const operatingLocation = document.getElementById('add-client-location')?.value?.trim();
+    const primaryPhone = document.getElementById('add-client-phone')?.value?.trim();
+    const primaryEmail = document.getElementById('add-client-email')?.value?.trim() || undefined;
+    const dialect = document.getElementById('add-client-dialect')?.value;
+
+    if (!name) return;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>Creating Client Workspace...</span>';
+    }
+
+    try {
+      const res = await fetch('/api/agency/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          industryCategory,
+          subcategory,
+          operatingLocation: operatingLocation || 'Karnataka, India',
+          primaryPhone: primaryPhone || '+91 80 4719 2000',
+          primaryEmail,
+          languagePreferences: {
+            primary: dialect === 'ENGLISH_INDIAN_CORPORATE' ? 'en-IN' : (dialect === 'KANGLISH_BUSINESS' ? 'kn-en' : 'kn-IN'),
+            conversationalStyle: 'POLITE_BUSINESS',
+            regionalDialect: dialect,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Failed to create client account');
+      }
+
+      closeAddClientModal();
+      document.getElementById('form-add-client')?.reset();
+
+      // Refresh agency overview and clients table
+      await loadAgencyOverview();
+      await renderOrgSwitcher();
+
+    } catch (err) {
+      if (errBanner) {
+        errBanner.textContent = err.message || 'Error creating client account';
+        errBanner.style.display = 'block';
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Create Client Account</span>';
+      }
+    }
+  }
+
+  function setAgencyDateRange(period) {
+    agencyDatePeriod = period;
+    ['today', '7d', '30d', 'all'].forEach(p => {
+      const b = document.getElementById(`btn-agency-filter-${p}`);
+      if (b) {
+        if (p === period) b.classList.add('active');
+        else b.classList.remove('active');
+      }
+    });
+    loadAgencyOverview();
+  }
+
+  async function loadAgencyOverview() {
+    try {
+      const res = await fetch(`/api/agency/overview?period=${agencyDatePeriod}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      agencyOverviewData = data;
+
+      // Update KPI cards
+      const summary = data.summary || {};
+      const elClients = document.getElementById('kpi-agency-total-clients');
+      const elAgents = document.getElementById('kpi-agency-active-agents');
+      const elCalls = document.getElementById('kpi-agency-completed-calls');
+      const elLeads = document.getElementById('kpi-agency-qualified-leads');
+      const elBookings = document.getElementById('kpi-agency-bookings');
+      const elMins = document.getElementById('kpi-agency-voice-minutes');
+      const navBadge = document.getElementById('nav-badge-agency-clients-count');
+
+      if (elClients) elClients.textContent = summary.totalClients || 0;
+      if (elAgents) elAgents.textContent = summary.activeAiEmployees || 0;
+      if (elCalls) elCalls.textContent = summary.completedCalls || 0;
+      if (elLeads) elLeads.textContent = summary.qualifiedLeads || 0;
+      if (elBookings) elBookings.textContent = summary.appointmentsConfirmed || 0;
+      if (elMins) elMins.textContent = summary.totalVoiceMinutes || 0;
+      if (navBadge) navBadge.textContent = summary.totalClients || 0;
+
+      const subBookings = document.getElementById('kpi-agency-bookings-sub');
+      if (subBookings) {
+        subBookings.textContent = `${summary.appointmentsRequested || 0} requested · ${summary.appointmentsConfirmed || 0} confirmed`;
+      }
+
+      renderAgencyClientsTable(data.clients || []);
+
+    } catch (e) {
+      console.warn('[Agency Overview Error]', e);
+    }
+  }
+
+  function filterAgencyClients() {
+    if (!agencyOverviewData || !agencyOverviewData.clients) return;
+    const q = document.getElementById('agency-client-search')?.value?.toLowerCase().trim() || '';
+    const ind = document.getElementById('agency-client-industry-filter')?.value || 'ALL';
+
+    const filtered = agencyOverviewData.clients.filter(c => {
+      const matchSearch = !q || c.name.toLowerCase().includes(q) || (c.operatingLocation && c.operatingLocation.toLowerCase().includes(q));
+      const matchIndustry = ind === 'ALL' || c.industryCategory === ind || c.subcategory === ind;
+      return matchSearch && matchIndustry;
+    });
+
+    renderAgencyClientsTable(filtered);
+  }
+
+  function renderAgencyClientsTable(clients) {
+    const tbody = document.getElementById('agency-clients-table-body');
+    const emptyBox = document.getElementById('agency-clients-empty-state');
+    const searchEmptyBox = document.getElementById('agency-search-empty-state');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (!clients || clients.length === 0) {
+      const q = document.getElementById('agency-client-search')?.value?.trim();
+      if (q && agencyOverviewData && agencyOverviewData.clients && agencyOverviewData.clients.length > 0) {
+        if (searchEmptyBox) searchEmptyBox.style.display = 'flex';
+        if (emptyBox) emptyBox.style.display = 'none';
+      } else {
+        if (emptyBox) emptyBox.style.display = 'flex';
+        if (searchEmptyBox) searchEmptyBox.style.display = 'none';
+      }
+      return;
+    }
+
+    if (emptyBox) emptyBox.style.display = 'none';
+    if (searchEmptyBox) searchEmptyBox.style.display = 'none';
+
+    clients.forEach(c => {
+      const tr = document.createElement('tr');
+      const m = c.metrics || {};
+      const indIcon = c.industryCategory === 'HEALTHCARE' ? '🏥' : (c.industryCategory === 'REAL_ESTATE' ? '🏡' : '🚀');
+      const indBadgeClass = c.industryCategory === 'HEALTHCARE' ? 'badge-blue' : (c.industryCategory === 'REAL_ESTATE' ? 'badge-warm' : 'badge-muted');
+
+      const aiStatus = c.aiEmployee?.status || 'DRAFT';
+      const aiStatusBadge = aiStatus === 'ACTIVE'
+        ? '<span class="status-badge badge-confirmed">Active · ' + (c.aiEmployee?.name || 'Agent') + '</span>'
+        : (aiStatus === 'READY'
+          ? '<span class="status-badge badge-blue">Ready · ' + (c.aiEmployee?.name || 'Agent') + '</span>'
+          : '<span class="status-badge badge-muted">Draft · ' + (c.aiEmployee?.name || 'Agent') + '</span>');
+
+      let lastActText = 'No activity';
+      if (m.lastActivity) {
+        const d = new Date(m.lastActivity);
+        lastActText = !isNaN(d.getTime()) ? d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) : 'Recent';
+      }
+
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight: 600; color: var(--text-primary); font-size: 12.5px;">${c.name}</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">${c.operatingLocation || 'Ballari, Karnataka'} · ${c.primaryPhone || ''}</div>
+        </td>
+        <td>
+          <span class="status-badge ${indBadgeClass}" style="gap: 4px;">
+            <span>${indIcon}</span>
+            <span>${c.subcategory || c.industryCategory}</span>
+          </span>
+        </td>
+        <td>${aiStatusBadge}</td>
+        <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${m.totalCalls || 0}</td>
+        <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #B91C1C;">${m.qualifiedLeads || 0}</td>
+        <td style="font-size: 11.5px;">
+          <span style="font-weight: 600; color: #047857;">${m.appointmentsConfirmed || 0} confirmed</span>
+          ${m.appointmentsRequested > 0 ? `<span style="color: var(--text-muted); font-size: 10.5px;"> (${m.appointmentsRequested} req)</span>` : ''}
+        </td>
+        <td>
+          ${m.followUpsRequiringAttention > 0
+            ? `<span class="status-badge badge-hot">${m.followUpsRequiringAttention} Hot / Urgent</span>`
+            : `<span style="color: var(--text-muted); font-size: 11.5px;">0 Pending</span>`}
+        </td>
+        <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">${m.totalVoiceMinutes || 0} min</td>
+        <td style="font-size: 11.5px; color: var(--text-muted);">${lastActText}</td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button onclick="openClientWorkspace('${c.id}')" class="btn-primary" style="padding: 4px 10px; font-size: 11px; margin-right: 4px;">
+            <span>Open Client</span>
+          </button>
+          <a href="/app/agents" class="btn-secondary" style="padding: 4px 8px; font-size: 11px; text-decoration: none;">AI Setup</a>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function openClientWorkspace(workspaceId) {
+    try {
+      const res = await fetch(`/api/agency/clients/${encodeURIComponent(workspaceId)}/switch`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error('[Open Client Workspace Error]', e);
+    }
+  }
+
+  async function switchToAgencyHub() {
+    // Clear active workspace cookie and refresh into agency overview
+    document.cookie = 'vanni_active_workspace=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    navigateToView('agency-overview');
+    await loadAgencyOverview();
+    const btn = document.getElementById('btn-return-agency-hub');
+    const wsName = document.getElementById('breadcrumb-workspace-name');
+    const wsSep = document.getElementById('breadcrumb-workspace-sep');
+    if (btn) btn.style.display = 'none';
+    if (wsName) wsName.style.display = 'none';
+    if (wsSep) wsSep.style.display = 'none';
+  }
+
+
+  // =========================================================================
+  // HEALTHCARE VERTICAL OPERATIONS & ROSTER LOGIC (PROMPT 05)
+  // =========================================================================
+  let healthcareDoctors = [];
+  let healthcareAppointments = [];
+  let healthcareFAQs = [];
+  let healthcareConfig = null;
+
+  async function checkAndInitHealthcareVertical(currentWs) {
+    const isHealthcare = currentWs?.industryCategory === 'HEALTHCARE' || 
+                         ['DENTAL', 'ORTHOPAEDICS', 'IVF', 'HOSPITAL'].includes(currentWs?.subcategory) ||
+                         activeIndustry === 'HEALTHCARE_HOSPITAL';
+    const navGroup = document.getElementById('healthcare-nav-group');
+    if (navGroup) {
+      navGroup.style.display = isHealthcare ? 'block' : 'none';
+    }
+
+    if (isHealthcare) {
+      const subnameEl = document.getElementById('healthcare-clinic-subname');
+      if (subnameEl && currentWs?.name) {
+        subnameEl.textContent = `${currentWs.name} · ${currentWs.subcategory || 'Clinic'}`;
+      }
+      loadHealthcareRoster();
+      loadHealthcareAppointments();
+      loadHealthcareFAQs();
+      loadHealthcareConfig();
+    }
+  }
+
+  async function loadHealthcareRoster() {
+    try {
+      const res = await fetch('/api/doctors');
+      if (res.ok) {
+        const data = await res.json();
+        healthcareDoctors = data.doctors || [];
+        renderHealthcareDoctors();
+      }
+    } catch (e) {
+      console.warn('[Healthcare Doctors]', e);
+    }
+  }
+
+  function renderHealthcareDoctors() {
+    const tbody = document.getElementById('healthcare-doctors-table-body');
+    const badge = document.getElementById('nav-badge-doctors-count');
+    const kpiCount = document.getElementById('kpi-hc-doctors-count');
+    const opdDoctorSelect = document.getElementById('opd-doctor-select');
+
+    if (badge) badge.textContent = healthcareDoctors.length;
+    if (kpiCount) kpiCount.textContent = healthcareDoctors.length;
+
+    if (opdDoctorSelect) {
+      opdDoctorSelect.innerHTML = '<option value="">Select a doctor...</option>' + 
+        healthcareDoctors.map(d => `<option value="${d.id}">${d.fullName} (${d.designation || d.specialization}) - ₹${d.consultationFee || 500}</option>`).join('');
+    }
+
+    if (!tbody) return;
+    if (healthcareDoctors.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">No doctors added to roster yet. Click "+ Add Doctor" to configure your medical team.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = healthcareDoctors.map(doc => `
+      <tr>
+        <td>
+          <div style="font-weight: 600; color: var(--text-primary);">${doc.fullName}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${doc.designation || doc.specialization}</div>
+        </td>
+        <td>${doc.kannadaName || '—'}</td>
+        <td>
+          <span style="font-family: monospace; font-size: 12px; font-weight: 600;">${doc.shiftStart || '09:00'} - ${doc.shiftEnd || '17:00'}</span>
+        </td>
+        <td>
+          <span style="font-family: monospace; font-size: 11.5px; color: #64748B;">${doc.breakStart ? doc.breakStart + ' - ' + doc.breakEnd : 'No break'}</span>
+        </td>
+        <td style="font-weight: 600;">₹${doc.consultationFee || 500}</td>
+        <td>
+          <span class="${doc.status === 'ACTIVE' ? 'badge-confirmed' : 'badge-muted'}">${doc.status || 'ACTIVE'}</span>
+        </td>
+        <td style="text-align: right;">
+          <button onclick="viewDoctorAvailabilityLive('${doc.id}', '${doc.fullName.replace(/'/g, "\\'")}')" class="btn-secondary" style="font-size: 11px; padding: 3px 8px;">
+            Check Slots
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function viewDoctorAvailabilityLive(docId, docName) {
+    const today = new Date().toISOString().split('T')[0];
+    const pickedDate = prompt(`Check availability for ${docName}\nEnter date (YYYY-MM-DD):`, today);
+    if (!pickedDate) return;
+
+    try {
+      const res = await fetch(`/api/doctors/${docId}/availability?date=${pickedDate}`);
+      if (res.ok) {
+        const data = await res.json();
+        const availableSlots = data.slots.filter(s => s.isAvailable);
+        const bookedOrBreakSlots = data.slots.filter(s => !s.isAvailable);
+        alert(`${docName} Availability for ${pickedDate}:\n\n` +
+              `Total Slots: ${data.totalSlots}\n` +
+              `Available: ${data.availableSlotsCount}\n\n` +
+              `Open Slots: ${availableSlots.map(s => s.startTime).slice(0, 8).join(', ')}${availableSlots.length > 8 ? '...' : ''}\n` +
+              `Unavailable/Breaks: ${bookedOrBreakSlots.map(s => s.startTime + ' (' + (s.reason || 'Booked') + ')').slice(0, 4).join(', ')}`);
+      } else {
+        alert('Could not fetch doctor availability');
+      }
+    } catch (e) {
+      alert('Error connecting to availability service: ' + e.message);
+    }
+  }
+
+  async function fetchDoctorSlotsForBooking() {
+    const docId = document.getElementById('opd-doctor-select')?.value;
+    const date = document.getElementById('opd-booking-date')?.value;
+    const slotSelect = document.getElementById('opd-slot-select');
+    if (!slotSelect) return;
+
+    if (!docId || !date) {
+      slotSelect.innerHTML = '<option value="">Select date & doctor first</option>';
+      return;
+    }
+
+    slotSelect.innerHTML = '<option value="">Checking live slots...</option>';
+    try {
+      const res = await fetch(`/api/doctors/${docId}/availability?date=${date}`);
+      if (res.ok) {
+        const data = await res.json();
+        const open = (data.slots || []).filter(s => s.isAvailable);
+        if (open.length === 0) {
+          slotSelect.innerHTML = '<option value="">No available slots (Doctor on leave or full)</option>';
+        } else {
+          slotSelect.innerHTML = open.map(s => `<option value="${s.startTime}">${s.startTime} (${s.durationMinutes}m)</option>`).join('');
+        }
+      }
+    } catch (e) {
+      slotSelect.innerHTML = '<option value="">Error loading slots</option>';
+    }
+  }
+
+  async function submitAddDoctor() {
+    const fullName = document.getElementById('doc-fullname')?.value?.trim();
+    if (!fullName) { alert('Doctor full name is required'); return; }
+
+    const kannadaName = document.getElementById('doc-kannadaname')?.value?.trim();
+    const designation = document.getElementById('doc-designation')?.value?.trim() || 'Specialist';
+    const specialization = document.getElementById('doc-specialization')?.value || 'GENERAL_OPD';
+    const consultationFee = Number(document.getElementById('doc-fee')?.value || 500);
+    const slotDurationMinutes = Number(document.getElementById('doc-slot-duration')?.value || 20);
+    const shiftStart = document.getElementById('doc-shift-start')?.value || '09:00';
+    const shiftEnd = document.getElementById('doc-shift-end')?.value || '13:00';
+    const breakStart = document.getElementById('doc-break-start')?.value || '11:00';
+    const breakEnd = document.getElementById('doc-break-end')?.value || '11:30';
+
+    const dayCheckboxes = document.querySelectorAll('input[name="doc-day"]:checked');
+    const availableDays = Array.from(dayCheckboxes).map(c => Number(c.value));
+
+    const btn = document.getElementById('btn-save-doctor');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/doctors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName,
+          kannadaName,
+          designation,
+          specialization,
+          consultationFee,
+          slotDurationMinutes,
+          shiftStart,
+          shiftEnd,
+          breakStart,
+          breakEnd,
+          availableDays,
+        }),
+      });
+
+      if (res.ok) {
+        closeModal('modal-add-doctor');
+        await loadHealthcareRoster();
+      } else {
+        const err = await res.json();
+        alert('Error adding doctor: ' + (err.error || 'Server rejected request'));
+      }
+    } catch (e) {
+      alert('Network error: ' + e.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function submitBookOPD() {
+    const doctorId = document.getElementById('opd-doctor-select')?.value;
+    const date = document.getElementById('opd-booking-date')?.value;
+    const time = document.getElementById('opd-slot-select')?.value;
+    const customerName = document.getElementById('opd-patient-name')?.value?.trim();
+    const customerPhone = document.getElementById('opd-patient-phone')?.value?.trim();
+    const serviceType = document.getElementById('opd-service-type')?.value?.trim() || 'OPD Consultation';
+    const notes = document.getElementById('opd-notes')?.value?.trim() || '';
+
+    if (!doctorId || !date || !time || !customerName || !customerPhone) {
+      alert('Please fill all required booking fields');
+      return;
+    }
+
+    const scheduledTime = `${date}T${time}:00Z`;
+    const btn = document.getElementById('btn-submit-opd');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctorId,
+          customerName,
+          customerPhone,
+          serviceType,
+          scheduledTime,
+          durationMinutes: 20,
+          notes,
+          idempotencyKey: 'ui_booking_' + Date.now(),
+        }),
+      });
+
+      if (res.ok) {
+        closeModal('modal-book-opd');
+        await loadHealthcareAppointments();
+        alert('OPD Appointment confirmed successfully!');
+      } else {
+        const err = await res.json();
+        alert('Booking failed: ' + (err.error || 'Slot may have just been taken'));
+      }
+    } catch (e) {
+      alert('Booking request error: ' + e.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function loadHealthcareAppointments() {
+    try {
+      const res = await fetch('/api/appointments');
+      if (res.ok) {
+        const data = await res.json();
+        healthcareAppointments = data.appointments || data.data || [];
+        renderHealthcareAppointments();
+      }
+    } catch (e) {
+      console.warn('[Healthcare Appointments]', e);
+    }
+  }
+
+  function renderHealthcareAppointments() {
+    const tbody = document.getElementById('healthcare-appointments-table-body');
+    const badge = document.getElementById('healthcare-bookings-badge');
+    const kpiCount = document.getElementById('kpi-hc-appointments-count');
+
+    if (badge) badge.textContent = `${healthcareAppointments.length} Bookings`;
+    if (kpiCount) kpiCount.textContent = healthcareAppointments.length;
+
+    if (!tbody) return;
+    if (healthcareAppointments.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">No OPD appointments recorded yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = healthcareAppointments.map(apt => `
+      <tr>
+        <td>
+          <div style="font-weight: 600; color: var(--text-primary);">${apt.customerName}</div>
+          <div style="font-size: 11px; font-family: monospace; color: var(--text-muted);">${apt.customerPhone}</div>
+        </td>
+        <td>
+          <div style="font-weight: 500;">${apt.doctorName || 'Doctor Assigned'}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${apt.serviceType || 'OPD Consultation'}</div>
+        </td>
+        <td>
+          <span style="font-weight: 600; font-size: 12px;">${apt.scheduledTime ? new Date(apt.scheduledTime).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}</span>
+        </td>
+        <td>${apt.durationMinutes || 20}m</td>
+        <td>
+          <span class="${apt.status === 'CONFIRMED' ? 'badge-confirmed' : (apt.status === 'CANCELLED' ? 'badge-muted' : 'badge-blue')}">${apt.status}</span>
+        </td>
+        <td style="font-size: 11.5px; color: var(--text-secondary); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${apt.notes || 'Routine consult'}
+        </td>
+        <td style="text-align: right;">
+          ${apt.status === 'CONFIRMED' ? `
+            <button onclick="cancelHealthcareAppointment('${apt.id}')" class="btn-secondary" style="font-size: 11px; padding: 2px 6px; color: #DC2626;">
+              Cancel
+            </button>
+          ` : '<span style="font-size: 11px; color: var(--text-muted);">Closed</span>'}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function cancelHealthcareAppointment(id) {
+    const reason = prompt('Cancellation reason:');
+    if (reason === null) return;
+    try {
+      const res = await fetch(`/api/appointments/${id}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason || 'Patient requested cancellation' }),
+      });
+      if (res.ok) {
+        await loadHealthcareAppointments();
+      } else {
+        alert('Could not cancel appointment');
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  }
+
+  async function loadHealthcareFAQs() {
+    try {
+      const res = await fetch('/api/healthcare/faqs');
+      if (res.ok) {
+        const data = await res.json();
+        healthcareFAQs = data.faqs || [];
+        renderHealthcareFAQs();
+      }
+    } catch (e) {
+      console.warn('[Healthcare FAQs]', e);
+    }
+  }
+
+  function renderHealthcareFAQs() {
+    const tbody = document.getElementById('healthcare-faqs-table-body');
+    const badge = document.getElementById('nav-badge-faqs-count');
+    const activeBadge = document.getElementById('hc-faqs-active-badge');
+
+    const activeCount = healthcareFAQs.filter(f => f.status === 'ACTIVE').length;
+    if (badge) badge.textContent = healthcareFAQs.length;
+    if (activeBadge) activeBadge.textContent = `${activeCount} Approved & Active`;
+
+    if (!tbody) return;
+    if (healthcareFAQs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">No approved FAQs registered yet. Add questions to train the voice agent.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = healthcareFAQs.map(faq => `
+      <tr>
+        <td><span class="badge-blue" style="font-size: 10px;">${faq.category}</span></td>
+        <td>
+          <div style="font-weight: 600; color: var(--text-primary);">${faq.question}</div>
+          ${faq.questionKn ? `<div style="font-size: 11.5px; color: #0284C7; margin-top: 2px;">${faq.questionKn}</div>` : ''}
+        </td>
+        <td style="font-size: 12px; color: var(--text-secondary); max-width: 280px;">${faq.answer}</td>
+        <td><span style="font-size: 11px; font-weight: 500;">${faq.language || 'kn-IN'}</span></td>
+        <td>
+          <span class="${faq.status === 'ACTIVE' ? 'badge-confirmed' : 'badge-muted'}">${faq.status}</span>
+        </td>
+        <td style="font-size: 11px; color: var(--text-muted);">${faq.approvedBy || 'Staff'}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function submitAddFAQ() {
+    const category = document.getElementById('faq-category')?.value;
+    const language = document.getElementById('faq-language')?.value;
+    const question = document.getElementById('faq-question')?.value?.trim();
+    const questionKn = document.getElementById('faq-kannada-question')?.value?.trim();
+    const answer = document.getElementById('faq-answer')?.value?.trim();
+    const approvedBy = document.getElementById('faq-approved-by')?.value?.trim() || 'Admin';
+
+    if (!question || !answer) {
+      alert('Question and approved answer are required');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-faq');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/healthcare/faqs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, language, question, questionKn, answer, approvedBy }),
+      });
+      if (res.ok) {
+        closeModal('modal-add-faq');
+        await loadHealthcareFAQs();
+      } else {
+        alert('Could not save FAQ');
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function loadHealthcareConfig() {
+    try {
+      const res = await fetch('/api/healthcare/config');
+      if (res.ok) {
+        const data = await res.json();
+        healthcareConfig = data.config || {};
+        if (healthcareConfig) {
+          const slotEl = document.getElementById('hc-conf-slot-duration');
+          if (slotEl && healthcareConfig.defaultSlotDurationMinutes) slotEl.value = healthcareConfig.defaultSlotDurationMinutes;
+
+          const bufEl = document.getElementById('hc-conf-buffer');
+          if (bufEl && healthcareConfig.bufferMinutes !== undefined) bufEl.value = healthcareConfig.bufferMinutes;
+
+          const emPhoneEl = document.getElementById('hc-conf-emergency-phone');
+          if (emPhoneEl && healthcareConfig.emergencyContactPhone) emPhoneEl.value = healthcareConfig.emergencyContactPhone;
+
+          const escPhoneEl = document.getElementById('hc-conf-escalation-phone');
+          if (escPhoneEl && healthcareConfig.escalationContactPhone) escPhoneEl.value = healthcareConfig.escalationContactPhone;
+
+          const escHoursEl = document.getElementById('hc-conf-escalation-hours');
+          if (escHoursEl && healthcareConfig.escalationHours) escHoursEl.value = healthcareConfig.escalationHours;
+
+          const whUrlEl = document.getElementById('hc-conf-webhook-url');
+          if (whUrlEl && healthcareConfig.webhookUrl) whUrlEl.value = healthcareConfig.webhookUrl;
+
+          const whEnEl = document.getElementById('hc-conf-webhook-enabled');
+          if (whEnEl && healthcareConfig.webhookEnabled !== undefined) whEnEl.checked = healthcareConfig.webhookEnabled;
+        }
+      }
+    } catch (e) {
+      console.warn('[Healthcare Config]', e);
+    }
+  }
+
+  async function saveClinicConfig() {
+    const defaultSlotDurationMinutes = Number(document.getElementById('hc-conf-slot-duration')?.value || 20);
+    const bufferMinutes = Number(document.getElementById('hc-conf-buffer')?.value || 5);
+    const emergencyContactPhone = document.getElementById('hc-conf-emergency-phone')?.value?.trim();
+    const escalationContactPhone = document.getElementById('hc-conf-escalation-phone')?.value?.trim();
+    const escalationHours = document.getElementById('hc-conf-escalation-hours')?.value?.trim();
+    const webhookUrl = document.getElementById('hc-conf-webhook-url')?.value?.trim();
+    const webhookSecret = document.getElementById('hc-conf-webhook-secret')?.value?.trim();
+    const webhookEnabled = document.getElementById('hc-conf-webhook-enabled')?.checked || false;
+
+    try {
+      const res = await fetch('/api/healthcare/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          defaultSlotDurationMinutes,
+          bufferMinutes,
+          emergencyContactPhone,
+          escalationContactPhone,
+          escalationHours,
+          webhookUrl,
+          webhookSecret: webhookSecret || undefined,
+          webhookEnabled,
+        }),
+      });
+
+      if (res.ok) {
+        alert('Clinic configuration and emergency safeguards saved successfully!');
+        await loadHealthcareConfig();
+      } else {
+        alert('Failed to update clinic configuration');
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  }
+
+  async function testWebhookEndpoint() {
+    const statusEl = document.getElementById('hc-webhook-test-status');
+    if (statusEl) statusEl.textContent = 'Testing webhook HMAC signature...';
+    try {
+      const res = await fetch('/api/healthcare/integrations/webhook/test', {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (statusEl) statusEl.innerHTML = '<span style="color: #059669; font-weight: 600;">✓ HMAC Signature Verified</span>';
+      } else {
+        const err = await res.json();
+        if (statusEl) statusEl.innerHTML = `<span style="color: #DC2626;">✗ ${err.error || 'Failed'}</span>`;
+      }
+    } catch (e) {
+      if (statusEl) statusEl.textContent = 'Connection error';
+    }
+  }
+  
 </script>
+
+
+  <!-- ========================================================================= -->
+  <!-- ADD CLIENT MODAL (PROMPT 04) -->
+  <!-- ========================================================================= -->
+  <div id="modal-add-client" class="drawer-overlay" style="display: none; align-items: center; justify-content: center; z-index: 100;">
+    <div style="background: #FFFFFF; border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 540px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden;" onclick="event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em;">Add Client Business Account</h2>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Create an isolated workspace with custom industry AI voice persona.</p>
+        </div>
+        <button onclick="closeAddClientModal()" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); padding: 4px;">
+          <svg style="width: 18px; height: 18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body / Form -->
+      <form id="form-add-client" onsubmit="handleCreateClientSubmit(event)" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Step 1: Business Identity -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Client Business Name *</label>
+          <input type="text" id="add-client-name" required placeholder="e.g. Ballari Multispecialty Dental / Tungabhadra Meadows" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none;">
+        </div>
+
+        <!-- Industry & Subcategory Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Industry *</label>
+            <select id="add-client-industry" onchange="onAddClientIndustryChange(this.value)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; background: #FFFFFF; outline: none;">
+              <option value="HEALTHCARE">🏥 Healthcare</option>
+              <option value="REAL_ESTATE">🏡 Real Estate</option>
+              <option value="DIGITAL_AGENCY">🚀 Digital Agency</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Subcategory *</label>
+            <select id="add-client-subcategory" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; background: #FFFFFF; outline: none;">
+              <!-- Dynamically populated based on selected industry -->
+              <option value="DENTAL">Dental Clinic</option>
+              <option value="ORTHOPAEDICS">Orthopaedics & Joints</option>
+              <option value="IVF">IVF & Fertility</option>
+              <option value="HOSPITAL">General Hospital / Clinic</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Location & Contact -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Operating Location *</label>
+            <input type="text" id="add-client-location" required placeholder="e.g. Ballari / Bengaluru" value="Ballari, Karnataka" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; outline: none;">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Hotline Phone *</label>
+            <input type="tel" id="add-client-phone" required placeholder="+91 80 4719 2000" value="+91 8392 240001" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; outline: none;">
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Client Notification Email</label>
+          <input type="email" id="add-client-email" placeholder="client-admin@business.in" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; outline: none;">
+        </div>
+
+        <!-- Dialect / Persona Selection -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Recommended Regional Dialect</label>
+          <select id="add-client-dialect" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; background: #FFFFFF; outline: none;">
+            <option value="KANGLISH_BUSINESS">Bilingual Kanglish (Commercial / Urban)</option>
+            <option value="KANNADA_STANDARD_POLITE">Standard Polite Kannada (OPD / Healthcare)</option>
+            <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka Kannada (Ballari / Hubballi)</option>
+            <option value="MYSORE_MANDYA_REGIONAL">Mysore / Mandya Regional</option>
+            <option value="ENGLISH_INDIAN_CORPORATE">Indian English Corporate</option>
+          </select>
+        </div>
+
+        <div id="add-client-error-banner" style="display: none; padding: 8px 12px; border-radius: 6px; background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; font-size: 12px;"></div>
+
+        <!-- Footer Actions -->
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 16px;">
+          <button type="button" onclick="closeAddClientModal()" class="btn-secondary" style="padding: 8px 16px;">Cancel</button>
+          <button type="submit" id="btn-submit-add-client" class="btn-primary" style="padding: 8px 18px;">
+            <span>Create Client Account</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: ADD DOCTOR / SPECIALIST TO CLINIC ROSTER (PROMPT 05) -->
+<!-- ========================================================================= -->
+<div id="modal-add-doctor" class="modal-overlay" style="display: none;">
+  <div class="modal-dialog" style="max-width: 580px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Doctor / Specialist to Clinic Roster</h3>
+      <button onclick="closeModal('modal-add-doctor')" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Doctor Full Name *</label>
+          <input type="text" id="doc-fullname" class="form-input" placeholder="e.g. Dr. Ramesh Patil" />
+        </div>
+        <div>
+          <label class="form-label">Kannada Name (ಡಾಕ್ಟರ್ ಹೆಸರು)</label>
+          <input type="text" id="doc-kannadaname" class="form-input" placeholder="e.g. ಡಾ. ರಮೇಶ್ ಪಾಟೀಲ್" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Designation *</label>
+          <input type="text" id="doc-designation" class="form-input" placeholder="Senior Implantologist" />
+        </div>
+        <div>
+          <label class="form-label">Specialty Category *</label>
+          <select id="doc-specialization" class="form-input">
+            <option value="DENTAL">Dental Surgeon / Orthodontist</option>
+            <option value="ORTHOPAEDICS">Orthopaedics & Joint Replacement</option>
+            <option value="IVF">IVF & Reproductive Medicine</option>
+            <option value="GENERAL_OPD">General Medicine / Physician</option>
+            <option value="PAEDIATRICS">Paediatrics & Child Health</option>
+            <option value="CARDIOLOGY">Cardiology Consultation</option>
+            <option value="PHYSIOTHERAPY">Physiotherapy & Rehabilitation</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Consultation Fee (₹) *</label>
+          <input type="number" id="doc-fee" class="form-input" value="500" min="0" />
+        </div>
+        <div>
+          <label class="form-label">Consultation Duration (Mins)</label>
+          <input type="number" id="doc-slot-duration" class="form-input" value="20" min="10" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Shift Start Time</label>
+          <input type="time" id="doc-shift-start" class="form-input" value="09:00" />
+        </div>
+        <div>
+          <label class="form-label">Shift End Time</label>
+          <input type="time" id="doc-shift-end" class="form-input" value="13:00" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+        <div>
+          <label class="form-label">Lunch / Procedure Break Start</label>
+          <input type="time" id="doc-break-start" class="form-input" value="11:00" />
+        </div>
+        <div>
+          <label class="form-label">Break End</label>
+          <input type="time" id="doc-break-end" class="form-input" value="11:30" />
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label">Working Days (Mon - Sun)</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="doc-day" value="1" checked /> Mon</label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="doc-day" value="2" checked /> Tue</label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="doc-day" value="3" checked /> Wed</label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="doc-day" value="4" checked /> Thu</label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="doc-day" value="5" checked /> Fri</label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="doc-day" value="6" checked /> Sat</label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="doc-day" value="0" /> Sun</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-add-doctor')" class="btn-secondary">Cancel</button>
+      <button onclick="submitAddDoctor()" class="btn-primary" id="btn-save-doctor">Save Doctor to Roster</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: BOOK OPD APPOINTMENT VIA SCHEDULING ENGINE (PROMPT 05) -->
+<!-- ========================================================================= -->
+<div id="modal-book-opd" class="modal-overlay" style="display: none;">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Schedule OPD Consultation Slot</h3>
+      <button onclick="closeModal('modal-book-opd')" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Doctor / Specialist *</label>
+        <select id="opd-doctor-select" class="form-input" onchange="fetchDoctorSlotsForBooking()">
+          <option value="">Select a doctor...</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Consultation Date *</label>
+          <input type="date" id="opd-booking-date" class="form-input" onchange="fetchDoctorSlotsForBooking()" />
+        </div>
+        <div>
+          <label class="form-label">Available Slot *</label>
+          <select id="opd-slot-select" class="form-input">
+            <option value="">Select date & doctor first</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Patient Full Name *</label>
+          <input type="text" id="opd-patient-name" class="form-input" placeholder="e.g. Ramesh Gowda" />
+        </div>
+        <div>
+          <label class="form-label">Patient Phone Number *</label>
+          <input type="text" id="opd-patient-phone" class="form-input" placeholder="+91 98450 12345" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Service / Chief Complaint</label>
+        <input type="text" id="opd-service-type" class="form-input" placeholder="e.g. Dental Crown checkup / Tooth ache" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes / Instructions</label>
+        <textarea id="opd-notes" class="form-input" rows="2" placeholder="Administrative notes"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-book-opd')" class="btn-secondary">Cancel</button>
+      <button onclick="submitBookOPD()" class="btn-primary" id="btn-submit-opd">Confirm OPD Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: ADD APPROVED FAQ (PROMPT 05) -->
+<!-- ========================================================================= -->
+<div id="modal-add-faq" class="modal-overlay" style="display: none;">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Approved Administrative FAQ</h3>
+      <button onclick="closeModal('modal-add-faq')" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Category *</label>
+          <select id="faq-category" class="form-input">
+            <option value="HOURS">Hours & Working Days</option>
+            <option value="LOCATION">Clinic Location & Parking</option>
+            <option value="SERVICES">Available Treatments & Doctors</option>
+            <option value="PREPARATION">Appointment Preparation</option>
+            <option value="BILLING">Consultation Fees & Payment</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Language</label>
+          <select id="faq-language" class="form-input">
+            <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
+            <option value="en-IN">Indian English</option>
+            <option value="KANGLISH">Kanglish (Kannada-English blend)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Question *</label>
+        <input type="text" id="faq-question" class="form-input" placeholder="e.g. What are the clinic timings on Sundays?" />
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Kannada Question (ಕನ್ನಡದಲ್ಲಿ ಪ್ರಶ್ನೆ)</label>
+        <input type="text" id="faq-kannada-question" class="form-input" placeholder="e.g. ಭಾನುವಾರ ಕ್ಲಿನಿಕ್ ಸಮಯ ಎಷ್ಟು?" />
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Approved Answer *</label>
+        <textarea id="faq-answer" class="form-input" rows="3" placeholder="Accurate verified clinic response..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Approved By (Staff / Administrator Name) *</label>
+        <input type="text" id="faq-approved-by" class="form-input" placeholder="e.g. Clinic Administrator" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-add-faq')" class="btn-secondary">Cancel</button>
+      <button onclick="submitAddFAQ()" class="btn-primary" id="btn-save-faq">Approve & Publish FAQ</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

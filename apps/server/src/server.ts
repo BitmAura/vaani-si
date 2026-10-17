@@ -3157,14 +3157,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     });
   });
 
-  // 2.8 Get Appointments List for Active Tenant
-  fastify.get('/api/appointments', async (request, reply) => {
-    const { tenant } = request.query as { tenant?: string };
-    const session = getSessionFromRequest(request);
-    const orgId = tenant || session?.activeOrganizationId;
-    const list = await globalDb.getAppointments(orgId);
-    return reply.send({ success: true, data: list });
-  });
+  // Note: /api/appointments handled by doctorRoutes plugin with full tenant isolation and slot verification
 
   // 2.9 Get Active Handoffs & Escalation Queue
   fastify.get('/api/handoffs', async (request, reply) => {

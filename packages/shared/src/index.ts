@@ -36,6 +36,31 @@ export type IndustrySubcategory =
   | 'SALES'
   | 'MARKETING_AGENCY';
 
+export interface ClinicConfigDTO {
+  operatingHours?: Array<{
+    dayOfWeek: number; // 0=Sun, 1=Mon, ..., 6=Sat
+    opensAt: string; // "09:00"
+    closesAt: string; // "20:00"
+    isClosed: boolean;
+    lunchBreakStart?: string;
+    lunchBreakEnd?: string;
+  }>;
+  temporaryClosures?: Array<{
+    startDate: string;
+    endDate: string;
+    reason: string;
+  }>;
+  defaultSlotDurationMinutes?: number;
+  bufferMinutes?: number;
+  emergencyContactPhone?: string;
+  emergencyProtocol?: string;
+  escalationContactPhone?: string;
+  escalationHours?: string;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  webhookEnabled?: boolean;
+}
+
 export interface ClientWorkspaceDTO {
   id: string;
   organizationId: string;
@@ -57,6 +82,7 @@ export interface ClientWorkspaceDTO {
   onboardingStep: number;
   onboardingCompleted: boolean;
   onboardingData?: Record<string, any>;
+  clinicConfig?: ClinicConfigDTO;
   aiEmployee?: {
     name: string;
     gender: 'FEMALE' | 'MALE';
@@ -319,9 +345,18 @@ export interface LeadDossierDTO {
   createdAt: string;
 }
 
+export interface AppointmentAuditEntry {
+  action: 'CREATED' | 'CONFIRMED' | 'RESCHEDULED' | 'CANCELLED' | 'COMPLETED';
+  timestamp: string;
+  performedBy?: string;
+  previousTime?: string;
+  note?: string;
+}
+
 export interface AppointmentSlotDTO {
   id: string;
   tenantId: string;
+  doctorId?: string;
   leadId?: string;
   customerName: string;
   customerPhone: string;
@@ -329,6 +364,10 @@ export interface AppointmentSlotDTO {
   scheduledTime: string;
   durationMinutes: number;
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+  notes?: string;
+  cancellationReason?: string;
+  auditHistory?: AppointmentAuditEntry[];
+  idempotencyKey?: string;
 }
 
 // ==============================================================================
@@ -411,6 +450,13 @@ export interface BusinessStaffDTO {
   consultationFee?: number;
   availableDays: number[]; // 0=Sun, 1=Mon, ..., 6=Sat
   workingHoursDescription?: string;
+  shiftStart?: string; // "09:00"
+  shiftEnd?: string; // "17:00"
+  breakStart?: string; // "13:00"
+  breakEnd?: string; // "14:00"
+  slotDurationMinutes?: number; // default 15
+  bufferMinutes?: number; // default 5
+  leaves?: Array<{ date: string; reason: string }>;
   isActive: boolean;
   status: KnowledgeStatus;
   authority: KnowledgeAuthority;
