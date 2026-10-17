@@ -91,6 +91,7 @@ import { EmergencyHandler, EmergencyDetectionResult } from './emergency-handler'
 import { agencyRoutes } from './routes/agency';
 import { doctorRoutes } from './routes/doctors';
 import { plotRoutes } from './routes/plots';
+import { realEstateRoutes } from './routes/real-estate';
 import { registerBillingRoutes } from './routes/billing';
 import { registerAnalyticsRoutes } from './routes/analytics';
 import { registerWebhookRoutes } from './routes/webhooks';
@@ -252,6 +253,7 @@ export async function buildServer() {
   await fastify.register(agencyRoutes);
   await fastify.register(doctorRoutes);
   await fastify.register(plotRoutes);
+  await fastify.register(realEstateRoutes);
   await fastify.register(registerBillingRoutes);
   await fastify.register(registerAnalyticsRoutes);
   await fastify.register(registerWebhookRoutes);

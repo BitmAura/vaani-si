@@ -807,6 +807,39 @@
     <!-- Navigation Menu -->
     <nav class="sidebar-nav custom-scroll">
       
+      <!-- Real Estate Operations Hub (Prompt 06) -->
+      <div id="realestate-nav-group" style="display: none;">
+        <div class="nav-group-title">Real Estate Operations</div>
+        <button onclick="navigateToView('realestate-inventory')" id="nav-realestate-inventory" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>Property Inventory</span>
+          <span class="nav-badge" id="nav-badge-properties-count">0</span>
+        </button>
+        <button onclick="navigateToView('realestate-sitevisits')" id="nav-realestate-sitevisits" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>Site Visit Operations</span>
+          <span class="nav-badge" id="nav-badge-sitevisits-count">0</span>
+        </button>
+        <button onclick="navigateToView('realestate-leads')" id="nav-realestate-leads" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>Sales Leads & Triage</span>
+          <span class="nav-badge" id="nav-badge-re-leads-count">0</span>
+        </button>
+        <button onclick="navigateToView('realestate-config')" id="nav-realestate-config" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>Visit Policy & RERA</span>
+        </button>
+      </div>
+
       <!-- Healthcare Operations Hub -->
       <div id="healthcare-nav-group" style="display: none;">
         <div class="nav-group-title">Healthcare Operations</div>
@@ -1738,6 +1771,290 @@
               <button type="button" onclick="testWebhookEndpoint()" class="btn-secondary" style="font-size: 12px;">
                 <span>Test Webhook Ping</span>
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: REAL ESTATE PROPERTY INVENTORY CATALOGUE (PROMPT 06) -->
+      <!-- ===================================================================== -->
+      <section id="view-realestate-inventory" class="content-container" style="display: none;">
+        <div class="page-header-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="badge-warm" style="font-size: 11px; padding: 2px 8px; border-radius: 4px;">🏡 Verified Property Catalogue</span>
+              <span style="font-size: 12px; color: var(--text-muted);" id="realestate-project-subname">Plots, Villas & Apartments</span>
+            </div>
+            <h1 class="page-title">Property & Inventory Management</h1>
+            <p class="page-subtitle">Track layout plots, villas, dimensions, verified RERA compliance numbers, prices, and live availability statuses.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="openModal('modal-book-sitevisit')" class="btn-secondary">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Schedule Site Visit</span>
+            </button>
+            <button onclick="openModal('modal-add-property')" class="btn-primary">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>+ Add Property / Plot</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+          <div class="kpi-card">
+            <span class="kpi-label">Total Properties / Plots</span>
+            <div class="kpi-value" id="kpi-re-properties-count">0</div>
+            <div class="kpi-subtext" style="color: var(--emerald-600);">In Active Catalogue</div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Available for Sale</span>
+            <div class="kpi-value" id="kpi-re-available-count">0</div>
+            <div class="kpi-subtext">Open for site booking</div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Scheduled Site Visits</span>
+            <div class="kpi-value" id="kpi-re-sitevisits-count">0</div>
+            <div class="kpi-subtext">Confirmed prospective buyers</div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">RERA Compliance Guard</span>
+            <div class="kpi-value" style="font-size: 16px; color: var(--emerald-600); font-weight: 700; margin-top: 6px;">K-RERA Verified</div>
+            <div class="kpi-subtext">No unverified claims</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="panel" style="padding: 14px 18px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="re-search-input" class="form-input" placeholder="Search by plot number, reference code, locality..." style="max-width: 320px;" oninput="filterRealEstateProperties()" />
+          <select id="re-filter-type" class="form-input" style="max-width: 180px;" onchange="filterRealEstateProperties()">
+            <option value="">All Types (Plots, Villas...)</option>
+            <option value="PLOT">Plots / Layouts</option>
+            <option value="VILLA">Villas / Houses</option>
+            <option value="APARTMENT">Apartments</option>
+            <option value="COMMERCIAL">Commercial Plots</option>
+          </select>
+          <select id="re-filter-status" class="form-input" style="max-width: 160px;" onchange="filterRealEstateProperties()">
+            <option value="">All Statuses</option>
+            <option value="AVAILABLE">Available</option>
+            <option value="ON_HOLD">On Hold</option>
+            <option value="RESERVED">Reserved</option>
+            <option value="SOLD">Sold</option>
+          </select>
+          <button onclick="loadRealEstateProperties()" class="btn-secondary" style="font-size: 12px;">Refresh</button>
+        </div>
+
+        <!-- Property Inventory Table Panel -->
+        <div class="panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="panel-title">Inventory Units & Availability</div>
+            <span class="badge-warm" id="re-properties-table-badge">0 Units</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ref & Name</th>
+                  <th>Type & Locality</th>
+                  <th>Dimensions & Area</th>
+                  <th>Base Price (₹)</th>
+                  <th>RERA Verification</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="realestate-properties-table-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">Loading property inventory...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: REAL ESTATE SITE VISIT OPERATIONS (PROMPT 06) -->
+      <!-- ===================================================================== -->
+      <section id="view-realestate-sitevisits" class="content-container" style="display: none;">
+        <div class="page-header-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="badge-warm" style="font-size: 11px; padding: 2px 8px; border-radius: 4px;">🏡 Booking & Scheduling Engine</span>
+              <span style="font-size: 12px; color: var(--text-muted);">Capacity Gated</span>
+            </div>
+            <h1 class="page-title">Site Visit Appointments & Schedules</h1>
+            <p class="page-subtitle">Schedule, reschedule, and manage buyer site visits. The scheduling engine enforces maximum visitor capacity and prevents duplicate bookings.</p>
+          </div>
+          <button onclick="openModal('modal-book-sitevisit')" class="btn-primary">
+            <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>+ Book Site Visit</span>
+          </button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="panel-title">Scheduled Site Visits</div>
+            <span class="badge-confirmed" id="re-sitevisits-active-badge">0 Visits</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Customer Name & Phone</th>
+                  <th>Property / Project Ref</th>
+                  <th>Scheduled Date & Time</th>
+                  <th>Visitors</th>
+                  <th>Transport</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="realestate-sitevisits-table-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">Loading site visits...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: REAL ESTATE LEADS & SALES TRIAGE (PROMPT 06) -->
+      <!-- ===================================================================== -->
+      <section id="view-realestate-leads" class="content-container" style="display: none;">
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">Real Estate Sales Leads & Follow-ups</h1>
+            <p class="page-subtitle">Qualified property buyers with budget range, preferred plot dimensions, purchase timeline, and sales rep assignments.</p>
+          </div>
+          <button onclick="openModal('modal-qualify-lead')" class="btn-primary">
+            <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>+ Add / Qualify Buyer</span>
+          </button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="panel-title">Active Property Sales Enquiries</div>
+            <span class="badge-blue" id="re-leads-count-badge">0 Leads</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Buyer Name & Phone</th>
+                  <th>Property Interest</th>
+                  <th>Budget Range</th>
+                  <th>Purpose & Timeline</th>
+                  <th>Status</th>
+                  <th>Follow-up Notes</th>
+                </tr>
+              </thead>
+              <tbody id="realestate-leads-table-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 32px; color: var(--text-muted);">Loading sales leads...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: REAL ESTATE CONFIG & COMPLIANCE (PROMPT 06) -->
+      <!-- ===================================================================== -->
+      <section id="view-realestate-config" class="content-container" style="display: none;">
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">Site Visit Configuration & Compliance Policy</h1>
+            <p class="page-subtitle">Set operating hours for layout site visits, maximum group visitor capacity, transportation notices, and RERA verification standards.</p>
+          </div>
+          <button onclick="saveRealEstateConfig()" class="btn-primary">
+            <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Save Configuration</span>
+          </button>
+        </div>
+
+        <!-- Compliance Card -->
+        <div style="background: #F8FAFC; border: 1px solid var(--border); border-left: 4px solid #F59E0B; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
+          <div style="font-weight: 600; font-size: 13px; color: var(--text-primary); margin-bottom: 4px;">RERA & Consumer Protection Safeguard Notice</div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+            The voice agent answers only <strong>verified property records</strong> in your authorized catalogue. It is strictly prohibited from making legal guarantees, promised investment returns, or claiming RERA approvals without a verified registration number.
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div class="panel" style="padding: 20px;">
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">Site Visit Timings & Capacity</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div>
+                <label class="form-label">Visit Start Time</label>
+                <input type="time" id="re-conf-start" class="form-input" value="09:00" />
+              </div>
+              <div>
+                <label class="form-label">Visit End Time</label>
+                <input type="time" id="re-conf-end" class="form-input" value="17:30" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div>
+                <label class="form-label">Visit Duration (Minutes)</label>
+                <input type="number" id="re-conf-duration" class="form-input" value="60" min="30" />
+              </div>
+              <div>
+                <label class="form-label">Max Visitors Per Slot</label>
+                <input type="number" id="re-conf-capacity" class="form-input" value="4" min="1" max="20" />
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Sales Coordinator Phone</label>
+              <input type="text" id="re-conf-phone" class="form-input" placeholder="+91 94480 12345" />
+            </div>
+
+            <div class="form-group">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px;">
+                <input type="checkbox" id="re-conf-transport" />
+                <span>Complimentary Cab / Transportation Available</span>
+              </label>
+              <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Disabled by default. Only enable if free pickup is genuinely arranged.</span>
+            </div>
+          </div>
+
+          <div class="panel" style="padding: 20px;">
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">Webhook & Portal Integration</h3>
+            
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Site Visit Webhook URL</label>
+              <input type="url" id="re-conf-webhook-url" class="form-input" placeholder="https://crm.yourcompany.in/webhooks/site-visits" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Shared Secret Key (HMAC-SHA256)</label>
+              <input type="password" id="re-conf-webhook-secret" class="form-input" placeholder="Enter secret token" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px;">
+                <input type="checkbox" id="re-conf-webhook-enabled" />
+                <span>Forward Confirmed Site Visits to Webhook</span>
+              </label>
             </div>
           </div>
         </div>
@@ -2707,7 +3024,7 @@
 
   // 15. View Navigation & Routing
   function navigateToView(viewId) {
-    const sections = ['agency-overview', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'overview', 'calls-full', 'leads-full', 'appointments-full'];
+    const sections = ['agency-overview', 'realestate-inventory', 'realestate-sitevisits', 'realestate-leads', 'realestate-config', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'overview', 'calls-full', 'leads-full', 'appointments-full'];
     sections.forEach(s => {
       const el = document.getElementById(`view-${s}`);
       if (el) el.style.display = s === viewId || (viewId === 'calls' && s === 'calls-full') || (viewId === 'leads' && s === 'leads-full') || (viewId === 'appointments' && s === 'appointments-full') ? 'flex' : 'none';
@@ -3518,6 +3835,517 @@
     }
   }
   
+
+  // =========================================================================
+  // REAL ESTATE VERTICAL OPERATIONS LOGIC (PROMPT 06)
+  // =========================================================================
+  let realEstateProperties = [];
+  let realEstateSiteVisits = [];
+  let realEstateLeads = [];
+  let realEstateConfig = null;
+
+  async function checkAndInitRealEstateVertical(currentWs) {
+    const isRealEstate = currentWs?.industryCategory === 'REAL_ESTATE' ||
+                         ['DEVELOPER', 'BROKERAGE', 'SALES', 'PLOT_LAYOUT'].includes(currentWs?.subcategory) ||
+                         activeIndustry === 'REAL_ESTATE';
+    const navGroup = document.getElementById('realestate-nav-group');
+    if (navGroup) {
+      navGroup.style.display = isRealEstate ? 'block' : 'none';
+    }
+
+    if (isRealEstate) {
+      const subnameEl = document.getElementById('realestate-project-subname');
+      if (subnameEl && currentWs?.name) {
+        subnameEl.textContent = `${currentWs.name} · ${currentWs.subcategory || 'Real Estate'}`;
+      }
+      loadRealEstateProperties();
+      loadRealEstateSiteVisits();
+      loadRealEstateLeads();
+      loadRealEstateConfig();
+    }
+  }
+
+  async function loadRealEstateProperties() {
+    try {
+      const res = await fetch('/api/real-estate/properties');
+      if (res.ok) {
+        const data = await res.json();
+        realEstateProperties = data.properties || [];
+        renderRealEstateProperties();
+      }
+    } catch (e) {
+      console.warn('[RE Properties]', e);
+    }
+  }
+
+  function filterRealEstateProperties() {
+    const q = document.getElementById('re-search-input')?.value?.toLowerCase() || '';
+    const type = document.getElementById('re-filter-type')?.value || '';
+    const status = document.getElementById('re-filter-status')?.value || '';
+
+    const filtered = realEstateProperties.filter(p => {
+      const matchesQ = !q || p.name.toLowerCase().includes(q) || p.referenceCode.toLowerCase().includes(q) || p.locality.toLowerCase().includes(q);
+      const matchesType = !type || p.propertyType === type;
+      const matchesStatus = !status || p.status === status;
+      return matchesQ && matchesType && matchesStatus;
+    });
+
+    renderRealEstateProperties(filtered);
+  }
+
+  function renderRealEstateProperties(list = realEstateProperties) {
+    const tbody = document.getElementById('realestate-properties-table-body');
+    const badge = document.getElementById('nav-badge-properties-count');
+    const tableBadge = document.getElementById('re-properties-table-badge');
+    const kpiCount = document.getElementById('kpi-re-properties-count');
+    const kpiAvailable = document.getElementById('kpi-re-available-count');
+    const visitPropSelect = document.getElementById('visit-prop-select');
+
+    if (badge) badge.textContent = realEstateProperties.length;
+    if (tableBadge) tableBadge.textContent = `${list.length} Units`;
+    if (kpiCount) kpiCount.textContent = realEstateProperties.length;
+
+    const availableCount = realEstateProperties.filter(p => p.status === 'AVAILABLE').length;
+    if (kpiAvailable) kpiAvailable.textContent = availableCount;
+
+    if (visitPropSelect) {
+      visitPropSelect.innerHTML = '<option value="">Select a property...</option>' +
+        realEstateProperties.map(p => `<option value="${p.id}">${p.referenceCode} - ${p.name} (${p.status})</option>`).join('');
+    }
+
+    if (!tbody) return;
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">No property units found. Click "+ Add Property / Plot" to configure your inventory.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(p => {
+      const dims = p.dimensions.dimensionText || `${p.dimensions.totalArea} ${p.dimensions.unit}`;
+      const priceLakhs = (p.pricing.basePrice / 100000).toFixed(1);
+      const isReraVerified = p.reraDetails?.verificationStatus === 'VERIFIED';
+      const reraBadge = isReraVerified
+        ? `<span class="badge-confirmed" style="font-size: 10px;">✓ RERA: ${p.reraDetails.registrationNumber}</span>`
+        : `<span class="badge-muted" style="font-size: 10px;">Unverified / In Process</span>`;
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight: 600; color: var(--text-primary);">${p.name}</div>
+            <div style="font-size: 11px; font-family: monospace; color: var(--text-muted);">${p.referenceCode}</div>
+          </td>
+          <td>
+            <span class="badge-blue" style="font-size: 10px;">${p.propertyType}</span>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">${p.locality}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; font-size: 12px;">${dims}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">${p.dimensions.areaSqft} sqft</div>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: var(--text-primary);">₹${priceLakhs} L</div>
+            <div style="font-size: 10.5px; color: var(--text-muted);">₹${p.pricing.pricePerSqft || '—'}/sqft</div>
+          </td>
+          <td>${reraBadge}</td>
+          <td>
+            <span class="${p.status === 'AVAILABLE' ? 'badge-confirmed' : (p.status === 'SOLD' ? 'badge-muted' : 'badge-warm')}">${p.status}</span>
+          </td>
+          <td style="text-align: right;">
+            <button onclick="quickScheduleVisitForProperty('${p.id}')" class="btn-secondary" style="font-size: 11px; padding: 3px 8px;">
+              Book Visit
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function quickScheduleVisitForProperty(propId) {
+    openModal('modal-book-sitevisit');
+    const select = document.getElementById('visit-prop-select');
+    if (select) {
+      select.value = propId;
+      fetchPropertyVisitSlots();
+    }
+  }
+
+  async function fetchPropertyVisitSlots() {
+    const propId = document.getElementById('visit-prop-select')?.value;
+    const date = document.getElementById('visit-date')?.value;
+    const slotSelect = document.getElementById('visit-slot-select');
+    if (!slotSelect) return;
+
+    if (!propId || !date) {
+      slotSelect.innerHTML = '<option value="">Select date & property first</option>';
+      return;
+    }
+
+    slotSelect.innerHTML = '<option value="">Checking live site slots...</option>';
+    try {
+      const res = await fetch(`/api/real-estate/site-visits/availability?propertyId=${propId}&date=${date}`);
+      if (res.ok) {
+        const data = await res.json();
+        const open = (data.slots || []).filter(s => s.isAvailable);
+        if (open.length === 0) {
+          slotSelect.innerHTML = `<option value="">No available slots (${data.notice || 'Capacity full'})`;
+        } else {
+          slotSelect.innerHTML = open.map(s => `<option value="${s.startTime}">${s.startTime} (${s.remainingCapacity} seats left)</option>`).join('');
+        }
+      }
+    } catch (e) {
+      slotSelect.innerHTML = '<option value="">Error loading slots</option>';
+    }
+  }
+
+  async function submitAddProperty() {
+    const name = document.getElementById('prop-name')?.value?.trim();
+    const referenceCode = document.getElementById('prop-ref')?.value?.trim();
+    const propertyType = document.getElementById('prop-type')?.value;
+    const locality = document.getElementById('prop-locality')?.value?.trim();
+    const dimensionText = document.getElementById('prop-dim-text')?.value?.trim();
+    const totalArea = Number(document.getElementById('prop-area')?.value || 1200);
+    const unit = document.getElementById('prop-unit')?.value;
+    const basePrice = Number(document.getElementById('prop-price')?.value);
+    const status = document.getElementById('prop-status')?.value;
+    const registrationNumber = document.getElementById('prop-rera-num')?.value?.trim();
+    const verificationStatus = document.getElementById('prop-rera-status')?.value;
+    const amenities = document.getElementById('prop-amenities')?.value?.split(',').map(s => s.trim()).filter(Boolean);
+    const description = document.getElementById('prop-desc')?.value?.trim();
+
+    if (!name || !referenceCode || !locality || !basePrice) {
+      alert('Name, Reference Code, Locality, and Base Price are required');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-property');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/real-estate/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          referenceCode,
+          propertyType,
+          locality,
+          dimensions: { dimensionText, totalArea, unit },
+          pricing: { basePrice },
+          status,
+          amenities,
+          description,
+          reraDetails: { registrationNumber, verificationStatus },
+        }),
+      });
+
+      if (res.ok) {
+        closeModal('modal-add-property');
+        await loadRealEstateProperties();
+      } else {
+        const err = await res.json();
+        alert('Error: ' + (err.error || 'Failed to save property'));
+      }
+    } catch (e) {
+      alert('Network error: ' + e.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function submitBookSiteVisit() {
+    const propertyId = document.getElementById('visit-prop-select')?.value;
+    const date = document.getElementById('visit-date')?.value;
+    const time = document.getElementById('visit-slot-select')?.value;
+    const customerName = document.getElementById('visit-cust-name')?.value?.trim();
+    const customerPhone = document.getElementById('visit-cust-phone')?.value?.trim();
+    const visitorCount = Number(document.getElementById('visit-count')?.value || 1);
+    const notes = document.getElementById('visit-notes')?.value?.trim() || '';
+
+    if (!propertyId || !date || !time || !customerName || !customerPhone) {
+      alert('Please fill all required booking fields');
+      return;
+    }
+
+    const scheduledTime = `${date}T${time}:00Z`;
+    const btn = document.getElementById('btn-submit-sitevisit');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/real-estate/site-visits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId,
+          customerName,
+          customerPhone,
+          scheduledTime,
+          visitorCount,
+          notes,
+          idempotencyKey: 'ui_visit_' + Date.now(),
+        }),
+      });
+
+      if (res.ok) {
+        closeModal('modal-book-sitevisit');
+        await loadRealEstateSiteVisits();
+        alert('Site Visit confirmed successfully!');
+      } else {
+        const err = await res.json();
+        alert('Booking failed: ' + (err.error || 'Capacity reached'));
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function loadRealEstateSiteVisits() {
+    try {
+      const res = await fetch('/api/real-estate/site-visits');
+      if (res.ok) {
+        const data = await res.json();
+        realEstateSiteVisits = data.siteVisits || [];
+        renderRealEstateSiteVisits();
+      }
+    } catch (e) {
+      console.warn('[RE Visits]', e);
+    }
+  }
+
+  function renderRealEstateSiteVisits() {
+    const tbody = document.getElementById('realestate-sitevisits-table-body');
+    const badge = document.getElementById('nav-badge-sitevisits-count');
+    const activeBadge = document.getElementById('re-sitevisits-active-badge');
+    const kpiCount = document.getElementById('kpi-re-sitevisits-count');
+
+    if (badge) badge.textContent = realEstateSiteVisits.length;
+    if (activeBadge) activeBadge.textContent = `${realEstateSiteVisits.length} Visits`;
+    if (kpiCount) kpiCount.textContent = realEstateSiteVisits.length;
+
+    if (!tbody) return;
+    if (realEstateSiteVisits.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">No site visits scheduled yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = realEstateSiteVisits.map(v => `
+      <tr>
+        <td>
+          <div style="font-weight: 600; color: var(--text-primary);">${v.customerName}</div>
+          <div style="font-size: 11px; font-family: monospace; color: var(--text-muted);">${v.customerPhone}</div>
+        </td>
+        <td>
+          <span style="font-weight: 500; font-size: 12px;">${v.serviceType}</span>
+        </td>
+        <td>
+          <span style="font-weight: 600; font-size: 12px;">${new Date(v.scheduledTime).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+        </td>
+        <td>${v.visitorCount || 1} Person(s)</td>
+        <td>
+          <span class="${v.transportRequired ? 'badge-blue' : 'badge-muted'}" style="font-size: 10px;">${v.transportRequired ? 'Cab Requested' : 'Self-Drive'}</span>
+        </td>
+        <td>
+          <span class="${v.status === 'CONFIRMED' ? 'badge-confirmed' : 'badge-muted'}">${v.status}</span>
+        </td>
+        <td style="text-align: right;">
+          ${v.status === 'CONFIRMED' ? `
+            <button onclick="cancelSiteVisit('${v.id}')" class="btn-secondary" style="font-size: 11px; padding: 2px 6px; color: #DC2626;">
+              Cancel
+            </button>
+          ` : '<span style="font-size: 11px; color: var(--text-muted);">Closed</span>'}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function cancelSiteVisit(id) {
+    const reason = prompt('Cancellation reason:');
+    if (reason === null) return;
+    try {
+      const res = await fetch(`/api/real-estate/site-visits/${id}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason || 'Buyer requested cancellation' }),
+      });
+      if (res.ok) {
+        await loadRealEstateSiteVisits();
+      }
+    } catch (e) {
+      alert('Error cancelling visit');
+    }
+  }
+
+  async function loadRealEstateLeads() {
+    try {
+      const res = await fetch('/api/real-estate/leads');
+      if (res.ok) {
+        const data = await res.json();
+        realEstateLeads = data.leads || [];
+        renderRealEstateLeads();
+      }
+    } catch (e) {
+      console.warn('[RE Leads]', e);
+    }
+  }
+
+  function renderRealEstateLeads() {
+    const tbody = document.getElementById('realestate-leads-table-body');
+    const badge = document.getElementById('nav-badge-re-leads-count');
+    const countBadge = document.getElementById('re-leads-count-badge');
+
+    if (badge) badge.textContent = realEstateLeads.length;
+    if (countBadge) countBadge.textContent = `${realEstateLeads.length} Leads`;
+
+    if (!tbody) return;
+    if (realEstateLeads.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">No sales leads recorded yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = realEstateLeads.map(l => `
+      <tr>
+        <td>
+          <div style="font-weight: 600; color: var(--text-primary);">${l.callerName || l.caller}</div>
+          <div style="font-size: 11px; font-family: monospace; color: var(--text-muted);">${l.callerPhone || l.phone}</div>
+        </td>
+        <td>
+          <div style="font-weight: 500; font-size: 12px;">${l.requirementSummary || l.intent}</div>
+        </td>
+        <td style="font-weight: 600; color: #0284C7;">${l.budgetOrFee || l.budget || '—'}</td>
+        <td style="font-size: 11.5px; color: var(--text-secondary);">${l.notes || 'General enquiry'}</td>
+        <td>
+          <span class="${l.leadRating === 'HOT' ? 'badge-warm' : 'badge-blue'}">${l.confirmedOutcome || l.status}</span>
+        </td>
+        <td style="font-size: 11px; color: var(--text-muted);">${new Date(l.createdAt).toLocaleDateString('en-IN')}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function submitQualifyLead() {
+    const contactName = document.getElementById('lead-name')?.value?.trim();
+    const contactPhone = document.getElementById('lead-phone')?.value?.trim();
+    const propertyInterest = document.getElementById('lead-prop-interest')?.value?.trim();
+    const purchasePurpose = document.getElementById('lead-purpose')?.value;
+    const purchaseTimeline = document.getElementById('lead-timeline')?.value;
+    const budgetMin = Number(document.getElementById('lead-budget-min')?.value || 0);
+    const budgetMax = Number(document.getElementById('lead-budget-max')?.value || 0);
+    const assignedTo = document.getElementById('lead-assigned')?.value?.trim();
+    const status = document.getElementById('lead-status')?.value;
+
+    if (!contactName || !contactPhone) {
+      alert('Buyer Name and Phone are required');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-lead');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/real-estate/leads/qualify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactName,
+          contactPhone,
+          propertyInterest,
+          purchasePurpose,
+          purchaseTimeline,
+          budgetMin,
+          budgetMax,
+          assignedTo,
+          status,
+        }),
+      });
+
+      if (res.ok) {
+        closeModal('modal-qualify-lead');
+        await loadRealEstateLeads();
+      } else {
+        alert('Failed to qualify lead');
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function loadRealEstateConfig() {
+    try {
+      const res = await fetch('/api/real-estate/config');
+      if (res.ok) {
+        const data = await res.json();
+        realEstateConfig = data.config || {};
+        if (realEstateConfig) {
+          const startEl = document.getElementById('re-conf-start');
+          if (startEl && realEstateConfig.siteVisitStart) startEl.value = realEstateConfig.siteVisitStart;
+
+          const endEl = document.getElementById('re-conf-end');
+          if (endEl && realEstateConfig.siteVisitEnd) endEl.value = realEstateConfig.siteVisitEnd;
+
+          const durEl = document.getElementById('re-conf-duration');
+          if (durEl && realEstateConfig.defaultVisitDurationMinutes) durEl.value = realEstateConfig.defaultVisitDurationMinutes;
+
+          const capEl = document.getElementById('re-conf-capacity');
+          if (capEl && realEstateConfig.maxVisitorsPerSlot) capEl.value = realEstateConfig.maxVisitorsPerSlot;
+
+          const phoneEl = document.getElementById('re-conf-phone');
+          if (phoneEl && realEstateConfig.salesContactPhone) phoneEl.value = realEstateConfig.salesContactPhone;
+
+          const transEl = document.getElementById('re-conf-transport');
+          if (transEl && realEstateConfig.transportAvailable !== undefined) transEl.checked = realEstateConfig.transportAvailable;
+
+          const whUrl = document.getElementById('re-conf-webhook-url');
+          if (whUrl && realEstateConfig.webhookUrl) whUrl.value = realEstateConfig.webhookUrl;
+
+          const whEn = document.getElementById('re-conf-webhook-enabled');
+          if (whEn && realEstateConfig.webhookEnabled !== undefined) whEn.checked = realEstateConfig.webhookEnabled;
+        }
+      }
+    } catch (e) {
+      console.warn('[RE Config]', e);
+    }
+  }
+
+  async function saveRealEstateConfig() {
+    const siteVisitStart = document.getElementById('re-conf-start')?.value || '09:00';
+    const siteVisitEnd = document.getElementById('re-conf-end')?.value || '17:30';
+    const defaultVisitDurationMinutes = Number(document.getElementById('re-conf-duration')?.value || 60);
+    const maxVisitorsPerSlot = Number(document.getElementById('re-conf-capacity')?.value || 4);
+    const salesContactPhone = document.getElementById('re-conf-phone')?.value?.trim();
+    const transportAvailable = document.getElementById('re-conf-transport')?.checked || false;
+    const webhookUrl = document.getElementById('re-conf-webhook-url')?.value?.trim();
+    const webhookSecret = document.getElementById('re-conf-webhook-secret')?.value?.trim();
+    const webhookEnabled = document.getElementById('re-conf-webhook-enabled')?.checked || false;
+
+    try {
+      const res = await fetch('/api/real-estate/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          siteVisitStart,
+          siteVisitEnd,
+          defaultVisitDurationMinutes,
+          maxVisitorsPerSlot,
+          salesContactPhone,
+          transportAvailable,
+          webhookUrl,
+          webhookSecret: webhookSecret || undefined,
+          webhookEnabled,
+        }),
+      });
+
+      if (res.ok) {
+        alert('Real estate configuration saved successfully!');
+        await loadRealEstateConfig();
+      } else {
+        alert('Failed to save real estate settings');
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  }
+  
 </script>
 
 
@@ -3823,6 +4651,249 @@
     <div class="modal-footer">
       <button onclick="closeModal('modal-add-faq')" class="btn-secondary">Cancel</button>
       <button onclick="submitAddFAQ()" class="btn-primary" id="btn-save-faq">Approve & Publish FAQ</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: ADD PROPERTY / PLOT (PROMPT 06) -->
+<!-- ========================================================================= -->
+<div id="modal-add-property" class="modal-overlay" style="display: none;">
+  <div class="modal-dialog" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Property / Plot to Catalogue</h3>
+      <button onclick="closeModal('modal-add-property')" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Property / Plot Name *</label>
+          <input type="text" id="prop-name" class="form-input" placeholder="e.g. Green Meadows Phase 1 Plot #104" />
+        </div>
+        <div>
+          <label class="form-label">Ref Code *</label>
+          <input type="text" id="prop-ref" class="form-input" placeholder="e.g. SGM-P104" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Property Type *</label>
+          <select id="prop-type" class="form-input">
+            <option value="PLOT">Residential Plot / Layout</option>
+            <option value="VILLA">Independent Villa / House</option>
+            <option value="APARTMENT">Apartment Unit</option>
+            <option value="COMMERCIAL">Commercial Plot / Space</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Locality / City *</label>
+          <input type="text" id="prop-locality" class="form-input" placeholder="e.g. Siruguppa Road, Ballari" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Dimensions (e.g. 30x40 ft)</label>
+          <input type="text" id="prop-dim-text" class="form-input" placeholder="30x40 ft" />
+        </div>
+        <div>
+          <label class="form-label">Total Area *</label>
+          <input type="number" id="prop-area" class="form-input" value="1200" min="1" />
+        </div>
+        <div>
+          <label class="form-label">Unit *</label>
+          <select id="prop-unit" class="form-input">
+            <option value="SQFT">Sq. Feet (sqft)</option>
+            <option value="SQYARDS">Sq. Yards</option>
+            <option value="CENTS">Cents</option>
+            <option value="ACRES">Acres</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Base Price (₹ INR) *</label>
+          <input type="number" id="prop-price" class="form-input" placeholder="1800000" min="1" />
+        </div>
+        <div>
+          <label class="form-label">Status *</label>
+          <select id="prop-status" class="form-input">
+            <option value="AVAILABLE">Available</option>
+            <option value="ON_HOLD">On Hold</option>
+            <option value="RESERVED">Reserved</option>
+            <option value="SOLD">Sold</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">RERA Registration Number</label>
+          <input type="text" id="prop-rera-num" class="form-input" placeholder="PRM/KA/RERA/..." />
+        </div>
+        <div>
+          <label class="form-label">RERA Verification Status</label>
+          <select id="prop-rera-status" class="form-input">
+            <option value="UNVERIFIED">Unverified / In Process</option>
+            <option value="VERIFIED">Verified via K-RERA Portal</option>
+            <option value="PENDING_VERIFICATION">Pending Verification</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Amenities (comma-separated)</label>
+        <input type="text" id="prop-amenities" class="form-input" value="Tar Road, Underground Drainage, Street Lights, Park" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Property Description</label>
+        <textarea id="prop-desc" class="form-input" rows="2" placeholder="Accurate verified layout description..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-add-property')" class="btn-secondary">Cancel</button>
+      <button onclick="submitAddProperty()" class="btn-primary" id="btn-save-property">Save Property Unit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: BOOK SITE VISIT (PROMPT 06) -->
+<!-- ========================================================================= -->
+<div id="modal-book-sitevisit" class="modal-overlay" style="display: none;">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Schedule Real Estate Site Visit</h3>
+      <button onclick="closeModal('modal-book-sitevisit')" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Select Property / Layout *</label>
+        <select id="visit-prop-select" class="form-input" onchange="fetchPropertyVisitSlots()">
+          <option value="">Select a property...</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Visit Date *</label>
+          <input type="date" id="visit-date" class="form-input" onchange="fetchPropertyVisitSlots()" />
+        </div>
+        <div>
+          <label class="form-label">Available Slot *</label>
+          <select id="visit-slot-select" class="form-input">
+            <option value="">Select date & property first</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Customer Name *</label>
+          <input type="text" id="visit-cust-name" class="form-input" placeholder="e.g. Kavitha Reddy" />
+        </div>
+        <div>
+          <label class="form-label">Visitors Count</label>
+          <input type="number" id="visit-count" class="form-input" value="2" min="1" max="10" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Phone Number *</label>
+        <input type="text" id="visit-cust-phone" class="form-input" placeholder="+91 98450 12345" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes / Vehicle Details</label>
+        <textarea id="visit-notes" class="form-input" rows="2" placeholder="Visiting with family / Looking for East plot"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-book-sitevisit')" class="btn-secondary">Cancel</button>
+      <button onclick="submitBookSiteVisit()" class="btn-primary" id="btn-submit-sitevisit">Confirm Site Visit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: QUALIFY REAL ESTATE BUYER LEAD (PROMPT 06) -->
+<!-- ========================================================================= -->
+<div id="modal-qualify-lead" class="modal-overlay" style="display: none;">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Qualify Real Estate Buyer Lead</h3>
+      <button onclick="closeModal('modal-qualify-lead')" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Buyer Full Name *</label>
+          <input type="text" id="lead-name" class="form-input" placeholder="e.g. Naveen Hiremath" />
+        </div>
+        <div>
+          <label class="form-label">Phone Number *</label>
+          <input type="text" id="lead-phone" class="form-input" placeholder="+91 97410 44556" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label">Property of Interest</label>
+        <input type="text" id="lead-prop-interest" class="form-input" placeholder="e.g. Green Meadows Plot #104" />
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Purchase Purpose</label>
+          <select id="lead-purpose" class="form-input">
+            <option value="INVESTMENT">Investment (Capital Growth)</option>
+            <option value="SELF_USE">Self-Use (Immediate Construction)</option>
+            <option value="COMMERCIAL">Commercial / Office</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Purchase Timeline</label>
+          <select id="lead-timeline" class="form-input">
+            <option value="IMMEDIATE">Immediate (Within 15 days)</option>
+            <option value="WITHIN_3_MONTHS">Within 3 Months</option>
+            <option value="EXPLORING">Exploring / Long Term</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Budget Min (₹)</label>
+          <input type="number" id="lead-budget-min" class="form-input" placeholder="1500000" />
+        </div>
+        <div>
+          <label class="form-label">Budget Max (₹)</label>
+          <input type="number" id="lead-budget-max" class="form-input" placeholder="2000000" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label class="form-label">Assigned Sales Executive</label>
+          <input type="text" id="lead-assigned" class="form-input" placeholder="e.g. Mallikarjun" />
+        </div>
+        <div>
+          <label class="form-label">Lead Status</label>
+          <select id="lead-status" class="form-input">
+            <option value="QUALIFIED">Qualified</option>
+            <option value="SITE_VISIT_CONFIRMED">Site Visit Confirmed</option>
+            <option value="FOLLOW_UP_REQUIRED">Follow-up Required</option>
+            <option value="NEW">New</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-qualify-lead')" class="btn-secondary">Cancel</button>
+      <button onclick="submitQualifyLead()" class="btn-primary" id="btn-save-lead">Save Qualified Lead</button>
     </div>
   </div>
 </div>

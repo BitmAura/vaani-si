@@ -7,6 +7,9 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 import {
   AppointmentSlotDTO,
+  PropertyDTO,
+  RealEstateConfigDTO,
+  RealEstateLeadQualificationDTO,
   ClientWorkspaceDTO,
   AuditLogDTO,
   CallRecordDTO,
@@ -113,6 +116,11 @@ export interface IDatabaseService {
   updateAppointment(id: string, partial: Partial<AppointmentSlotDTO>, organizationId?: string): Promise<AppointmentSlotDTO | null>;
   deleteAppointment(id: string, organizationId?: string): Promise<void>;
 
+  getProperties(workspaceId?: string, filters?: { propertyType?: string; status?: string; locality?: string; minPrice?: number; maxPrice?: number; search?: string }): Promise<PropertyDTO[]>;
+  getPropertyById(id: string, workspaceId?: string): Promise<PropertyDTO | null>;
+  saveProperty(property: PropertyDTO): Promise<void>;
+  updateProperty(id: string, partial: Partial<PropertyDTO>, workspaceId?: string): Promise<PropertyDTO | null>;
+  deleteProperty(id: string, workspaceId?: string): Promise<boolean>;
   getStaffById(id: string, organizationId?: string): Promise<BusinessStaffDTO | null>;
   updateStaff(id: string, partial: Partial<BusinessStaffDTO>, organizationId?: string): Promise<BusinessStaffDTO | null>;
 
@@ -338,6 +346,7 @@ export interface IDatabaseService {
 
 export class InMemoryDatabaseService implements IDatabaseService {
   protected clientWorkspaces: Map<string, ClientWorkspaceDTO> = new Map();
+  protected properties: Map<string, PropertyDTO> = new Map();
 
   async saveClientWorkspace(workspace: ClientWorkspaceDTO): Promise<void> {
     this.clientWorkspaces.set(workspace.id, { ...workspace });
@@ -1723,6 +1732,95 @@ export class InMemoryDatabaseService implements IDatabaseService {
     return updated;
   }
 
+  // ==========================================
+  // REAL ESTATE PROPERTY INVENTORY METHODS
+  // ==========================================
+  async getProperties(
+    workspaceId?: string,
+    filters?: {
+      propertyType?: string;
+      status?: string;
+      locality?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      search?: string;
+    }
+  ): Promise<PropertyDTO[]> {
+    let list = Array.from(this.properties.values());
+    if (workspaceId) {
+      list = list.filter((p) => p.workspaceId === workspaceId || p.organizationId === workspaceId);
+    }
+    if (filters) {
+      if (filters.propertyType) {
+        list = list.filter((p) => p.propertyType.toLowerCase() === filters.propertyType!.toLowerCase());
+      }
+      if (filters.status) {
+        list = list.filter((p) => p.status.toLowerCase() === filters.status!.toLowerCase());
+      }
+      if (filters.locality) {
+        list = list.filter((p) => p.locality.toLowerCase().includes(filters.locality!.toLowerCase()));
+      }
+      if (filters.minPrice !== undefined) {
+        list = list.filter((p) => p.pricing.basePrice >= filters.minPrice!);
+      }
+      if (filters.maxPrice !== undefined) {
+        list = list.filter((p) => p.pricing.basePrice <= filters.maxPrice!);
+      }
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        list = list.filter((p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.referenceCode.toLowerCase().includes(q) ||
+          p.locality.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q)
+        );
+      }
+    }
+    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getPropertyById(id: string, workspaceId?: string): Promise<PropertyDTO | null> {
+    const byId = this.properties.get(id);
+    if (byId) {
+      if (workspaceId && byId.workspaceId !== workspaceId && byId.organizationId !== workspaceId) return null;
+      return { ...byId };
+    }
+    for (const p of this.properties.values()) {
+      if (p.referenceCode === id) {
+        if (workspaceId && p.workspaceId !== workspaceId && p.organizationId !== workspaceId) return null;
+        return { ...p };
+      }
+    }
+    return null;
+  }
+
+  async saveProperty(property: PropertyDTO): Promise<void> {
+    this.properties.set(property.id, { ...property });
+  }
+
+  async updateProperty(
+    id: string,
+    partial: Partial<PropertyDTO>,
+    workspaceId?: string
+  ): Promise<PropertyDTO | null> {
+    const existing = await this.getPropertyById(id, workspaceId);
+    if (!existing) return null;
+    const updated: PropertyDTO = {
+      ...existing,
+      ...partial,
+      updatedAt: new Date().toISOString(),
+    };
+    this.properties.set(id, updated);
+    return { ...updated };
+  }
+
+  async deleteProperty(id: string, workspaceId?: string): Promise<boolean> {
+    const existing = await this.getPropertyById(id, workspaceId);
+    if (!existing) return false;
+    this.properties.delete(id);
+    return true;
+  }
+
   // --- Agents ---
   async getAgents(organizationId?: string): Promise<AgentRecordDTO[]> {
     const all = Array.from(this.agents.values());
@@ -2888,6 +2986,9 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         if (Array.isArray(data.faqs)) {
           for (const f of data.faqs) super.saveFAQ(f);
         }
+        if (Array.isArray(data.properties)) {
+          for (const p of data.properties) super.saveProperty(p);
+        }
       } catch (err: any) {
         console.warn('[DurableDatabaseService] Failed to load snapshot:', err.message);
       }
@@ -2935,6 +3036,7 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         clientWorkspaces: Array.from((this as any).clientWorkspaces.values()),
         staff: Array.from((this as any).staffMembers.values()),
         faqs: Array.from((this as any).faqs.values()),
+        properties: Array.from((this as any).properties.values()),
       };
       const tempPath = `${this.persistPath}.${Date.now()}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');

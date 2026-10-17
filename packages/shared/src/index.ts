@@ -83,6 +83,7 @@ export interface ClientWorkspaceDTO {
   onboardingCompleted: boolean;
   onboardingData?: Record<string, any>;
   clinicConfig?: ClinicConfigDTO;
+  realEstateConfig?: RealEstateConfigDTO;
   aiEmployee?: {
     name: string;
     gender: 'FEMALE' | 'MALE';
@@ -356,7 +357,13 @@ export interface AppointmentAuditEntry {
 export interface AppointmentSlotDTO {
   id: string;
   tenantId: string;
+  workspaceId?: string;
   doctorId?: string;
+  propertyId?: string;
+  visitorCount?: number;
+  transportRequired?: boolean;
+  assignedAgent?: string;
+  appointmentType?: 'OPD_CONSULTATION' | 'SITE_VISIT' | 'GENERAL';
   leadId?: string;
   customerName: string;
   customerPhone: string;
@@ -2452,4 +2459,105 @@ export class ProviderNotConfiguredError extends Error {
     this.name = 'ProviderNotConfiguredError';
     this.provider = provider;
   }
+}
+
+// ==============================================================================
+// REAL ESTATE VERTICAL MODELS (PROMPT 06)
+// ==============================================================================
+
+export type PropertyType = 'PLOT' | 'VILLA' | 'APARTMENT' | 'HOUSE' | 'COMMERCIAL';
+export type PropertyAvailabilityStatus = 'AVAILABLE' | 'ON_HOLD' | 'RESERVED' | 'SOLD' | 'INACTIVE';
+export type ReraVerificationStatus = 'VERIFIED' | 'PENDING_VERIFICATION' | 'UNVERIFIED' | 'EXPIRED';
+
+export interface PropertyDimensions {
+  lengthFeet?: number;
+  widthFeet?: number;
+  dimensionText?: string; // e.g. "30x40 ft", "40x60 ft", "50x80 ft"
+  totalArea: number; // in explicit unit
+  unit: 'SQFT' | 'SQYARDS' | 'CENTS' | 'ACRES';
+  areaSqft: number; // normalized sqft
+}
+
+export interface PropertyPricing {
+  basePrice: number; // in INR
+  pricePerSqft?: number;
+  priceNegotiable?: boolean;
+  currency: string; // 'INR'
+  additionalCharges?: {
+    cornerCharge?: number;
+    clubhouseMaintenance?: number;
+    registrationEstimate?: number;
+    notes?: string;
+  };
+}
+
+export interface ReraComplianceDetails {
+  registrationNumber?: string;
+  jurisdiction?: string; // e.g. "K-RERA (Karnataka)"
+  verificationStatus: ReraVerificationStatus;
+  verificationSource?: string;
+  verifiedAt?: string;
+  verifiedBy?: string;
+}
+
+export interface PropertyDTO {
+  id: string;
+  workspaceId: string;
+  organizationId: string;
+  name: string;
+  referenceCode: string;
+  propertyType: PropertyType;
+  subType?: string;
+  locality: string;
+  address?: string;
+  mapUrl?: string;
+  dimensions: PropertyDimensions;
+  pricing: PropertyPricing;
+  status: PropertyAvailabilityStatus;
+  amenities: string[];
+  description: string;
+  developerContact: {
+    name: string;
+    phone: string;
+    email?: string;
+  };
+  reraDetails?: ReraComplianceDetails;
+  documents?: Array<{
+    title: string;
+    url: string;
+    type: string;
+  }>;
+  verifiedBy?: string;
+  lastVerifiedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RealEstateConfigDTO {
+  siteVisitDays?: number[]; // e.g. [0, 1, 2, 3, 4, 5, 6]
+  siteVisitStart?: string; // e.g. '09:30'
+  siteVisitEnd?: string; // e.g. '18:00'
+  defaultVisitDurationMinutes?: number; // e.g. 60
+  bufferMinutes?: number; // e.g. 15
+  maxVisitorsPerSlot?: number; // e.g. 4
+  transportAvailable?: boolean; // false
+  transportNotes?: string;
+  blockedDates?: string[];
+  salesContactPhone?: string;
+  escalationPhone?: string;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  webhookEnabled?: boolean;
+}
+
+export interface RealEstateLeadQualificationDTO {
+  propertyInterest?: string;
+  purchasePurpose?: 'INVESTMENT' | 'SELF_USE' | 'COMMERCIAL';
+  budgetMin?: number;
+  budgetMax?: number;
+  preferredLocation?: string;
+  preferredDimensions?: string;
+  purchaseTimeline?: 'IMMEDIATE' | 'WITHIN_3_MONTHS' | 'EXPLORING';
+  preferredCallbackTime?: string;
+  siteVisitInterest?: 'YES' | 'NO' | 'UNDECIDED';
 }
