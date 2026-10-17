@@ -67,6 +67,7 @@ import {
   MockConversationChannel,
   KANNADA_GOLDEN_EVALUATION_CASES,
   REGIONAL_DIALECT_PROFILES,
+  VoiceTextPreparation,
 } from '@vanni/conversation-engine';
 import {
   globalBusinessBrainService,
@@ -270,6 +271,32 @@ export async function buildServer() {
   const whatsapp = new WhatsAppLeadService();
   const db = new CallDatabaseService();
   const openSourceCRM = new OpenSourceCRMService();
+
+  // Institutional WhatsApp Dispatch Status & Simulation Test Endpoint
+  fastify.get('/api/whatsapp/status', async () => {
+    return {
+      status: 'ONLINE',
+      service: 'Dhwani SI WhatsApp Dispatcher',
+      ...whatsapp.getStatus(),
+    };
+  });
+
+  fastify.post('/api/whatsapp/test-lead', async (request, reply) => {
+    const body = (request.body || {}) as any;
+    const phone = body.phone || '+919845012345';
+    const result = await whatsapp.dispatchLead(phone, {
+      tenantName: body.tenantName || 'Ballari Residential Layouts',
+      customerName: body.customerName || 'Test Customer',
+      customerPhone: body.customerPhone || '+919845012345',
+      leadRating: body.leadRating || 'HOT',
+      requirementSummary: body.requirementSummary || '30x40 DC Converted Plot Site Visit',
+      budgetOrFee: body.budgetOrFee || '₹18 Lakhs Starting',
+      nextAction: body.nextAction || 'Confirmed Sunday 11 AM Free Cab Pickup',
+      callDurationSeconds: 65,
+    });
+    return reply.send(result);
+  });
+
   const identityService = new IdentityService();
   const agentLifecycleService = new AgentLifecycleService(globalDb);
   const agentSimulator = new AgentSimulationHarness(globalDb);
@@ -277,6 +304,7 @@ export async function buildServer() {
   const emergencyHandler = new EmergencyHandler();
   const handoffManager = new HandoffManager();
   const llmService = new LLMConversationalService();
+  const voicePrep = new VoiceTextPreparation();
 
   // Helper: Extract and deserialize session from HTTP-only cookie or Authorization header
   function getSessionFromRequest(req: FastifyRequest): AuthSessionDTO | null {
@@ -591,7 +619,24 @@ export async function buildServer() {
         durationSeconds: 35,
       });
 
-      fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Dispatched & Synced]');
+      
+
+      // Instant WhatsApp alert to business owner on Speed-to-Lead lead ingestion
+      const ownerWhatsApp = tenant.ownerWhatsAppNumber || '+919845012345';
+      whatsapp.dispatchLead(ownerWhatsApp, {
+        tenantName: tenant.name,
+        customerName: name,
+        customerPhone: phone,
+        leadRating: 'HOT',
+        requirementSummary: `Meta Lead Ad Instant Ingestion (${leadIndustry})`,
+        budgetOrFee: callRecord.budget,
+        nextAction: `Speed-to-lead autodial placed (< 5s). Call SID: ${callSid}`,
+        callDurationSeconds: 35,
+      }).catch(err => {
+        fastify.log.warn({ err }, '[WhatsApp Speed-to-Lead Dispatch Warning]');
+      });
+
+fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Dispatched & Synced]');
       return reply.send({
         success: true,
         queued: true,
@@ -2829,7 +2874,25 @@ export async function buildServer() {
         handoffSummary: handoff.handoffSummary,
         detectedKeywords: emergencyResult?.detectedKeywords?.length ? emergencyResult.detectedKeywords : [triggerWord],
       };
+
+      // Instantly notify business owner via WhatsApp on caller escalation
+      const ownerWhatsAppEsc = tenant.ownerWhatsAppNumber || '+919845012345';
+      const escalationName = callerDossier?.name || body.callerName || 'Verified Caller';
+      const escalationPhone = callerPhone || '+91 98450 12345';
+      whatsapp.dispatchLead(ownerWhatsAppEsc, {
+        tenantName: tenant.name,
+        customerName: escalationName,
+        customerPhone: escalationPhone,
+        leadRating: isEmergencyEscalation ? 'HOT' : (isComplaintEscalation ? 'DISQUALIFIED' : 'WARM'),
+        requirementSummary: `🚨 ESCALATION: ${reason} (Keyword: ${triggerWord})`,
+        budgetOrFee: `Priority: ${priority}`,
+        nextAction: `Immediate Human Handoff -> ${destinationDepartment}`,
+        callDurationSeconds: 45,
+      }).catch(err => {
+        fastify.log.warn({ err }, '[WhatsApp Escalation Dispatch Warning]');
+      });
     }
+
 
     // Deterministic Real-Time Tool Calling: Detect Appointment / Booking / Qualification
     let bookingRecord: any = null;
@@ -2988,25 +3051,30 @@ export async function buildServer() {
         transcript: [{ speaker: 'Caller', time: '00:45', text: body.text }, { speaker: 'Sahana', time: '00:58', text: replyText }],
         durationSeconds: 75,
       }).catch(e => console.warn('[CRM Sync]', e));
+
+      // 4. Instantly notify business owner via WhatsApp Lead Dossier
+      const ownerWhatsAppBook = tenant.ownerWhatsAppNumber || '+919845012345';
+      whatsapp.dispatchLead(ownerWhatsAppBook, {
+        tenantName: tenant.name,
+        customerName: bookingRecord.customerName,
+        customerPhone: bookingRecord.customerPhone,
+        leadRating: 'HOT',
+        requirementSummary: `${bookingRecord.serviceType} | Scheduled: ${bookingRecord.scheduledTime}`,
+        budgetOrFee,
+        nextAction: `Confirmed Appointment (Token: ${tokenNum}) - Direct Cab/Clinic Reserved`,
+        callDurationSeconds: 75,
+      }).catch(err => {
+        fastify.log.warn({ err }, '[WhatsApp Booking Dispatch Warning]');
+      });
     }
+
 
     // Detect turn language dynamically via caller utterance & reply
     const turnLang = body.targetLanguageCode || llmService.detectLanguage(body.text);
 
-    // Phonetic & dimension normalization for conversational clarity
-    const spokenText = replyText
-      .replace(/30\s*[*xX]\s*40\s*(?:site|plots?|ನಿವೇಶನ)?/gi, () => {
-        if (turnLang === 'kn-IN') return 'ಮೂವತ್ತು ನಲವತ್ತು ಸೈಟ್';
-        if (turnLang === 'hi-IN') return 'tees chaalis plot';
-        if (turnLang === 'te-IN') return 'muppai nalabhai plot';
-        return 'thirty by forty site';
-      })
-      .replace(/40\s*[*xX]\s*60\s*(?:site|plots?|ನಿವೇಶನ)?/gi, () => {
-        if (turnLang === 'kn-IN') return 'ನಲವತ್ತು ಅರವತ್ತು ಸೈಟ್';
-        return 'forty by sixty site';
-      })
-      .replace(/(\d+)\s*[*xX]\s*(\d+)/g, '$1 by $2')
-      .replace(/₹\s*(\d+)\s*(?:lakhs?|lacs?|L)/gi, '$1 lakh rupees');
+    // Standardized Vernacular Phonetics Normalization via VoiceTextPreparation
+    const prepped = voicePrep.prepareSpeechText(replyText, turnLang === 'kn-IN' ? 'kn' : 'kanglish');
+    const spokenText = turnLang === 'kn-IN' ? prepped.spokenTextKannada : prepped.spokenTextKanglish;
 
     // Synthesize via Sarvam Bulbul v3
     let audioBase64: string | null = null;
@@ -3122,6 +3190,8 @@ export async function buildServer() {
     const tenantKey = url.searchParams.get('tenant') || 'real_estate';
     const isInception = tenantKey === 'inception';
     const tenant = DEMO_TENANTS[tenantKey] || DEMO_TENANTS.real_estate;
+    let isTelephony = url.searchParams.get('source') === 'telephony';
+    let currentStreamSid = url.searchParams.get('streamSid') || url.searchParams.get('callSid') || '';
 
     fastify.log.info(`[WebSocket Connected] Tenant: ${tenant.name}, Inception: ${isInception}, User: ${session?.userId || 'guest'}`);
 
@@ -3140,12 +3210,30 @@ export async function buildServer() {
       },
       onInterrupt: () => {
         socket.send(JSON.stringify({ type: 'BARGE_IN_INTERRUPT' }));
+        if (isTelephony && currentStreamSid) {
+          socket.send(JSON.stringify({ event: 'clear', streamSid: currentStreamSid }));
+        }
       },
       onEscalation: (escalation: any) => {
         socket.send(JSON.stringify({ type: 'ESCALATION_TRIGGERED', escalation }));
       },
       onAudioChunk: (base64Audio: string) => {
         socket.send(JSON.stringify({ type: 'AUDIO_CHUNK', audio: base64Audio }));
+        if (isTelephony && currentStreamSid) {
+          try {
+            const pcmBuffer = Buffer.from(base64Audio, 'base64');
+            const mulawPayload = mediaBridge.encodePcm16ToPayload(pcmBuffer);
+            if (mulawPayload) {
+              socket.send(JSON.stringify({
+                event: 'media',
+                streamSid: currentStreamSid,
+                media: { payload: mulawPayload }
+              }));
+            }
+          } catch (transcodeErr) {
+            fastify.log.warn({ err: transcodeErr }, '[Telephony Transcode Warning]');
+          }
+        }
       },
     };
 
@@ -3154,6 +3242,13 @@ export async function buildServer() {
         let parsed: any;
         if (typeof rawMsg === 'string' || (Buffer.isBuffer(rawMsg) && rawMsg[0] === 123)) {
           parsed = JSON.parse(rawMsg.toString());
+        }
+
+        if (parsed?.event === 'start' && parsed.start?.streamSid) {
+          isTelephony = true;
+          currentStreamSid = parsed.start.streamSid;
+          fastify.log.info(`[Telephony Media Stream Started] StreamSid: ${currentStreamSid}`);
+          return;
         }
 
         if (parsed?.event === 'start_call') {

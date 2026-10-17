@@ -96,4 +96,13 @@ _Generated instantly by Dhwani SI Voice Telephony Gateway_`;
       return { success: false };
     }
   }
+
+  public getStatus(): { configured: boolean; mode: 'LIVE_META_API' | 'DEV_SIMULATION'; phoneNumberId?: string } {
+    const isConfigured = Boolean(this.apiToken && this.phoneNumberId);
+    return {
+      configured: isConfigured,
+      mode: isConfigured ? 'LIVE_META_API' : 'DEV_SIMULATION',
+      phoneNumberId: this.phoneNumberId ? `...${this.phoneNumberId.slice(-4)}` : undefined,
+    };
+  }
 }

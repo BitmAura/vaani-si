@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 /**
  * @vanni/auth — Complete Identity, Organization & Multi-Tenancy Service
  */
@@ -61,10 +63,84 @@ export class IdentityService {
   private members: Map<string, OrganizationMemberDTO> = new Map(); // keyed by id
   private auditLogs: AuditLogDTO[] = [];
 
-  constructor() {
+  private persistEnabled = false;
+  private persistPath: string | null = null;
+
+  constructor(options?: { persist?: boolean; storePath?: string }) {
     // SECURITY: demo accounts and demo organizations are deliberately NOT seeded.
-    // There is no hardcoded/default credential anywhere in the system. Accounts
-    // and organizations are created exclusively through the signup flow.
+    // Accounts and organizations are created exclusively through signup/admin flows.
+    const isTest = process.env.NODE_ENV === 'test';
+    this.persistEnabled = options?.persist ?? (!isTest && process.env.DISABLE_AUTH_PERSISTENCE !== 'true');
+
+    if (this.persistEnabled) {
+      const customPath = options?.storePath || process.env.AUTH_STORE_PATH;
+      if (customPath) {
+        this.persistPath = customPath;
+      } else {
+        const cwdData = path.resolve(process.cwd(), 'data');
+        const rootData = path.resolve(process.cwd(), '../../data');
+        const dataDir = fs.existsSync(rootData) ? rootData : cwdData;
+        if (!fs.existsSync(dataDir)) {
+          try { fs.mkdirSync(dataDir, { recursive: true }); } catch {}
+        }
+        this.persistPath = path.join(dataDir, 'auth_store.json');
+      }
+      this.loadSnapshot();
+    }
+  }
+
+  private loadSnapshot(): void {
+    if (!this.persistPath || !fs.existsSync(this.persistPath)) return;
+    try {
+      const raw = fs.readFileSync(this.persistPath, 'utf8');
+      const data = JSON.parse(raw);
+      if (Array.isArray(data.users)) {
+        for (const u of data.users) {
+          this.users.set(u.id, u);
+          this.usersByEmail.set(u.email.toLowerCase().trim(), u.id);
+        }
+      }
+      if (Array.isArray(data.organizations)) {
+        for (const o of data.organizations) {
+          this.organizations.set(o.id, o);
+          this.orgsBySlug.set(o.slug, o.id);
+        }
+      }
+      if (Array.isArray(data.members)) {
+        for (const m of data.members) {
+          this.members.set(m.id, m);
+        }
+      }
+      if (Array.isArray(data.auditLogs)) {
+        this.auditLogs = data.auditLogs;
+      }
+    } catch (err) {
+      console.warn('[IdentityService] Warning: Failed to load auth_store.json snapshot:', err);
+    }
+  }
+
+  private saveSnapshot(): void {
+    if (!this.persistEnabled || !this.persistPath) return;
+    const data = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      users: Array.from(this.users.values()),
+      organizations: Array.from(this.organizations.values()),
+      members: Array.from(this.members.values()),
+      auditLogs: this.auditLogs.slice(0, 500),
+    };
+    const tmp = `${this.persistPath}.${Date.now()}.tmp`;
+    try {
+      fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8');
+      fs.renameSync(tmp, this.persistPath);
+    } catch {
+      try {
+        if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+      } catch {}
+      try {
+        fs.writeFileSync(this.persistPath, JSON.stringify(data, null, 2), 'utf8');
+      } catch {}
+    }
   }
 
   /**
@@ -232,6 +308,7 @@ export class IdentityService {
       ],
     };
 
+    this.saveSnapshot();
     return { session, user: userProfile, organization: org };
   }
 
@@ -393,6 +470,7 @@ export class IdentityService {
       memberships: [...session.memberships, newMembershipItem],
     };
 
+    this.saveSnapshot();
     return { organization: org, updatedSession };
   }
 
@@ -465,6 +543,7 @@ export class IdentityService {
       metadata: { email: normalizedEmail, role },
     });
 
+    this.saveSnapshot();
     return newMember;
   }
 
@@ -504,6 +583,7 @@ export class IdentityService {
       metadata: { targetUserId, oldRole, newRole },
     });
 
+    this.saveSnapshot();
     return member;
   }
 
@@ -534,6 +614,7 @@ export class IdentityService {
       metadata: { onboardingStatus: status },
     });
 
+    this.saveSnapshot();
     return org;
   }
 
