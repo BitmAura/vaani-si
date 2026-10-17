@@ -74,6 +74,14 @@ describe('Agency Client Management & Multi-Client Dashboard (Prompt 04)', () => 
 
   beforeAll(async () => {
     app = await buildServer();
+    const staleA = await globalDb.getClientWorkspacesByOrg(AGENCY_A_ORG_ID);
+    for (const ws of staleA) {
+      (globalDb as any).clientWorkspaces?.delete(ws.id);
+    }
+    const staleB = await globalDb.getClientWorkspacesByOrg(AGENCY_B_ORG_ID);
+    for (const ws of staleB) {
+      (globalDb as any).clientWorkspaces?.delete(ws.id);
+    }
     agencyACookie = `${SESSION_COOKIE_NAME}=${serializeSession(sessionForAgencyOwner(AGENCY_A_ORG_ID))}`;
     agencyBCookie = `${SESSION_COOKIE_NAME}=${serializeSession(sessionForAgencyOwner(AGENCY_B_ORG_ID))}`;
     agencyAViewerCookie = `${SESSION_COOKIE_NAME}=${serializeSession(sessionForAgencyViewer(AGENCY_A_ORG_ID))}`;

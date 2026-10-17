@@ -89,6 +89,7 @@ import { SarvamVoiceAdapter } from '../../../packages/voice-engine/src/sarvam-ad
 import { TelephonyMediaBridge } from '../../../packages/voice-engine/src/telephony/media-bridge';
 import { CallLifecycleManager } from '../../../packages/voice-engine/src/telephony/call-lifecycle';
 import { validateIndianPhoneNumber } from '@vanni/providers';
+import { globalEntitlementEngine } from '@vanni/billing';
 import { EmergencyHandler, EmergencyDetectionResult } from './emergency-handler';
 import { agencyRoutes } from './routes/agency';
 import { doctorRoutes } from './routes/doctors';
@@ -2102,7 +2103,8 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       rawDurationSeconds: durSec,
       costInr: (durSec / 60) * 0.85,
       failureReason: body?.FailureReason || (canonicalStatus === 'FAILED' ? 'Provider call failed' : undefined),
-    });
+      organizationId: body?.tenant || 'a0000000-0000-0000-0000-000000000001',
+    } as any);
 
     if (transitionRes.isDuplicate) {
       fastify.log.info({ callSid }, '[Exotel CDR] Duplicate webhook discarded cleanly');
@@ -2172,6 +2174,17 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     const host = request.headers.host || 'localhost:4000';
     const orgId = body.organizationId || 'a0000000-0000-0000-0000-000000000001';
+
+    // Server-Side Entitlement Check: Verify organization has outbound calling and voice minutes allowance
+    const entitlementCheck = await globalEntitlementEngine.canInitiateOutboundCall(orgId);
+    if (!entitlementCheck.allowed) {
+      return reply.status(403).send({
+        success: false,
+        error: 'ENTITLEMENT_LIMIT_EXCEEDED',
+        message: entitlementCheck.reason,
+      });
+    }
+
     const callbackUrl = `http://${host}/api/telephony/inbound-webhook?tenant=${orgId}`;
 
     const result = await telephony.dispatchOutboundCall(body, callbackUrl);

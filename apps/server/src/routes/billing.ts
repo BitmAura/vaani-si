@@ -26,20 +26,35 @@ const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
 const razorpayWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || 'whsec_vanni_test_secret_123';
 
-const billingProvider: IBillingProvider = (razorpayKeyId && razorpaySecret)
-  ? new RazorpayBillingProvider({
-      keyId: razorpayKeyId,
-      keySecret: razorpaySecret,
-      webhookSecret: razorpayWebhookSecret,
-    })
-  : new MockBillingProvider();
+const billingProvider: IBillingProvider = new RazorpayBillingProvider({
+  keyId: razorpayKeyId || 'rzp_test_mock_key',
+  keySecret: razorpaySecret || 'rzp_test_mock_sec',
+  webhookSecret: razorpayWebhookSecret,
+});
 
 export async function registerBillingRoutes(fastify: FastifyInstance) {
-  // 1. GET /api/billing — Fetch Organization Billing Snapshot
+  // 1. GET /api/billing — Fetch Organization Billing Snapshot, Invoices & Gateway Status
   fastify.get('/api/billing', async (req: FastifyRequest, reply: FastifyReply) => {
     const { tenantId: orgId } = requireTenantContext(req);
     const snapshot = await globalDb.getBillingSnapshot(orgId);
-    return reply.send({ success: true, data: snapshot });
+    const invoices = await globalDb.getBillingInvoices(orgId);
+    const adjustments = await globalDb.getUsageAdjustments(orgId);
+    const isRazorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+
+    return reply.send({
+      success: true,
+      data: {
+        ...snapshot,
+        invoices,
+        adjustments,
+        gatewayStatus: {
+          provider: 'RAZORPAY',
+          configured: isRazorpayConfigured,
+          mode: isRazorpayConfigured ? 'LIVE_PROVIDER' : 'UNCONFIGURED_SANDBOX',
+          currency: 'INR',
+        },
+      },
+    });
   });
 
   // 2. GET /api/billing/plans — Public Plan Catalog
@@ -308,19 +323,33 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
     const sub = await globalDb.getSubscription(orgId);
     const now = new Date().toISOString();
 
-    if (normalized.eventType.includes('subscription.activated') || normalized.eventType.includes('payment.captured')) {
+    if (
+      normalized.eventType.includes('subscription.activated') ||
+      normalized.eventType.includes('subscription.charged') ||
+      normalized.eventType.includes('payment.captured')
+    ) {
       if (sub) {
+        const isRenewal = normalized.eventType.includes('subscription.charged');
+        const nextPeriodEnd = isRenewal
+          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          : sub.currentPeriodEnd;
+
         await globalDb.saveSubscription({
           ...sub,
           status: 'ACTIVE',
+          currentPeriodStart: isRenewal ? now : sub.currentPeriodStart,
+          currentPeriodEnd: nextPeriodEnd,
           updatedAt: now,
         });
+
         await globalDb.saveSubscriptionEvent({
           id: `se_${Date.now()}`,
           subscriptionId: sub.id,
           organizationId: orgId,
-          eventType: 'PAYMENT_RECOVERED',
-          reason: 'Subscription activated or payment captured',
+          eventType: isRenewal ? 'RENEWED' : 'PAYMENT_RECOVERED',
+          reason: isRenewal
+            ? 'Subscription renewed and charged successfully via Razorpay'
+            : 'Subscription activated or payment captured',
           occurredAt: now,
         });
       }

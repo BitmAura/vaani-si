@@ -1,4 +1,4 @@
-import { CallStatus, CallRecordDTO } from '@vanni/shared';
+import { CallStatus, CallRecordDTO, UsageEventDTO } from '@vanni/shared';
 
 export type CanonicalCallStatus =
   | 'INITIATED'
@@ -11,8 +11,8 @@ export type CanonicalCallStatus =
   | 'CANCELLED';
 
 export const ALLOWED_CALL_TRANSITIONS: Record<CanonicalCallStatus, CanonicalCallStatus[]> = {
-  INITIATED: ['RINGING', 'IN_PROGRESS', 'CANCELLED', 'FAILED'],
-  RINGING: ['IN_PROGRESS', 'NO_ANSWER', 'BUSY', 'FAILED', 'CANCELLED'],
+  INITIATED: ['RINGING', 'IN_PROGRESS', 'COMPLETED', 'NO_ANSWER', 'BUSY', 'CANCELLED', 'FAILED'],
+  RINGING: ['IN_PROGRESS', 'COMPLETED', 'NO_ANSWER', 'BUSY', 'FAILED', 'CANCELLED'],
   IN_PROGRESS: ['COMPLETED', 'FAILED', 'CANCELLED'],
   COMPLETED: [],
   FAILED: [],
@@ -55,6 +55,8 @@ export interface CallSessionLifecycleState {
 export interface CallPersistencePort {
   saveCall(call: CallRecordDTO): Promise<void>;
   getCallById(id: string, organizationId?: string): Promise<CallRecordDTO | null>;
+  saveUsageEvent?(event: any): Promise<void>;
+  getClientWorkspaceById?(id: string, organizationId?: string): Promise<any>;
 }
 
 /**
@@ -169,10 +171,22 @@ export class CallLifecycleManager {
     }
 
     if (!session) {
-      return {
-        success: false,
-        error: `Call session not found for ID: ${event.callId}`,
+      // Auto-initialize call session from provider CDR if seeing this call for the first time
+      const initiatedAt = new Date(Date.now() - (event.rawDurationSeconds || 0) * 1000).toISOString();
+      session = {
+        callId: event.callId,
+        organizationId: (event as any).organizationId || 'a0000000-0000-0000-0000-000000000001',
+        direction: 'INBOUND',
+        callerPhone: 'Verified Caller',
+        currentStatus: 'INITIATED',
+        providerCallSid: event.providerCallSid || event.callId,
+        telephonyProvider: event.provider || 'exotel',
+        initiatedAt,
+        durationSeconds: 0,
+        costInr: 0,
+        history: [{ status: 'INITIATED', timestamp: initiatedAt }],
       };
+      this.activeCalls.set(session.callId, session);
     }
 
     // 3. Prevent duplicate same-state transitions
@@ -231,6 +245,56 @@ export class CallLifecycleManager {
 
     // 6. Persist to authoritative database
     await this.persistCallRecord(session);
+
+    // 7. Prompt 09: Usage Metering — Emit auditable usage event for completed voice duration
+    if (session.currentStatus === 'COMPLETED' && session.durationSeconds > 0 && this.persistence?.saveUsageEvent) {
+      let billingOrgId = session.organizationId;
+      let clientWorkspaceId: string | undefined;
+
+      if (this.persistence.getClientWorkspaceById) {
+        try {
+          const clientWs = await this.persistence.getClientWorkspaceById(session.organizationId);
+          if (clientWs) {
+            billingOrgId = clientWs.organizationId;
+            clientWorkspaceId = clientWs.id;
+          }
+        } catch {}
+      }
+
+      const usageEvent: UsageEventDTO = {
+        id: `usage_${session.callId}_voice`,
+        organizationId: billingOrgId,
+        clientWorkspaceId,
+        eventType: 'VOICE_DURATION',
+        resourceType: 'VOICE_MINUTE',
+        provider: session.telephonyProvider || 'exotel',
+        quantity: session.durationSeconds,
+        unit: 'seconds',
+        costType: 'ESTIMATED',
+        estimatedCost: Math.round(((session.durationSeconds / 60) * 0.85) * 10000) / 10000,
+        actualCost: session.costInr || Math.round(((session.durationSeconds / 60) * 0.85) * 10000) / 10000,
+        currency: 'INR',
+        correlationId: session.callId,
+        durationSource: event.rawDurationSeconds ? 'PROVIDER_CDR' : 'WEBSOCKET_SESSION',
+        confirmedDurationSec: session.durationSeconds,
+        channel: 'VOICE',
+        language: 'kn-IN',
+        occurredAt: session.endedAt || now,
+        metadata: {
+          direction: session.direction,
+          callerPhone: session.callerPhone,
+          destinationPhone: session.destinationPhone,
+          providerCallSid: session.providerCallSid,
+          callStatus: session.currentStatus,
+        },
+      };
+
+      try {
+        await this.persistence.saveUsageEvent(usageEvent);
+      } catch (err) {
+        console.warn(`[CallLifecycle] Failed to emit usage event for call ${session.callId}:`, err);
+      }
+    }
 
     return { success: true, session };
   }

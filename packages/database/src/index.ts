@@ -54,6 +54,7 @@ import {
   HandoffSLADTO,
   EscalationPolicyDTO,
   UsageEventDTO,
+  UsageAdjustmentDTO,
   ProviderPricingDefinitionDTO,
   UsageLedgerRecordDTO,
   DailyUsageAggregationDTO,
@@ -335,6 +336,8 @@ export interface IDatabaseService {
   // ANALYTICS, USAGE METERING & COST (MODULE 18)
   // ==========================================
   saveUsageEvent(event: UsageEventDTO): Promise<void>;
+  saveUsageAdjustment(adj: UsageAdjustmentDTO): Promise<void>;
+  getUsageAdjustments(organizationId: string): Promise<UsageAdjustmentDTO[]>;
   getUsageEvents(organizationId: string, filters?: { eventType?: string; agentId?: string; startDate?: string; endDate?: string }): Promise<UsageEventDTO[]>;
 
   saveProviderPricing(pricing: ProviderPricingDefinitionDTO): Promise<void>;
@@ -489,6 +492,7 @@ export class InMemoryDatabaseService implements IDatabaseService {
 
   // Analytics & Usage Metering Collections (Module 18)
   private usageEvents: Map<string, UsageEventDTO> = new Map();
+  private usageAdjustments: Map<string, UsageAdjustmentDTO> = new Map();
   private providerPricing: Map<string, ProviderPricingDefinitionDTO> = new Map();
   private usageLedger: Map<string, UsageLedgerRecordDTO> = new Map();
   private dailyAggregations: Map<string, DailyUsageAggregationDTO> = new Map();
@@ -2590,16 +2594,42 @@ export class InMemoryDatabaseService implements IDatabaseService {
   // ==========================================
 
   async saveUsageEvent(event: UsageEventDTO): Promise<void> {
+    // Enforce idempotency: check if event with matching organizationId, correlationId, and eventType exists
+    for (const [id, existing] of this.usageEvents.entries()) {
+      if (
+        existing.organizationId === event.organizationId &&
+        existing.correlationId === event.correlationId &&
+        existing.eventType === event.eventType
+      ) {
+        // Safe correction: update existing record with verified provider values without duplicating usage
+        this.usageEvents.set(id, { ...existing, ...event, id });
+        return;
+      }
+    }
     this.usageEvents.set(event.id, { ...event });
   }
 
-  async getUsageEvents(organizationId: string, filters?: { eventType?: string; agentId?: string; startDate?: string; endDate?: string }): Promise<UsageEventDTO[]> {
+  async getUsageEvents(
+    organizationId: string,
+    filters?: { eventType?: string; agentId?: string; startDate?: string; endDate?: string; clientWorkspaceId?: string }
+  ): Promise<UsageEventDTO[]> {
     let list = Array.from(this.usageEvents.values()).filter(e => e.organizationId === organizationId);
     if (filters?.eventType) list = list.filter(e => e.eventType === filters.eventType);
     if (filters?.agentId) list = list.filter(e => e.agentId === filters.agentId);
     if (filters?.startDate) list = list.filter(e => e.occurredAt >= filters.startDate!);
     if (filters?.endDate) list = list.filter(e => e.occurredAt <= filters.endDate!);
+    if (filters?.clientWorkspaceId) list = list.filter(e => e.clientWorkspaceId === filters.clientWorkspaceId);
     return list.sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
+  }
+
+  async saveUsageAdjustment(adj: UsageAdjustmentDTO): Promise<void> {
+    this.usageAdjustments.set(adj.id, { ...adj });
+  }
+
+  async getUsageAdjustments(organizationId: string): Promise<UsageAdjustmentDTO[]> {
+    return Array.from(this.usageAdjustments.values())
+      .filter(a => a.organizationId === organizationId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   async saveProviderPricing(pricing: ProviderPricingDefinitionDTO): Promise<void> {
@@ -2911,7 +2941,27 @@ export class InMemoryDatabaseService implements IDatabaseService {
 
     const voiceMinutesUsed = events
       .filter(e => e.eventType === 'VOICE_DURATION')
-      .reduce((acc, e) => acc + e.quantity, 0);
+      .reduce((acc, e) => acc + (e.unit === 'seconds' ? e.quantity / 60 : e.quantity), 0);
+
+    const clientWorkspaces = Array.from(this.clientWorkspaces.values()).filter(w => w.organizationId === organizationId);
+    const clientUsageBreakdown = clientWorkspaces.map(ws => {
+      const wsEvents = events.filter(e => e.clientWorkspaceId === ws.id || e.resourceId === ws.id);
+      const wsMinutes = wsEvents
+        .filter(e => e.eventType === 'VOICE_DURATION')
+        .reduce((sum, e) => sum + (e.unit === 'seconds' ? e.quantity / 60 : e.quantity), 0);
+      const wsCalls = wsEvents.filter(e => e.eventType === 'CALL_STARTED' || e.eventType === 'CALL_COMPLETED' || e.eventType === 'VOICE_DURATION').length;
+      const wsEstCost = wsEvents.reduce((sum, e) => sum + (e.estimatedCost || 0), 0);
+      const wsActCost = wsEvents.reduce((sum, e) => sum + (e.actualCost || 0), 0);
+
+      return {
+        clientWorkspaceId: ws.id,
+        clientName: ws.name,
+        callCount: wsCalls,
+        voiceMinutes: Math.round(wsMinutes * 10) / 10,
+        estimatedCostInr: Math.round(wsEstCost * 100) / 100,
+        actualCostInr: Math.round(wsActCost * 100) / 100,
+      };
+    });
 
     const maxMinutes = plan.entitlements.maxMonthlyVoiceMinutes;
     const remaining = Math.max(0, maxMinutes - voiceMinutesUsed);
@@ -2960,6 +3010,7 @@ export class InMemoryDatabaseService implements IDatabaseService {
       isEntitlementExceeded: isExceeded,
       exceededEntities: exceededEntities.length > 0 ? exceededEntities : undefined,
       recentPayments: payments.slice(0, 10),
+      clientUsageBreakdown: clientUsageBreakdown.length > 0 ? clientUsageBreakdown : undefined,
     };
   }
 }

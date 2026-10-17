@@ -11,6 +11,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import crypto from 'node:crypto';
 import { globalDb } from '@vanni/database';
+import { globalEntitlementEngine } from '@vanni/billing';
 import {
   AuthSessionDTO,
   ClientWorkspaceDTO,
@@ -272,6 +273,18 @@ export async function agencyRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     const orgId = session.activeOrganizationId;
+
+    // Server-Side Entitlement Check: Verify maximum client workspaces entitlement
+    const limitCheck = await globalEntitlementEngine.canCreateClientWorkspace(orgId);
+    if (!limitCheck.allowed) {
+      return reply.status(403).send({
+        error: 'ENTITLEMENT_LIMIT_EXCEEDED',
+        message: limitCheck.reason,
+        currentCount: limitCheck.currentCount,
+        maxAllowed: limitCheck.maxAllowed,
+      });
+    }
+
     const {
       name,
       industryCategory,

@@ -4,8 +4,14 @@ import path from 'node:path';
 export default defineConfig({
   resolve: {
     alias: {
-      // Cross-tree relative imports (packages -> apps) do not resolve under
-      // this vitest setup; alias the server audio pipeline instead.
+      '@vanni/database': path.resolve(__dirname, 'packages/database/src/index.ts'),
+      '@vanni/shared': path.resolve(__dirname, 'packages/shared/src/index.ts'),
+      '@vanni/billing': path.resolve(__dirname, 'packages/billing/src/index.ts'),
+      '@vanni/auth': path.resolve(__dirname, 'packages/auth/src/index.ts'),
+      '@vanni/providers': path.resolve(__dirname, 'packages/providers/src/index.ts'),
+      '@vanni/provider-sdk': path.resolve(__dirname, 'packages/provider-sdk/src/index.ts'),
+      '@vanni/voice-engine': path.resolve(__dirname, 'packages/voice-engine/src/index.ts'),
+      '@vanni/core': path.resolve(__dirname, 'packages/core/src/index.ts'),
       '@server-pipeline': path.resolve(__dirname, 'apps/server/src/audio-pipeline.ts'),
     },
   },

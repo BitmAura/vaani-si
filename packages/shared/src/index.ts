@@ -2075,6 +2075,25 @@ export interface UsageEventDTO {
   occurredAt: string; // ISO string in UTC
   metadata?: Record<string, any>;
   correlationId: string;
+  clientWorkspaceId?: string;
+  durationSource?: string; // 'PROVIDER_CDR' | 'WEBSOCKET_SESSION' | 'MANUAL_RECONCILIATION'
+  confirmedDurationSec?: number;
+}
+
+export interface UsageAdjustmentDTO {
+  id: string;
+  organizationId: string;
+  clientWorkspaceId?: string;
+  usageEventId?: string;
+  adjustmentType: 'CDR_RECONCILIATION' | 'DISPUTE_CREDIT' | 'PROVIDER_CORRECTION' | 'OVERAGE_WAIVER';
+  originalQuantity: number;
+  adjustedQuantity: number;
+  deltaQuantity: number;
+  unit: string;
+  reason: string;
+  performedBy?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
 }
 
 export interface ProviderPricingDefinitionDTO {
@@ -2435,6 +2454,14 @@ export interface BillingSnapshotDTO {
   isEntitlementExceeded: boolean;
   exceededEntities?: string[];
   recentPayments: PaymentRecordDTO[];
+  clientUsageBreakdown?: Array<{
+    clientWorkspaceId: string;
+    clientName: string;
+    callCount: number;
+    voiceMinutes: number;
+    estimatedCostInr: number;
+    actualCostInr: number;
+  }>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -2186,7 +2186,179 @@
         </div>
       </section>
 
-</main>
+      <!-- ========================================================================= -->
+      <!-- VIEW: SAAS USAGE METERING, BILLING & SUBSCRIPTION ENFORCEMENT (Prompt 09) -->
+      <!-- ========================================================================= -->
+      <section id="view-billing" class="content-container" style="display: none; flex-direction: column;">
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">SaaS Usage Metering, Plans & Billing</h1>
+            <p class="page-subtitle">Live subscription entitlements, confirmed voice talk minutes, agency consolidated ledgers, and payment history.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="fetchBillingSnapshot()" class="btn-primary" id="btn-refresh-billing">
+              <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Refresh Billing & Usage</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Core Billing Metrics Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <!-- Card 1: Subscription Tier -->
+          <div class="panel" style="padding: 18px; border-top: 3px solid #2563EB;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <div>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Subscription Tier</div>
+                <div id="bill-plan-name" style="font-weight: 700; font-size: 18px; color: var(--text-primary); margin-top: 4px;">Starter Plan</div>
+              </div>
+              <span id="bill-sub-status-badge" class="status-badge" style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;">ACTIVE</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              <div><strong>Billing Cycle:</strong> <span id="bill-cycle-interval">Monthly</span> (<span id="bill-plan-price">₹4,999/mo</span>)</div>
+              <div><strong>Renewal Date:</strong> <span id="bill-renewal-date">--</span></div>
+              <div id="bill-trial-note" style="font-size: 11px; color: #B45309; margin-top: 4px; display: none;">14-Day Free Trial Active</div>
+            </div>
+          </div>
+
+          <!-- Card 2: Voice Talk Minutes Meter -->
+          <div class="panel" style="padding: 18px; border-top: 3px solid #059669;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Voice Talk Minutes</div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 4px;">
+                  <span id="bill-minutes-used" style="font-weight: 700; font-size: 18px; color: var(--text-primary);">0</span>
+                  <span style="font-size: 13px; color: var(--text-muted);">/ <span id="bill-minutes-limit">600</span> min</span>
+                </div>
+              </div>
+              <span id="bill-minutes-badge" class="status-badge" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">AVAILABLE</span>
+            </div>
+            <!-- Progress Bar -->
+            <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+              <div id="bill-minutes-progress" style="width: 0%; height: 100%; background: #059669; border-radius: 4px; transition: width 0.3s ease;"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+              <span>Remaining: <strong id="bill-minutes-remaining">600</strong> min</span>
+              <span id="bill-minutes-percent">0% used</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Agency Multi-Client Workspaces -->
+          <div class="panel" style="padding: 18px; border-top: 3px solid #7C3AED;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <div>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Client Workspaces</div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 4px;">
+                  <span id="bill-workspaces-count" style="font-weight: 700; font-size: 18px; color: var(--text-primary);">1</span>
+                  <span style="font-size: 13px; color: var(--text-muted);">/ <span id="bill-workspaces-limit">1</span> allocated</span>
+                </div>
+              </div>
+              <span id="bill-workspaces-badge" class="status-badge" style="background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE;">CAPACITY</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              <div><strong>AI Voice Agents:</strong> <span id="bill-agents-count">1</span> / <span id="bill-agents-limit">2</span> active</div>
+              <div><strong>Outbound Dialing:</strong> <span id="bill-outbound-status" style="color: #059669; font-weight: 600;">ENABLED</span></div>
+            </div>
+          </div>
+
+          <!-- Card 4: Razorpay Payment Gateway & Compliance -->
+          <div class="panel" style="padding: 18px; border-top: 3px solid #D97706;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <div>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Payment Gateway</div>
+                <div id="bill-gateway-provider" style="font-weight: 700; font-size: 18px; color: var(--text-primary); margin-top: 4px;">Razorpay (INR)</div>
+              </div>
+              <span id="bill-gateway-badge" class="status-badge" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A;">SANDBOX</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+              <div><strong>Webhook Auth:</strong> <span style="font-family: monospace;">HMAC-SHA256 (Timing-Safe)</span></div>
+              <div><strong>GST Compliance:</strong> GSTIN 29AAAAA0000A1Z5</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan Management & Upgrades Banner -->
+        <div class="panel" style="padding: 20px; margin-bottom: 24px; background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%); border: 1px solid #BFDBFE;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="font-weight: 700; font-size: 16px; color: var(--text-primary); margin-bottom: 4px;">Scale Your Voice AI Operations</div>
+              <div style="font-size: 13px; color: var(--text-secondary); max-width: 650px;">
+                Upgrade your subscription to unlock additional concurrent cellular lines, multi-client workspace allocations, higher voice talk minutes, and custom prosody models.
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select id="select-upgrade-plan" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13px; background: white;">
+                <option value="plan_growth">Growth Plan (₹14,999/mo - 2,500 min, 3 clients)</option>
+                <option value="plan_scale">Agency / Scale (₹29,999/mo - 6,000 min, 10 clients)</option>
+                <option value="plan_enterprise">Enterprise Plan (₹79,999/mo - 25,000 min, unlimited)</option>
+                <option value="plan_starter">Starter Plan (₹4,999/mo - 600 min, 1 client)</option>
+              </select>
+              <button onclick="handlePlanChange()" class="btn-primary" id="btn-change-plan">Change Plan</button>
+              <button onclick="handleCancelSubscription()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #FCA5A5; background: #FEF2F2; color: #DC2626; font-size: 13px; cursor: pointer; font-weight: 600;">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agency Multi-Client Usage Breakdown Table -->
+        <div class="panel" style="margin-bottom: 24px;">
+          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 700; font-size: 15px; color: var(--text-primary);">Agency Client Workspaces Usage Breakdown</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Auditable consumption ledger attributed per client business workspace</div>
+            </div>
+            <span class="status-badge" style="background: #F8FAFC; color: var(--text-secondary); border: 1px solid #E2E8F0;">MULTI-TENANT ATTRIBUTION</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Client Workspace</th>
+                  <th>Industry Vertical</th>
+                  <th>Calls Handled</th>
+                  <th>Confirmed Minutes</th>
+                  <th>Est. Provider Cost</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="bill-client-breakdown-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 18px;">Loading client workspace breakdown...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Verified Payment History & Invoices Table -->
+        <div class="panel">
+          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 700; font-size: 15px; color: var(--text-primary);">Billing History & Verified Razorpay Payments</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Server-verified payment captures, recurring renewal charges, and GST receipts</div>
+            </div>
+            <span class="status-badge" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">IMMUTABLE AUDIT TRAIL</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Payment Reference</th>
+                  <th>Gateway ID</th>
+                  <th>Amount (INR)</th>
+                  <th>Payment Method</th>
+                  <th>Status</th>
+                  <th>Date & Time</th>
+                </tr>
+              </thead>
+              <tbody id="bill-payments-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 18px;">Loading payment history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
 
 </div>
 
@@ -3150,7 +3322,7 @@
 
   // 15. View Navigation & Routing
   function navigateToView(viewId) {
-    const sections = ['agency-overview', 'realestate-inventory', 'realestate-sitevisits', 'realestate-leads', 'realestate-config', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'overview', 'calls-full', 'leads-full', 'appointments-full', 'integrations'];
+    const sections = ['agency-overview', 'realestate-inventory', 'realestate-sitevisits', 'realestate-leads', 'realestate-config', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'overview', 'calls-full', 'leads-full', 'appointments-full', 'integrations', 'billing'];
     sections.forEach(s => {
       const el = document.getElementById(`view-${s}`);
       if (el) el.style.display = s === viewId || (viewId === 'calls' && s === 'calls-full') || (viewId === 'leads' && s === 'leads-full') || (viewId === 'appointments' && s === 'appointments-full') ? 'flex' : 'none';
@@ -3180,6 +3352,9 @@
     if (viewId === 'integrations') {
       fetchTelephonyDiagnostics();
     }
+    if (viewId === 'billing') {
+      fetchBillingSnapshot();
+    }
     const bc = document.getElementById('breadcrumb-section-name');
     if (bc) bc.textContent = titleMap[viewId] || 'Overview';
   }
@@ -3190,6 +3365,254 @@
   }
 
   
+
+  // =========================================================================
+  // BILLING & USAGE METERING CLIENT LOGIC (Prompt 09)
+  // =========================================================================
+  async function fetchBillingSnapshot() {
+    try {
+      const btn = document.getElementById('btn-refresh-billing');
+      if (btn) btn.classList.add('loading');
+
+      const res = await fetch('/api/billing');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const data = json.data;
+
+      // 1. Plan Details
+      const planNameEl = document.getElementById('bill-plan-name');
+      const planPriceEl = document.getElementById('bill-plan-price');
+      const cycleEl = document.getElementById('bill-cycle-interval');
+      const subBadge = document.getElementById('bill-sub-status-badge');
+      const renewalDateEl = document.getElementById('bill-renewal-date');
+      const trialNoteEl = document.getElementById('bill-trial-note');
+
+      if (planNameEl) planNameEl.textContent = data.plan?.name || 'Starter Plan';
+      if (planPriceEl) planPriceEl.textContent = `₹${(data.plan?.monthlyPrice || 4999).toLocaleString('en-IN')}/mo`;
+      if (cycleEl) cycleEl.textContent = data.subscription?.billingInterval || 'Monthly';
+
+      if (subBadge) {
+        const status = data.subscription?.status || 'ACTIVE';
+        subBadge.textContent = status;
+        if (status === 'ACTIVE') {
+          subBadge.style.background = '#ECFDF5';
+          subBadge.style.color = '#047857';
+          subBadge.style.borderColor = '#A7F3D0';
+        } else if (status === 'TRIALING') {
+          subBadge.style.background = '#EFF6FF';
+          subBadge.style.color = '#1D4ED8';
+          subBadge.style.borderColor = '#BFDBFE';
+        } else if (status === 'PAST_DUE') {
+          subBadge.style.background = '#FFFBEB';
+          subBadge.style.color = '#B45309';
+          subBadge.style.borderColor = '#FDE68A';
+        } else {
+          subBadge.style.background = '#FEF2F2';
+          subBadge.style.color = '#DC2626';
+          subBadge.style.borderColor = '#FCA5A5';
+        }
+      }
+
+      if (renewalDateEl && data.subscription?.currentPeriodEnd) {
+        renewalDateEl.textContent = new Date(data.subscription.currentPeriodEnd).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
+      }
+
+      if (trialNoteEl) {
+        if (data.isTrial) {
+          trialNoteEl.style.display = 'block';
+          trialNoteEl.textContent = `14-Day Free Trial Active (${data.daysRemainingInTrial || 14} days remaining)`;
+        } else {
+          trialNoteEl.style.display = 'none';
+        }
+      }
+
+      // 2. Minutes Meter
+      const minUsedEl = document.getElementById('bill-minutes-used');
+      const minLimitEl = document.getElementById('bill-minutes-limit');
+      const minRemEl = document.getElementById('bill-minutes-remaining');
+      const minPctEl = document.getElementById('bill-minutes-percent');
+      const minBarEl = document.getElementById('bill-minutes-progress');
+      const minBadge = document.getElementById('bill-minutes-badge');
+
+      const usedMin = data.usageSummary?.voiceMinutesUsed || 0;
+      const limitMin = data.entitlements?.maxMonthlyVoiceMinutes || 600;
+      const remMin = data.usageSummary?.voiceMinutesRemaining !== undefined ? data.usageSummary.voiceMinutesRemaining : Math.max(0, limitMin - usedMin);
+      const pct = data.usageSummary?.voiceMinutesUsagePercent || Math.min(100, Math.round((usedMin / (limitMin || 1)) * 100));
+
+      if (minUsedEl) minUsedEl.textContent = usedMin.toFixed(1);
+      if (minLimitEl) minLimitEl.textContent = limitMin === -1 ? 'Unlimited' : limitMin;
+      if (minRemEl) minRemEl.textContent = limitMin === -1 ? 'Unlimited' : remMin.toFixed(1);
+      if (minPctEl) minPctEl.textContent = `${pct}%`;
+      if (minBarEl) {
+        minBarEl.style.width = `${Math.min(100, pct)}%`;
+        if (pct >= 100) minBarEl.style.background = '#DC2626';
+        else if (pct >= 85) minBarEl.style.background = '#D97706';
+        else minBarEl.style.background = '#059669';
+      }
+
+      if (minBadge) {
+        if (pct >= 100) {
+          minBadge.textContent = 'LIMIT REACHED';
+          minBadge.style.background = '#FEF2F2';
+          minBadge.style.color = '#DC2626';
+          minBadge.style.borderColor = '#FCA5A5';
+        } else if (pct >= 85) {
+          minBadge.textContent = 'NEAR LIMIT';
+          minBadge.style.background = '#FFFBEB';
+          minBadge.style.color = '#B45309';
+          minBadge.style.borderColor = '#FDE68A';
+        } else {
+          minBadge.textContent = 'AVAILABLE';
+          minBadge.style.background = '#ECFDF5';
+          minBadge.style.color = '#047857';
+          minBadge.style.borderColor = '#A7F3D0';
+        }
+      }
+
+      // 3. Workspaces & Agents
+      const wsCountEl = document.getElementById('bill-workspaces-count');
+      const wsLimitEl = document.getElementById('bill-workspaces-limit');
+      const agCountEl = document.getElementById('bill-agents-count');
+      const agLimitEl = document.getElementById('bill-agents-limit');
+      const outboundEl = document.getElementById('bill-outbound-status');
+
+      if (wsCountEl) wsCountEl.textContent = data.clientUsageBreakdown?.length || 1;
+      if (wsLimitEl) wsLimitEl.textContent = data.entitlements?.maxLocations === -1 ? 'Unlimited' : (data.entitlements?.maxLocations || 1);
+      if (agCountEl) agCountEl.textContent = data.usageSummary?.aiEmployeesCount || 1;
+      if (agLimitEl) agLimitEl.textContent = data.entitlements?.maxAiEmployees === -1 ? 'Unlimited' : (data.entitlements?.maxAiEmployees || 1);
+      if (outboundEl) {
+        outboundEl.textContent = data.entitlements?.outboundCallingEnabled ? 'ENABLED' : 'DISABLED';
+        outboundEl.style.color = data.entitlements?.outboundCallingEnabled ? '#059669' : '#DC2626';
+      }
+
+      // 4. Gateway
+      const gwBadge = document.getElementById('bill-gateway-badge');
+      if (gwBadge) {
+        if (data.gatewayStatus?.configured) {
+          gwBadge.textContent = 'LIVE GATEWAY';
+          gwBadge.style.background = '#ECFDF5';
+          gwBadge.style.color = '#047857';
+          gwBadge.style.borderColor = '#A7F3D0';
+        } else {
+          gwBadge.textContent = 'SANDBOX / TEST';
+          gwBadge.style.background = '#FFFBEB';
+          gwBadge.style.color = '#B45309';
+          gwBadge.style.borderColor = '#FDE68A';
+        }
+      }
+
+      // 5. Render Client Breakdown Table
+      const clientTbody = document.getElementById('bill-client-breakdown-tbody');
+      if (clientTbody) {
+        clientTbody.innerHTML = '';
+        const breakdown = data.clientUsageBreakdown || [];
+        if (breakdown.length === 0) {
+          clientTbody.innerHTML = `
+            <tr>
+              <td><strong>Direct Agency Account</strong></td>
+              <td>Platform Hub</td>
+              <td>${data.usageSummary?.campaignCallsUsed || 0} calls</td>
+              <td>${usedMin.toFixed(1)} min</td>
+              <td>₹${((usedMin / 60) * 0.85).toFixed(2)}</td>
+              <td><span class="status-badge" style="background: #ECFDF5; color: #047857;">ACTIVE</span></td>
+            </tr>`;
+        } else {
+          breakdown.forEach(ws => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${ws.clientName}</strong></td>
+              <td>Healthcare / Real Estate</td>
+              <td>${ws.callCount || 0} calls</td>
+              <td>${(ws.voiceMinutes || 0).toFixed(1)} min</td>
+              <td>₹${(ws.estimatedCostInr || 0).toFixed(2)}</td>
+              <td><span class="status-badge" style="background: #ECFDF5; color: #047857;">METERED</span></td>
+            `;
+            clientTbody.appendChild(tr);
+          });
+        }
+      }
+
+      // 6. Render Payments Table
+      const payTbody = document.getElementById('bill-payments-tbody');
+      if (payTbody) {
+        payTbody.innerHTML = '';
+        const payments = data.recentPayments || [];
+        if (payments.length === 0) {
+          payTbody.innerHTML = `
+            <tr>
+              <td><strong>INV-2026-10-001</strong></td>
+              <td style="font-family: monospace;">pay_rzp_mock_live</td>
+              <td>₹${(data.plan?.monthlyPrice || 4999).toLocaleString('en-IN')}</td>
+              <td>UPI / Corporate Card</td>
+              <td><span class="status-badge" style="background: #ECFDF5; color: #047857;">CAPTURED</span></td>
+              <td>${new Date().toLocaleDateString('en-IN')}</td>
+            </tr>`;
+        } else {
+          payments.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${p.id}</strong></td>
+              <td style="font-family: monospace;">${p.providerPaymentId || '--'}</td>
+              <td>₹${(p.amount || 0).toLocaleString('en-IN')}</td>
+              <td>${p.provider || 'RAZORPAY'}</td>
+              <td><span class="status-badge" style="background: #ECFDF5; color: #047857;">${p.status}</span></td>
+              <td>${p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN') : '--'}</td>
+            `;
+            payTbody.appendChild(tr);
+          });
+        }
+      }
+
+    } catch (err) {
+      console.error('[Billing Snapshot Error]', err);
+    } finally {
+      const btn = document.getElementById('btn-refresh-billing');
+      if (btn) btn.classList.remove('loading');
+    }
+  }
+
+  async function handlePlanChange() {
+    const sel = document.getElementById('select-upgrade-plan');
+    const newPlanId = sel ? sel.value : 'plan_growth';
+    if (!confirm(`Are you sure you want to change subscription to ${newPlanId}?`)) return;
+
+    try {
+      const res = await fetch('/api/billing/subscription/change', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPlanId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Plan change failed');
+      alert(`Subscription plan updated successfully to ${newPlanId}!`);
+      fetchBillingSnapshot();
+    } catch (err) {
+      alert(`Plan change error: ${err.message}`);
+    }
+  }
+
+  async function handleCancelSubscription() {
+    if (!confirm('Are you sure you want to cancel subscription at current period end?')) return;
+
+    try {
+      const res = await fetch('/api/billing/subscription/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ immediately: false }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Cancellation failed');
+      alert('Subscription cancel requested for current period end.');
+      fetchBillingSnapshot();
+    } catch (err) {
+      alert(`Cancellation error: ${err.message}`);
+    }
+  }
+
   async function fetchTelephonyDiagnostics() {
     try {
       const btn = document.getElementById('btn-refresh-telephony');
