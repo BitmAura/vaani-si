@@ -18,6 +18,116 @@ export type OnboardingStatus = 'created' | 'business_setup' | 'agent_setup' | 'r
 
 export type BillingTier = 'STARTER' | 'GROWTH' | 'BUSINESS';
 
+// ==============================================================================
+// 1.1 CLIENT WORKSPACES & MULTI-TENANT ONBOARDING DOMAIN
+// ==============================================================================
+
+export type BusinessModelType = 'AGENCY' | 'DIRECT_BUSINESS';
+
+export type IndustryCategory = 'DIGITAL_AGENCY' | 'HEALTHCARE' | 'REAL_ESTATE';
+
+export type IndustrySubcategory =
+  | 'DENTAL'
+  | 'ORTHOPAEDICS'
+  | 'IVF'
+  | 'HOSPITAL'
+  | 'DEVELOPER'
+  | 'BROKERAGE'
+  | 'SALES'
+  | 'MARKETING_AGENCY';
+
+export interface ClientWorkspaceDTO {
+  id: string;
+  organizationId: string;
+  name: string;
+  slug: string;
+  modelType: BusinessModelType;
+  industryCategory: IndustryCategory;
+  subcategory: IndustrySubcategory;
+  operatingLocation: string;
+  primaryPhone: string;
+  primaryEmail?: string;
+  timezone: string;
+  languagePreferences: {
+    primary: 'kn-IN' | 'kn-en' | 'en-IN';
+    conversationalStyle: 'POLITE_BUSINESS' | 'CONVERSATIONAL' | 'FORMAL';
+    regionalDialect: RegionalDialect;
+  };
+  startingTemplateId?: string;
+  onboardingStep: number;
+  onboardingCompleted: boolean;
+  onboardingData?: Record<string, any>;
+  aiEmployee?: {
+    name: string;
+    gender: 'FEMALE' | 'MALE';
+    speakerId: string;
+    engine: string;
+    status: 'DRAFT' | 'READY' | 'ACTIVE';
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StarterTemplateDTO {
+  id: string;
+  title: string;
+  description: string;
+  industryCategory: IndustryCategory;
+  subcategory: IndustrySubcategory;
+  recommendedDialect: RegionalDialect;
+  defaultAgentName: string;
+  sampleUseCases: string[];
+  capabilities: string[];
+}
+
+export const CreateClientWorkspaceInputSchema = z.object({
+  name: z.string().min(2, 'Client business name must be at least 2 characters').max(100),
+  modelType: z.enum(['AGENCY', 'DIRECT_BUSINESS']).default('DIRECT_BUSINESS'),
+  industryCategory: z.enum(['DIGITAL_AGENCY', 'HEALTHCARE', 'REAL_ESTATE']),
+  subcategory: z.enum([
+    'DENTAL',
+    'ORTHOPAEDICS',
+    'IVF',
+    'HOSPITAL',
+    'DEVELOPER',
+    'BROKERAGE',
+    'SALES',
+    'MARKETING_AGENCY',
+  ]),
+  operatingLocation: z.string().min(2, 'Operating location required').default('Karnataka, India'),
+  primaryPhone: z.string().min(8, 'Phone number required').default('+91 80 4719 2000'),
+  primaryEmail: z.string().email().optional(),
+  timezone: z.string().default('Asia/Kolkata'),
+  languagePreferences: z
+    .object({
+      primary: z.enum(['kn-IN', 'kn-en', 'en-IN']).default('kn-IN'),
+      conversationalStyle: z.enum(['POLITE_BUSINESS', 'CONVERSATIONAL', 'FORMAL']).default('POLITE_BUSINESS'),
+      regionalDialect: z
+        .enum([
+          'KANNADA_STANDARD_POLITE',
+          'KANGLISH_BUSINESS',
+          'NORTH_KARNATAKA_COMMERCIAL',
+          'MYSORE_MANDYA_REGIONAL',
+          'ENGLISH_INDIAN_CORPORATE',
+        ])
+        .default('KANGLISH_BUSINESS'),
+    })
+    .default({
+      primary: 'kn-IN',
+      conversationalStyle: 'POLITE_BUSINESS',
+      regionalDialect: 'KANGLISH_BUSINESS',
+    }),
+  startingTemplateId: z.string().optional(),
+});
+
+export const SaveOnboardingStepInputSchema = z.object({
+  workspaceId: z.string().optional(),
+  step: z.number().int().min(1).max(7),
+  data: z.record(z.string(), z.any()),
+  complete: z.boolean().default(false),
+});
+
+
 export interface UserProfileDTO {
   id: string;
   fullName: string;

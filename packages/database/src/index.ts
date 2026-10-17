@@ -7,6 +7,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 import {
   AppointmentSlotDTO,
+  ClientWorkspaceDTO,
   AuditLogDTO,
   CallRecordDTO,
   LeadDossierDTO,
@@ -246,6 +247,15 @@ export interface IDatabaseService {
   getConversationSummary(conversationId: string, organizationId?: string): Promise<ConversationSummaryDTO | null>;
 
   // ==========================================
+  // CLIENT WORKSPACES & ONBOARDING (PROMPT 03)
+  // ==========================================
+  saveClientWorkspace(workspace: ClientWorkspaceDTO): Promise<void>;
+  getClientWorkspacesByOrg(organizationId: string): Promise<ClientWorkspaceDTO[]>;
+  getClientWorkspaceById(id: string, organizationId?: string): Promise<ClientWorkspaceDTO | null>;
+  updateClientWorkspace(id: string, updates: Partial<ClientWorkspaceDTO>, organizationId?: string): Promise<ClientWorkspaceDTO>;
+  deleteClientWorkspace(id: string, organizationId: string): Promise<boolean>;
+
+  // ==========================================
   // CRM, CONTACTS & LEAD MANAGEMENT (PROMPT 15)
   // ==========================================
   getContacts(organizationId: string, query?: string): Promise<ContactDTO[]>;
@@ -321,6 +331,50 @@ export interface IDatabaseService {
 }
 
 export class InMemoryDatabaseService implements IDatabaseService {
+  protected clientWorkspaces: Map<string, ClientWorkspaceDTO> = new Map();
+
+  async saveClientWorkspace(workspace: ClientWorkspaceDTO): Promise<void> {
+    this.clientWorkspaces.set(workspace.id, { ...workspace });
+  }
+
+  async getClientWorkspacesByOrg(organizationId: string): Promise<ClientWorkspaceDTO[]> {
+    return Array.from(this.clientWorkspaces.values()).filter(
+      (w) => w.organizationId === organizationId
+    );
+  }
+
+  async getClientWorkspaceById(id: string, organizationId?: string): Promise<ClientWorkspaceDTO | null> {
+    const ws = this.clientWorkspaces.get(id);
+    if (!ws) return null;
+    if (organizationId && ws.organizationId !== organizationId) return null;
+    return { ...ws };
+  }
+
+  async updateClientWorkspace(
+    id: string,
+    updates: Partial<ClientWorkspaceDTO>,
+    organizationId?: string
+  ): Promise<ClientWorkspaceDTO> {
+    const existing = await this.getClientWorkspaceById(id, organizationId);
+    if (!existing) {
+      throw new Error(`Client workspace ${id} not found`);
+    }
+    const updated: ClientWorkspaceDTO = {
+      ...existing,
+      ...updates,
+      id: existing.id,
+      organizationId: existing.organizationId,
+      updatedAt: new Date().toISOString(),
+    };
+    this.clientWorkspaces.set(id, updated);
+    return updated;
+  }
+
+  async deleteClientWorkspace(id: string, organizationId: string): Promise<boolean> {
+    const existing = await this.getClientWorkspaceById(id, organizationId);
+    if (!existing) return false;
+    return this.clientWorkspaces.delete(id);
+  }
   private profiles: Map<string, UserProfileDTO> = new Map();
   private organizations: Map<string, OrganizationDTO> = new Map();
   private members: Map<string, OrganizationMemberDTO> = new Map();
@@ -2769,6 +2823,11 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         if (Array.isArray(data.organizations)) {
           for (const o of data.organizations) super.saveOrganization(o);
         }
+        if (Array.isArray(data.clientWorkspaces)) {
+          for (const w of data.clientWorkspaces) {
+            (this as any).clientWorkspaces.set(w.id, w);
+          }
+        }
         if (Array.isArray(data.calls)) {
           for (const c of data.calls) super.saveCall(c);
         }
@@ -2828,6 +2887,7 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         appointments: Array.from((this as any).appointments.values()),
         members: Array.from((this as any).members.values()),
         subscriptions: Array.from((this as any).subscriptions.values()),
+        clientWorkspaces: Array.from((this as any).clientWorkspaces.values()),
       };
       const tempPath = `${this.persistPath}.${Date.now()}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
@@ -2844,6 +2904,46 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
     } finally {
       this.isWriting = false;
     }
+  }
+
+  override async saveClientWorkspace(workspace: ClientWorkspaceDTO): Promise<void> {
+    await super.saveClientWorkspace(workspace);
+    this.persistSnapshot();
+    if (this.supabase) {
+      this.supabase.from('client_workspaces').upsert({
+        id: workspace.id,
+        organization_id: workspace.organizationId,
+        name: workspace.name,
+        slug: workspace.slug,
+        model_type: workspace.modelType,
+        industry_category: workspace.industryCategory,
+        subcategory: workspace.subcategory,
+        operating_location: workspace.operatingLocation,
+        primary_phone: workspace.primaryPhone,
+        primary_email: workspace.primaryEmail,
+        timezone: workspace.timezone,
+        onboarding_step: workspace.onboardingStep,
+        onboarding_completed: workspace.onboardingCompleted,
+        config: {
+          languagePreferences: workspace.languagePreferences,
+          startingTemplateId: workspace.startingTemplateId,
+          aiEmployee: workspace.aiEmployee,
+          onboardingData: workspace.onboardingData,
+        },
+      }).then(() => {}, (err: any) => {
+        console.warn('[DurableDatabaseService] Supabase workspace sync error:', err.message);
+      });
+    }
+  }
+
+  override async updateClientWorkspace(
+    id: string,
+    updates: Partial<ClientWorkspaceDTO>,
+    organizationId?: string
+  ): Promise<ClientWorkspaceDTO> {
+    const res = await super.updateClientWorkspace(id, updates, organizationId);
+    this.persistSnapshot();
+    return res;
   }
 
   override async saveCall(call: CallRecordDTO): Promise<void> {

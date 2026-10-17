@@ -1510,36 +1510,104 @@
     }
   }
 
-  // 3. Render Workspace Switcher Dropdown
-  function renderOrgSwitcher(memberships) {
+  // 3. Render Workspace & Client Switcher Dropdown (Phase 6)
+  async function renderOrgSwitcher(memberships) {
     const list = document.getElementById('org-switcher-list');
     if (!list) return;
     list.innerHTML = '';
 
-    if (!memberships || memberships.length === 0) {
-      list.innerHTML = '<div style="padding: 6px 8px; font-size: 11px; color: var(--text-muted);">No other workspaces</div>';
-      return;
+    // Fetch Client Workspaces under active organization
+    let clientWorkspaces = [];
+    try {
+      const wsRes = await fetch('/api/workspaces');
+      if (wsRes.ok) {
+        const wsData = await wsRes.json();
+        clientWorkspaces = wsData.workspaces || [];
+      }
+    } catch (e) {
+      console.warn('[Workspace fetch warning]', e);
     }
 
-    memberships.forEach(m => {
-      const isActive = m.organizationId === activeOrgId;
-      const item = document.createElement('div');
-      item.className = `org-dropdown-item ${isActive ? 'active' : ''}`;
-      const icon = m.industry === 'HEALTHCARE_HOSPITAL' ? '🏥' : (m.industry === 'AGENCY' ? '🚀' : '🏡');
-      item.innerHTML = `
-        <span style="display: flex; align-items: center; gap: 6px; truncate;">
-          <span>${icon}</span>
-          <span style="font-weight: ${isActive ? '600' : '400'};">${m.organizationName || 'Workspace'}</span>
-        </span>
-        ${isActive ? '<span style="font-size: 10px; color: #1D4ED8;">✓</span>' : ''}
-      `;
-      item.onclick = async () => {
-        if (!isActive) {
-          await switchOrganization(m.organizationId);
-        }
-      };
-      list.appendChild(item);
-    });
+    // 1. Client Workspaces Section (for Agencies and Multi-Client accounts)
+    if (clientWorkspaces.length > 0) {
+      const wsHeader = document.createElement('div');
+      wsHeader.style.cssText = 'font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 6px 8px 4px; letter-spacing: 0.05em;';
+      wsHeader.textContent = 'Client Businesses / Workspaces';
+      list.appendChild(wsHeader);
+
+      const activeWsCookie = document.cookie.split('; ').find(row => row.startsWith('vanni_active_workspace='))?.split('=')[1];
+
+      clientWorkspaces.forEach(ws => {
+        const isActiveWs = activeWsCookie ? ws.id === activeWsCookie : ws === clientWorkspaces[0];
+        const item = document.createElement('div');
+        item.className = `org-dropdown-item ${isActiveWs ? 'active' : ''}`;
+        const icon = ws.industryCategory === 'HEALTHCARE' ? '🏥' : (ws.industryCategory === 'REAL_ESTATE' ? '🏡' : '🚀');
+        item.innerHTML = `
+          <span style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+            <span>${icon}</span>
+            <span style="font-weight: ${isActiveWs ? '600' : '400'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">${ws.name}</span>
+          </span>
+          <span style="font-size: 9px; padding: 1px 5px; border-radius: 4px; background: #EEF2F6; color: #475569; font-weight: 600;">${ws.subcategory || ws.industryCategory}</span>
+        `;
+        item.onclick = async () => {
+          if (!isActiveWs) {
+            await switchClientWorkspace(ws.id);
+          }
+        };
+        list.appendChild(item);
+      });
+
+      // Divider
+      const div = document.createElement('div');
+      div.style.cssText = 'height: 1px; background: var(--border); margin: 6px 0;';
+      list.appendChild(div);
+    }
+
+    // 2. Organization Accounts Section
+    const orgHeader = document.createElement('div');
+    orgHeader.style.cssText = 'font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 4px 8px 4px; letter-spacing: 0.05em;';
+    orgHeader.textContent = 'Organizations';
+    list.appendChild(orgHeader);
+
+    if (!memberships || memberships.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding: 4px 8px; font-size: 11px; color: var(--text-muted);';
+      empty.textContent = 'No other organizations';
+      list.appendChild(empty);
+    } else {
+      memberships.forEach(m => {
+        const isActive = m.organizationId === activeOrgId;
+        const item = document.createElement('div');
+        item.className = `org-dropdown-item ${isActive ? 'active' : ''}`;
+        const icon = m.industry === 'HEALTHCARE_HOSPITAL' ? '🏥' : (m.industry === 'AGENCY' ? '🚀' : '🏡');
+        item.innerHTML = `
+          <span style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+            <span>${icon}</span>
+            <span style="font-weight: ${isActive ? '600' : '400'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">${m.organizationName || 'Workspace'}</span>
+          </span>
+          ${isActive ? '<span style="font-size: 10px; color: #1D4ED8;">✓</span>' : ''}
+        `;
+        item.onclick = async () => {
+          if (!isActive) {
+            await switchOrganization(m.organizationId);
+          }
+        };
+        list.appendChild(item);
+      });
+    }
+  }
+
+  async function switchClientWorkspace(workspaceId) {
+    try {
+      const res = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/switch`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error('[Switch Workspace Error]', err);
+    }
   }
 
   function toggleOrgSwitcher(e) {
