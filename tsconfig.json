@@ -20,6 +20,6 @@
     "noImplicitOverride": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": [],
+  "include": ["scripts/**/*.ts"],
   "exclude": ["node_modules", "dist", "**/node_modules", "**/dist"]
 }
