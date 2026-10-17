@@ -209,7 +209,7 @@ export async function buildServer() {
   // SECURITY: explicit origin allowlist. Never reflect an arbitrary Origin while
   // credentials are enabled — that would let any third-party site read responses
   // from authenticated APIs using the victim's session cookie.
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:4100,http://localhost:4200')
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:4000,http://127.0.0.1:4000,http://localhost:3000,http://localhost:4100,http://localhost:4200')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
