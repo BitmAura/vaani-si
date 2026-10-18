@@ -91,8 +91,184 @@ export interface ClientWorkspaceDTO {
     engine: string;
     status: 'DRAFT' | 'READY' | 'ACTIVE';
   };
+  activationStatus?: WorkspaceActivationStatus;
+  voiceAgentConfig?: VoiceAgentConfigDTO;
   createdAt: string;
   updatedAt: string;
+}
+
+
+// ==============================================================================
+// 1.2 LAUNCH READINESS, PILOT OPERATIONS & VOICE AGENT ACTIVATION (PROMPT 11)
+// ==============================================================================
+
+export type WorkspaceActivationStatus =
+  | 'DRAFT'
+  | 'CONFIGURATION_INCOMPLETE'
+  | 'READY_FOR_TESTING'
+  | 'TESTING'
+  | 'READY_FOR_LIVE_ACTIVATION'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'FAILED';
+
+export type ReadinessCheckStatus =
+  | 'Ready'
+  | 'Action required'
+  | 'Connection failed'
+  | 'Configuration missing'
+  | 'Verification pending'
+  | 'Not applicable';
+
+export type ReadinessCheckCategory =
+  | 'AUTH_TENANCY'
+  | 'DATABASE'
+  | 'BUSINESS_PROFILE'
+  | 'VOICE_PROVIDER'
+  | 'TELEPHONY_PROVIDER'
+  | 'WEBHOOKS'
+  | 'SPEECH_SERVICES'
+  | 'LANGUAGE_MODEL'
+  | 'KNOWLEDGE_FAQS'
+  | 'INDUSTRY_ACTIONS'
+  | 'HUMAN_HANDOFF'
+  | 'SUBSCRIPTION_ENTITLEMENT'
+  | 'OBSERVABILITY_LOGGING'
+  | 'DEPLOYMENT_SECURITY'
+  | 'PILOT_TEST_SAFETY';
+
+export interface ReadinessCheckItem {
+  id: string;
+  category: ReadinessCheckCategory;
+  name: string;
+  status: ReadinessCheckStatus;
+  message: string;
+  isMandatoryForLive: boolean;
+  isMandatoryForTesting: boolean;
+  remediationGuide?: string;
+  details?: Record<string, any>;
+}
+
+export interface WorkspaceReadinessReport {
+  workspaceId: string;
+  organizationId: string;
+  overallStatus:
+    | 'Ready for live activation'
+    | 'Ready for testing'
+    | 'Configuration incomplete'
+    | 'Action required'
+    | 'Connection failed';
+  canTest: boolean;
+  canActivateLive: boolean;
+  generatedAt: string;
+  checks: ReadinessCheckItem[];
+  summary: {
+    total: number;
+    ready: number;
+    actionRequired: number;
+    missing: number;
+    pending: number;
+    failed: number;
+    notApplicable: number;
+  };
+  blockers: string[];
+  testingBlockers: string[];
+}
+
+export interface SupportedVoiceOption {
+  id: string; // e.g. "meera", "kavya"
+  name: string;
+  gender: 'FEMALE' | 'MALE';
+  provider: 'sarvam' | 'azure';
+  engine: string;
+  supportedLanguages: string[];
+  recommendedDialects: string[];
+  sampleAudioUrl?: string;
+  isVerified: boolean;
+}
+
+export interface VoiceAgentConfigDTO {
+  agentName: string;
+  displayName: string;
+  speakerId: string;
+  engine: string;
+  primaryLanguage: 'kn-IN' | 'kn-en' | 'en-IN';
+  regionalDialect: RegionalDialect;
+  greetingKannada: string;
+  greetingEnglish?: string;
+  conversationalStyle: 'POLITE_BUSINESS' | 'CONVERSATIONAL' | 'FORMAL';
+  toolPermissions: string[];
+  operatingHours: {
+    opensAt: string;
+    closesAt: string;
+    timezone: string;
+  };
+  afterHoursBehavior: 'TAKE_MESSAGE' | 'VOICEMAIL' | 'TRANSFER_URGENT' | 'OFFLINE_NOTICE';
+  humanHandoffPhone?: string;
+  emergencyContactPhone?: string;
+  maxCallDurationSeconds: number;
+  monthlyUsageLimitMinutes?: number;
+  status: 'SAVED' | 'VALIDATED' | 'ENABLED' | 'DISABLED' | 'FAILED';
+  version: number;
+  updatedAt: string;
+}
+
+export interface ActivationTransitionDTO {
+  targetStatus: WorkspaceActivationStatus;
+  reason: string;
+  notes?: string;
+  whitelistedTestNumbers?: string[];
+}
+
+export interface PilotOperationsSummaryDTO {
+  organizationId: string;
+  totalWorkspaces: number;
+  workspacesByStatus: Record<WorkspaceActivationStatus, number>;
+  readyForTestingCount: number;
+  readyForLiveCount: number;
+  activeAgentsCount: number;
+  suspendedAgentsCount: number;
+  callMetrics: {
+    totalAttempted: number;
+    completed: number;
+    answered: number;
+    unanswered: number;
+    busy: number;
+    failed: number;
+    interrupted: number;
+    confirmedDurationSeconds: number;
+    meteredVoiceMinutes: number;
+  };
+  subscriptionUsage: {
+    planId: string;
+    planName: string;
+    voiceMinutesAllowance: number;
+    voiceMinutesUsed: number;
+    remainingAllowance: number;
+    overageMinutes: number;
+    status: string;
+  };
+  providerHealth: {
+    database: { status: string; latencyMs: number | null; adapter: string };
+    telephony: { provider: string; configured: boolean; status: string };
+    speechServices: { sttProvider: string; ttsProvider: string; status: string };
+    languageModel: { provider: string; status: string };
+  };
+  recentAuditChanges: Array<{
+    id: string;
+    action: string;
+    resourceType: string;
+    resourceId: string;
+    actorUserId?: string;
+    timestamp: string;
+    details?: Record<string, any>;
+  }>;
+  workspaceBlockers: Array<{
+    workspaceId: string;
+    workspaceName: string;
+    activationStatus: WorkspaceActivationStatus;
+    blockers: string[];
+  }>;
 }
 
 export interface StarterTemplateDTO {

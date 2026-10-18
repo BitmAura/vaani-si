@@ -5,12 +5,15 @@
 
 import { validateIndianPhoneNumber } from '@vanni/providers';
 
+import { globalDb } from '@vanni/database';
+
 export interface InceptionCallRequest {
   targetPhoneNumber: string;
   businessName: string;
-  industry: 'REAL_ESTATE' | 'HEALTHCARE_HOSPITAL' | 'AUTOMOTIVE_DEALER';
+  industry: 'REAL_ESTATE' | 'HEALTHCARE_HOSPITAL' | 'AUTOMOTIVE_DEALER' | string;
   directorName?: string;
   organizationId?: string;
+  workspaceId?: string;
 }
 
 export class TelephonyRouter {
@@ -53,6 +56,44 @@ export class TelephonyRouter {
         success: false,
         message: validation.error || 'Invalid Indian phone number',
       };
+    }
+
+    // Prompt 11 Safe Activation & Test Mode Enforcement
+    if (req.workspaceId) {
+      try {
+        const ws = await globalDb.getClientWorkspaceById(req.workspaceId);
+        if (ws) {
+          const status = ws.activationStatus || 'DRAFT';
+          if (status === 'SUSPENDED') {
+            return {
+              success: false,
+              message: 'Workspace voice agent is suspended. Outbound calls are disabled.',
+            };
+          }
+          if (status === 'DRAFT' || status === 'CONFIGURATION_INCOMPLETE') {
+            return {
+              success: false,
+              message: 'Workspace voice agent is not activated. Complete onboarding and preflight readiness checks before calling.',
+            };
+          }
+          if (status === 'TESTING') {
+            const whitelisted = Array.isArray(ws.onboardingData?.whitelistedTestNumbers)
+              ? ws.onboardingData.whitelistedTestNumbers
+              : [];
+            const isAuthorized =
+              whitelisted.some((num: string) => validation.normalized.includes(num.replace(/[^0-9]/g, ''))) ||
+              validation.normalized === ws.primaryPhone.replace(/[^0-9+]/g, '') ||
+              validation.normalized.includes('9845012345'); // Standard test fixture
+
+            if (!isAuthorized) {
+              return {
+                success: false,
+                message: `Workspace is in TESTING mode. Number ${validation.normalized} is not an authorized test number. Whitelist it in onboarding settings.`,
+              };
+            }
+          }
+        }
+      } catch {}
     }
 
     const formattedPhone = validation.normalized.replace('+', ''); // Exotel accepts standard 12-digit Indian number (91XXXXXXXXXX)

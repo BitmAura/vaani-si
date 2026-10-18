@@ -99,6 +99,7 @@ import { registerBillingRoutes } from './routes/billing';
 import { registerAnalyticsRoutes } from './routes/analytics';
 import { registerWebhookRoutes } from './routes/webhooks';
 import { registerWorkspaceRoutes } from './routes/workspaces';
+import { registerPilotRoutes } from './routes/pilot';
 
 // Default Institutional Tenants
 const DEMO_TENANTS: Record<string, Tenant> = {
@@ -261,6 +262,7 @@ export async function buildServer() {
   await fastify.register(registerAnalyticsRoutes);
   await fastify.register(registerWebhookRoutes);
   await fastify.register(registerWorkspaceRoutes);
+  await fastify.register(registerPilotRoutes);
 
   // Health check routes for Docker, Azure, and orchestration probes
   fastify.get('/health/live', async (_req: FastifyRequest, reply: FastifyReply) => {
@@ -2198,9 +2200,10 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         providerCallSid: result.callSid,
         telephonyProvider: 'exotel',
       });
+      return reply.status(200).send(result);
     }
 
-    return reply.send(result);
+    return reply.status(400).send(result);
   });
 
   // 2.3.2 Inbound Cellular Webhook with Workspace Resolution & State Machine
