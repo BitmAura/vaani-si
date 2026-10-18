@@ -272,8 +272,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       shiftEnd: body.shiftEnd || '17:00',
       breakStart: body.breakStart || '13:00',
       breakEnd: body.breakEnd || '14:00',
-      slotDurationMinutes: body.slotDurationMinutes || 15,
-      bufferMinutes: body.bufferMinutes || 5,
+      slotDurationMinutes: typeof body.slotDurationMinutes === 'number' ? body.slotDurationMinutes : 15,
+      bufferMinutes: typeof body.bufferMinutes === 'number' ? body.bufferMinutes : 5,
       leaves: Array.isArray(body.leaves) ? body.leaves : [],
       workingHoursDescription: body.workingHoursDescription || 'Mon-Sat 09:00 AM - 05:00 PM',
       isActive: body.isActive !== false,
@@ -417,8 +417,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     const shiftEnd = doctor.shiftEnd || '17:00';
     const breakStart = doctor.breakStart || '13:00';
     const breakEnd = doctor.breakEnd || '14:00';
-    const slotDuration = doctor.slotDurationMinutes || 15;
-    const buffer = doctor.bufferMinutes || 5;
+    const slotDuration = typeof doctor.slotDurationMinutes === 'number' ? doctor.slotDurationMinutes : 15;
+    const buffer = typeof doctor.bufferMinutes === 'number' ? doctor.bufferMinutes : 5;
 
     const toMinutes = (hhmm: string) => {
       const [h, m] = hhmm.split(':').map(Number);

@@ -2089,7 +2089,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     const body = request.body as any;
     const callSid = body?.CallSid || `CALL-${Date.now().toString().slice(-4)}`;
-    const durSec = Number(body?.RecordingDuration || body?.duration || 60);
+    const durSec = Number(body?.DialCallDuration || body?.RecordingDuration || body?.duration || 60);
     const rawStatus = body?.Status || body?.CallStatus || 'completed';
     const canonicalStatus = callLifecycle.mapProviderStatus(rawStatus);
 
@@ -2103,7 +2103,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       rawDurationSeconds: durSec,
       costInr: (durSec / 60) * 0.85,
       failureReason: body?.FailureReason || (canonicalStatus === 'FAILED' ? 'Provider call failed' : undefined),
-      organizationId: body?.tenant || 'a0000000-0000-0000-0000-000000000001',
+      organizationId: body?.tenant || body?.tenantId || body?.TenantId || body?.organizationId || 'a0000000-0000-0000-0000-000000000001',
     } as any);
 
     if (transitionRes.isDuplicate) {
@@ -2113,7 +2113,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     const record = {
       id: callSid,
-      tenantId: body?.tenant || 'a0000000-0000-0000-0000-000000000001',
+      tenantId: body?.tenant || body?.tenantId || body?.TenantId || body?.organizationId || 'a0000000-0000-0000-0000-000000000001',
       time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
       timestampMs: Date.now(),
       caller: body?.CallerName || 'Verified Caller',
