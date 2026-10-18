@@ -214,199 +214,37 @@
 
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
-      const lowerEmail = email.toLowerCase();
 
       try {
-        let loggedIn = false;
-        let matchedAccount = null;
-
-        // 1. First try POST /api/auth/login
-        try {
-          const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.session) {
-              localStorage.setItem('vanni_session', JSON.stringify(data.session));
-              if (data.user) localStorage.setItem('vanni_user', JSON.stringify(data.user));
-              loggedIn = true;
-            }
-          }
-        } catch (apiErr) {
-          console.warn('Backend API login unreachable, attempting registry check:', apiErr);
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Invalid email or password. Please verify your credentials.');
         }
 
-        // 2. Next, check localStorage.getItem('vanni_accounts_db') for a matching email
-        let accountsDb = {};
-        try {
-          accountsDb = JSON.parse(localStorage.getItem('vanni_accounts_db') || '{}');
-        } catch(e) {
-          accountsDb = {};
-        }
+        const session = data.session;
+        const orgId = session?.activeOrganizationId || 'org_' + Date.now();
+        const tenantKey = (session?.activeRole === 'owner') ? 'agency' : 'real_estate';
 
-        if (accountsDb && accountsDb[lowerEmail]) {
-          matchedAccount = accountsDb[lowerEmail];
-          // If not already authenticated via server, check passwordHash
-          if (!loggedIn) {
-            if (matchedAccount.passwordHash && matchedAccount.passwordHash !== btoa(password)) {
-              throw new Error('Incorrect password. Please verify your credentials.');
-            }
+        document.cookie = "vanni_active_tenant=" + encodeURIComponent(orgId) + "; path=/; max-age=604800; SameSite=Lax";
+        document.cookie = "dhwani_active_tenant=" + encodeURIComponent(tenantKey) + "; path=/; max-age=604800; SameSite=Lax";
+
+        btn.innerHTML = '<span>Authentication successful! Redirecting...</span>';
+        
+        const returnUrl = new URLSearchParams(window.location.search).get('returnUrl');
+        setTimeout(() => {
+          if (returnUrl) {
+            window.location.href = returnUrl;
+          } else {
+            window.location.href = '/app-dashboard.html';
           }
-
-          // Restore that user's exact { user, activeOrganizationId, activeOrganizationName, industry, phone, onboardingCompleted, onboardingData }!
-          const orgId = matchedAccount.organizationId || ('org_' + Date.now());
-          const orgName = matchedAccount.organizationName || 'My Organization';
-          const industry = matchedAccount.industry || 'AGENCY';
-          const phone = matchedAccount.phone || '';
-          const tenantKey = industry === 'AGENCY' ? 'agency' : (industry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
-
-          const restoredUser = matchedAccount.user || {
-            id: 'usr_' + Date.now(),
-            email: email,
-            name: email.split('@')[0],
-            fullName: email.split('@')[0],
-            phone: phone
-          };
-
-          const sess = {
-            userId: restoredUser.id,
-            email: email,
-            fullName: restoredUser.fullName || restoredUser.name || email.split('@')[0],
-            activeOrganizationId: orgId,
-            activeOrganizationName: orgName,
-            role: 'owner',
-            activeRole: 'ORGANIZATION OWNER',
-            memberships: [{
-              organizationId: orgId,
-              organizationName: orgName,
-              industry: industry,
-              role: 'owner'
-            }]
-          };
-
-          localStorage.setItem('vanni_session', JSON.stringify(sess));
-          localStorage.setItem('vanni_user', JSON.stringify(restoredUser));
-          localStorage.setItem('vanni_org_name', orgName);
-          localStorage.setItem('vanni_industry', industry);
-          localStorage.setItem('vanni_phone', phone);
-          localStorage.setItem('vanni_email', email);
-          localStorage.setItem('vanni_active_tenant', orgId);
-          localStorage.setItem('dhwani_active_tenant', tenantKey);
-
-          const isCompleted = matchedAccount.onboardingCompleted === true;
-          localStorage.setItem('vanni_onboarding_completed', isCompleted ? 'true' : 'false');
-
-          if (matchedAccount.onboardingData) {
-            localStorage.setItem('vanni_onboarding_data', JSON.stringify(matchedAccount.onboardingData));
-          }
-
-          loggedIn = true;
-        } else {
-          // Check existing vanni_session / vanni_email in localStorage
-          let existingSession = null;
-          try {
-            const raw = localStorage.getItem('vanni_session');
-            if (raw) existingSession = JSON.parse(raw);
-          } catch(e) {}
-
-          const storedEmail = localStorage.getItem('vanni_email');
-          const emailMatchesSession = existingSession && (
-            (existingSession.user?.email && existingSession.user.email.toLowerCase() === lowerEmail) ||
-            (existingSession.email && existingSession.email.toLowerCase() === lowerEmail)
-          );
-          const emailMatchesStored = storedEmail && storedEmail.toLowerCase() === lowerEmail;
-
-          if (emailMatchesSession || emailMatchesStored) {
-            // Restore from existing session in localStorage
-            const existingOrg = localStorage.getItem('vanni_org_name') || existingSession?.activeOrganizationName || 'My Organization';
-            const existingIndustry = localStorage.getItem('vanni_industry') || existingSession?.memberships?.[0]?.industry || 'AGENCY';
-            const existingPhone = localStorage.getItem('vanni_phone') || existingSession?.user?.phone || '';
-            const existingOrgId = localStorage.getItem('vanni_active_tenant') || existingSession?.activeOrganizationId || ('org_' + Date.now());
-            const tenantKey = existingIndustry === 'AGENCY' ? 'agency' : (existingIndustry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
-
-            const sess = existingSession || {
-              userId: 'usr_' + Date.now(),
-              email: email,
-              fullName: email.split('@')[0],
-              activeOrganizationId: existingOrgId,
-              activeOrganizationName: existingOrg,
-              role: 'owner',
-              activeRole: 'ORGANIZATION OWNER',
-              memberships: [{ organizationId: existingOrgId, organizationName: existingOrg, industry: existingIndustry, role: 'owner' }]
-            };
-
-            localStorage.setItem('vanni_session', JSON.stringify(sess));
-            localStorage.setItem('vanni_user', JSON.stringify(sess.user || { id: sess.userId, email, name: sess.fullName, phone: existingPhone }));
-            localStorage.setItem('vanni_org_name', existingOrg);
-            localStorage.setItem('vanni_industry', existingIndustry);
-            localStorage.setItem('vanni_phone', existingPhone);
-            localStorage.setItem('vanni_email', email);
-            localStorage.setItem('vanni_active_tenant', existingOrgId);
-            localStorage.setItem('dhwani_active_tenant', tenantKey);
-            loggedIn = true;
-          } else if (!loggedIn) {
-            // Direct Supabase fallback
-            try {
-              const supabaseUrl = 'https://qwmxgqpmcbuvkhrsbibz.supabase.co';
-              const anonKey = 'sb_publishable_DRuRSnMq009Fw96ND4sNAQ_6OpM0fkm';
-              const supaRes = await fetch(supabaseUrl + '/auth/v1/token?grant_type=password', {
-                method: 'POST',
-                headers: { 'apikey': anonKey, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-              });
-              if (supaRes.ok) {
-                const supaData = await supaRes.json();
-                localStorage.setItem('supabase_token', supaData.access_token);
-              }
-            } catch(e) {}
-
-            // Never overwrite an existing user's vanni_org_name, vanni_industry, or vanni_phone with 'Ballari Residential Layouts' unless no account exists for that email.
-            // If no account exists for this email, default session with onboarding required:
-            const orgId = 'org_' + Date.now();
-            const sess = {
-              user: { id: 'usr_' + Date.now(), email, name: email.split('@')[0] },
-              userId: 'usr_' + Date.now(),
-              email: email,
-              fullName: email.split('@')[0],
-              activeOrganizationId: orgId,
-              activeOrganizationName: 'My Organization',
-              role: 'owner',
-              activeRole: 'ORGANIZATION OWNER',
-              memberships: [{ organizationId: orgId, organizationName: 'My Organization', industry: 'AGENCY', role: 'owner' }]
-            };
-            localStorage.setItem('vanni_session', JSON.stringify(sess));
-            localStorage.setItem('vanni_user', JSON.stringify(sess.user));
-            localStorage.setItem('vanni_org_name', 'My Organization');
-            localStorage.setItem('vanni_industry', 'AGENCY');
-            localStorage.setItem('vanni_phone', '');
-            localStorage.setItem('vanni_email', email);
-            localStorage.setItem('vanni_active_tenant', orgId);
-            localStorage.setItem('dhwani_active_tenant', 'agency');
-            localStorage.setItem('vanni_onboarding_completed', 'false');
-            loggedIn = true;
-          }
-        }
-
-        // After login, if onboardingCompleted === false (or localStorage.getItem('vanni_onboarding_completed') === 'false'),
-        // redirect to /app/onboarding; otherwise redirect to /app/dashboard.
-        const storedOnboardingDone = localStorage.getItem('vanni_onboarding_completed');
-        const isCompleted = storedOnboardingDone !== 'false' && (matchedAccount ? matchedAccount.onboardingCompleted !== false : true);
-
-        const params = new URLSearchParams(window.location.search);
-        let redirectUrl = isCompleted ? '/app/dashboard' : '/app/onboarding';
-
-        const customRedirect = params.get('redirect');
-        if (customRedirect && !customRedirect.includes('/console')) {
-          if (isCompleted) {
-            redirectUrl = customRedirect;
-          }
-        }
-
-        window.location.href = redirectUrl;
-
+        }, 500);
+        return;
       } catch (err) {
         errEl.innerText = err.message || 'An error occurred during login.';
         errEl.style.display = 'block';

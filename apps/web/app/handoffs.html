@@ -94,11 +94,11 @@
   </div>
 
   <div class="nav-tabs">
-    <button class="tab active">All Escalations (4)</button>
-    <button class="tab">My Queue (1)</button>
-    <button class="tab">Unassigned (2)</button>
-    <button class="tab">Urgent / Safety (1)</button>
-    <button class="tab">Resolved (18)</button>
+    <button class="tab active" onclick="filterQueue('ALL', this)">All Escalations (4)</button>
+    <button class="tab" onclick="filterQueue('MY_QUEUE', this)">My Queue (1)</button>
+    <button class="tab" onclick="filterQueue('UNASSIGNED', this)">Unassigned (2)</button>
+    <button class="tab" onclick="filterQueue('URGENT', this)">Urgent / Safety (1)</button>
+    <button class="tab" onclick="filterQueue('RESOLVED', this)">Resolved (18)</button>
   </div>
 
   <div class="table-container">
@@ -171,5 +171,29 @@
       </tbody>
     </table>
   </div>
+
+  <script>
+    function filterQueue(filter, btn) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        if (filter === 'ALL') {
+          row.style.display = '';
+        } else if (filter === 'URGENT') {
+          const isUrgent = row.querySelector('.priority-urgent');
+          row.style.display = isUrgent ? '' : 'none';
+        } else if (filter === 'UNASSIGNED') {
+          const isPending = row.querySelector('.status-pending');
+          row.style.display = isPending ? '' : 'none';
+        } else if (filter === 'MY_QUEUE') {
+          const isInProgress = row.querySelector('.status-in_progress');
+          row.style.display = isInProgress ? '' : 'none';
+        } else if (filter === 'RESOLVED') {
+          row.style.display = 'none'; // Mock queue shows 0 active resolved rows
+        }
+      });
+    }
+  </script>
 </body>
 </html>

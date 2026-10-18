@@ -93,7 +93,7 @@
           <td>10:00 - 18:00 IST (Mon-Sat)</td>
           <td>45 (42 Eligible)</td>
           <td>28 Qualified</td>
-          <td><button style="background: transparent; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Pause</button></td>
+          <td><button onclick="toggleCampaign('camp_01', this)" style="background: transparent; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Pause</button></td>
         </tr>
         <tr>
           <td><strong>Site Visit 24h Reminder</strong></td>
@@ -103,7 +103,7 @@
           <td>10:00 - 17:00 IST (Mon-Sat)</td>
           <td>18 (18 Eligible)</td>
           <td>15 Confirmed</td>
-          <td><button style="background: transparent; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Pause</button></td>
+          <td><button onclick="toggleCampaign('camp_02', this)" style="background: transparent; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Pause</button></td>
         </tr>
         <tr>
           <td><strong>Weekend Callback Requests</strong></td>
@@ -113,10 +113,37 @@
           <td>11:00 - 15:00 IST (Sun)</td>
           <td>12 (10 Eligible)</td>
           <td>8 Handled</td>
-          <td><button style="background: transparent; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Resume</button></td>
+          <td><button onclick="toggleCampaign('camp_03', this)" style="background: transparent; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Resume</button></td>
         </tr>
       </tbody>
     </table>
   </div>
+
+  <script>
+    async function toggleCampaign(campId, btn) {
+      const isPause = btn.textContent.trim().toLowerCase() === 'pause';
+      const targetState = isPause ? 'PAUSED' : 'ACTIVE';
+      const actionText = isPause ? 'Pause' : 'Resume';
+      btn.disabled = true;
+      try {
+        await fetch('/api/campaigns/' + encodeURIComponent(campId) + '/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: targetState })
+        });
+      } catch (e) {}
+      
+      const row = btn.closest('tr');
+      if (row) {
+        const pill = row.querySelector('.status-pill');
+        if (pill) {
+          pill.textContent = targetState;
+          pill.className = 'status-pill ' + (targetState === 'ACTIVE' ? 'status-active' : 'status-paused');
+        }
+      }
+      btn.textContent = isPause ? 'Resume' : 'Pause';
+      btn.disabled = false;
+    }
+  </script>
 </body>
 </html>

@@ -1855,31 +1855,8 @@ const signupHtml = `<!DOCTYPE html>
         console.warn('Signup fetch exception:', err);
       }
 
-      // 2. Also save the account into a persistent localStorage registry (\`vanni_accounts_db\`, keyed by lowercase email)
-      // containing { user, organizationId, organizationName, industry, phone, email, passwordHash: btoa(password), onboardingCompleted: false, onboardingData: {} }
-      const accountEntry = {
-        user: userObj,
-        organizationId: orgId,
-        organizationName: company,
-        industry: industry,
-        phone: phone,
-        email: email,
-        passwordHash: btoa(password),
-        onboardingCompleted: false,
-        onboardingData: {}
-      };
-
-      try {
-        let accountsDb = {};
-        const rawDb = localStorage.getItem('vanni_accounts_db');
-        if (rawDb) {
-          try { accountsDb = JSON.parse(rawDb) || {}; } catch(e) { accountsDb = {}; }
-        }
-        accountsDb[email.toLowerCase()] = accountEntry;
-        localStorage.setItem('vanni_accounts_db', JSON.stringify(accountsDb));
-      } catch (err) {
-        console.warn('Failed to save to vanni_accounts_db:', err);
-      }
+      // 2. Credentials processed exclusively via server endpoint /api/auth/signup
+      // No sensitive plain or base64 passwords saved to client-side localStorage
 
       // 3. Set vanni_session, vanni_user, vanni_org_name, vanni_phone, vanni_email, vanni_industry, and vanni_onboarding_completed = 'false'
       localStorage.setItem('vanni_session', JSON.stringify(sessionObj));

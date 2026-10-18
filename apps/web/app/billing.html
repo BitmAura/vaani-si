@@ -283,7 +283,7 @@
             <td>₹${p.amount.toLocaleString('en-IN')}</td>
             <td>${p.provider}</td>
             <td><span class="badge-status status-active">${p.status}</span></td>
-            <td><a href="#" style="color:var(--accent); text-decoration:none;">Receipt</a></td>
+            <td><button onclick="viewReceipt('${p.providerPaymentId}', ${p.amount})" style="background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer;">Receipt</button></td>
           </tr>
         `).join('');
       }
@@ -368,6 +368,12 @@
 
     loadBillingSnapshot();
     loadPlans();
+  </script>
+
+  <script>
+    function viewReceipt(paymentId, amount) {
+      alert('VANNI TAX INVOICE RECEIPT\nPayment ID: ' + paymentId + '\nAmount Paid: ₹' + (amount || 0).toLocaleString('en-IN') + '\nStatus: CAPTURED\nGSTIN: 29AABCU9603R1ZM\nThank you for your business!');
+    }
   </script>
 </body>
 </html>

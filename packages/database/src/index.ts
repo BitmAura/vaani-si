@@ -3022,6 +3022,7 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
   private callsFilePath: string;
   private supabase: SupabaseClient | null = null;
   private isWriting = false;
+  private hasPendingWrite = false;
 
   constructor() {
     if (process.env.NODE_ENV === 'production' && process.env.ALLOW_FILE_DATABASE !== 'true') {
@@ -3122,8 +3123,12 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
   }
 
   private persistSnapshot(): void {
-    if (this.isWriting) return;
+    if (this.isWriting) {
+      this.hasPendingWrite = true;
+      return;
+    }
     this.isWriting = true;
+    this.hasPendingWrite = false;
     try {
       const data = {
         savedAt: new Date().toISOString(),
@@ -3152,6 +3157,9 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
       } catch {}
     } finally {
       this.isWriting = false;
+      if (this.hasPendingWrite) {
+        setImmediate(() => this.persistSnapshot());
+      }
     }
   }
 
@@ -3376,6 +3384,7 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
         startingTemplateId: workspace.startingTemplateId,
         aiEmployee: workspace.aiEmployee,
         onboardingData: workspace.onboardingData,
+        activationStatus: (workspace as any).activationStatus || 'DRAFT',
       },
       clinic_config: (workspace as any).clinicConfig || {},
       real_estate_config: (workspace as any).realEstateConfig || {},
@@ -3411,6 +3420,7 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
       startingTemplateId: row.config?.startingTemplateId || '',
       aiEmployee: row.config?.aiEmployee || { employeeName: 'Sahana', personaRole: 'AI Assistant', defaultDialect: 'BANGALORE_KANNADA', voiceGender: 'FEMALE', speechPace: 1.05 },
       onboardingData: row.config?.onboardingData || {},
+      activationStatus: row.config?.activationStatus || 'DRAFT',
       clinicConfig: row.clinic_config,
       realEstateConfig: row.real_estate_config,
       createdAt: row.created_at,

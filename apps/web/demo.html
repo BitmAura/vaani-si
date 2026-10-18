@@ -271,8 +271,8 @@
 
         <form id="demo-request-form" onsubmit="handleDemoSubmit(event)">
           <div class="vanni-form-group">
-            <label for="modal-demo-industry" class="vanni-label">Your Industry</label>
-            <select id="modal-demo-industry" name="industry" class="vanni-select" required>
+            <label for="demo-industry" class="vanni-label">Your Industry</label>
+            <select id="demo-industry" name="industry" class="vanni-select" required>
               <option value="dental">Dental / Specialty Clinic</option>
               <option value="healthcare">Hospital / Healthcare</option>
               <option value="ivf">IVF / Fertility Center</option>
@@ -284,14 +284,14 @@
           </div>
 
           <div class="vanni-form-group">
-            <label for="modal-demo-phone" class="vanni-label">Phone Number for Demo Call *</label>
-            <input type="tel" id="modal-demo-phone" name="phone" placeholder="+91 98450 XXXXX" required class="vanni-input" />
+            <label for="demo-phone" class="vanni-label">Phone Number for Demo Call *</label>
+            <input type="tel" id="demo-phone" name="phone" placeholder="+91 98450 XXXXX" required class="vanni-input" />
             <div class="vanni-form-hint">We will connect a live test call to this number.</div>
           </div>
 
           <div class="vanni-form-group">
-            <label for="modal-demo-name" class="vanni-label">Your Name or Business</label>
-            <input type="text" id="modal-demo-name" name="name" placeholder="e.g. Dr. Ramesh / Venkatesh Plots" required class="vanni-input" />
+            <label for="demo-name" class="vanni-label">Your Name or Business</label>
+            <input type="text" id="demo-name" name="name" placeholder="e.g. Dr. Ramesh / Venkatesh Plots" required class="vanni-input" />
           </div>
 
           <div style="margin-top: 16px; margin-bottom: 20px; font-size: 11px; color: var(--vanni-text-muted); line-height: 1.4;">
@@ -300,7 +300,7 @@
 
           <div style="display: flex; justify-content: flex-end; gap: 10px;">
             <button type="button" onclick="closeDemoModal()" class="vanni-button vanni-button-secondary">Cancel</button>
-            <button type="submit" id="btn-submit-modal-demo" class="vanni-button vanni-button-primary">Request Demo Call</button>
+            <button type="submit" id="btn-submit-demo" class="vanni-button vanni-button-primary">Request Demo Call</button>
           </div>
         </form>
       </div>
@@ -333,7 +333,7 @@
       if (modal) {
         modal.style.display = 'flex';
         if (prefillIndustry) {
-          const select = document.getElementById('modal-demo-industry') || document.getElementById('demo-industry');
+          const select = document.getElementById('demo-industry');
           if (select) select.value = prefillIndustry;
         }
       }
@@ -352,20 +352,15 @@
 
     async function handleDemoSubmit(e) {
       e.preventDefault();
-      const btn = (e.submitter) || (e.target ? e.target.querySelector('button[type="submit"]') : null) || document.getElementById('btn-submit-demo') || document.getElementById('btn-submit-modal-demo');
+      const btn = document.getElementById('btn-submit-demo');
       if (btn) {
         btn.disabled = true;
         btn.textContent = 'Connecting...';
       }
 
-      const form = e.target;
-      const phoneInput = form.querySelector('input[type="tel"]') || document.getElementById('modal-demo-phone') || document.getElementById('demo-phone');
-      const nameInput = form.querySelector('input[type="text"]') || document.getElementById('modal-demo-name') || document.getElementById('demo-name');
-      const industrySelect = form.querySelector('select') || document.getElementById('modal-demo-industry') || document.getElementById('demo-industry');
-
-      const phone = phoneInput ? phoneInput.value : '';
-      const name = nameInput ? nameInput.value : '';
-      const industry = industrySelect ? industrySelect.value : '';
+      const phone = document.getElementById('demo-phone').value;
+      const name = document.getElementById('demo-name').value;
+      const industry = document.getElementById('demo-industry').value;
 
       try {
         await fetch('/api/calls/outbound-inception', {

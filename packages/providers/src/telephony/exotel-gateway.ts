@@ -110,6 +110,15 @@ export class ExotelTelephonyProvider implements ITelephonyProvider {
 
     // 3. Test / Mock Mode Gating: Never place real paid calls during tests or without credentials
     if (process.env.NODE_ENV === 'test' || !this.apiKey || !this.accountSid) {
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          success: false,
+          providerCallSid: '',
+          providerName: this.providerName,
+          status: 'FAILED',
+          errorMessage: 'CRITICAL TELEPHONY ERROR: EXOTEL_API_KEY and EXOTEL_ACCOUNT_SID must be configured in production mode. Silent simulated calls are prohibited in production.',
+        };
+      }
       const mockSid = `SIM_EXO_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       return {
         success: true,

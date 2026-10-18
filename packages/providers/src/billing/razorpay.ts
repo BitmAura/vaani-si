@@ -35,7 +35,13 @@ export class RazorpayBillingProvider implements IBillingProvider {
    */
   async createCustomer(req: CreateCustomerRequest): Promise<CustomerResult> {
     if (!this.config.keyId || !this.config.keySecret) {
-      // Graceful fallback in development/test environments
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          success: false,
+          providerCustomerId: '',
+          error: 'CRITICAL BILLING CONFIGURATION ERROR: RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be configured in production mode.',
+        };
+      }
       return {
         success: true,
         providerCustomerId: `cust_rzp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -89,6 +95,14 @@ export class RazorpayBillingProvider implements IBillingProvider {
    */
   async createSubscription(req: CreateSubscriptionRequest): Promise<SubscriptionResult> {
     if (!this.config.keyId || !this.config.keySecret) {
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          success: false,
+          providerSubscriptionId: '',
+          status: 'failed',
+          error: 'CRITICAL BILLING CONFIGURATION ERROR: RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be configured in production mode. Silent simulated subscriptions are prohibited.',
+        };
+      }
       const mockSubId = `sub_rzp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       return {
         success: true,

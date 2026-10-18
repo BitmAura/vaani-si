@@ -3350,7 +3350,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
   });
 
   // 3. Web & Telephony Audio WebSocket Stream
-  fastify.get('/ws/audio-stream', { websocket: true }, (socket, req) => {
+  fastify.get('/ws/audio-stream', { websocket: true }, async (socket, req) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
     const token = url.searchParams.get('token') || url.searchParams.get('session');
     let session = getSessionFromRequest(req);
@@ -3367,7 +3367,39 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     const tenantKey = url.searchParams.get('tenant') || 'real_estate';
     const isInception = tenantKey === 'inception';
-    const tenant = DEMO_TENANTS[tenantKey] || DEMO_TENANTS.real_estate;
+    let resolvedTenant = DEMO_TENANTS[tenantKey];
+    if (!resolvedTenant && tenantKey) {
+      try {
+        const clientWs = await globalDb.getClientWorkspaceById(tenantKey);
+        if (clientWs) {
+          const industry = clientWs.industryCategory === 'HEALTHCARE' ? 'HEALTHCARE_HOSPITAL' : (clientWs.industryCategory === 'DIGITAL_AGENCY' ? 'AGENCY' : 'REAL_ESTATE');
+          resolvedTenant = {
+            id: clientWs.id,
+            name: clientWs.name,
+            industry,
+            virtualPhoneNumber: clientWs.primaryPhone || '+918047192000',
+            ownerWhatsAppNumber: clientWs.primaryPhone || '+918047192000',
+            dialect: 'KANGLISH_BUSINESS',
+            knowledge: {
+              companyName: clientWs.name,
+              industry,
+              primaryDialect: 'KANGLISH_BUSINESS',
+              officeTimings: '9:00 AM - 7:00 PM',
+              catalogSummary: clientWs.name + ' Customer Care & Conversational Assistant',
+              faqs: [],
+            },
+            monthlyMinuteLimit: 6000,
+            minutesUsedCurrentMonth: 0,
+            active: true,
+            createdAt: clientWs.createdAt,
+            updatedAt: clientWs.updatedAt,
+          };
+        }
+      } catch (e) {
+        fastify.log.warn({ err: e }, '[Dynamic Tenant Lookup Error]');
+      }
+    }
+    const tenant = resolvedTenant || DEMO_TENANTS.real_estate;
     let isTelephony = url.searchParams.get('source') === 'telephony';
     let currentStreamSid = url.searchParams.get('streamSid') || url.searchParams.get('callSid') || '';
 
