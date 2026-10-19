@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vanni.css">
+  <script src="/assets/vanni-auth.js"></script>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -583,41 +584,13 @@
     let activeOrgIndustry = 'REAL_ESTATE';
 
     async function checkAuthSession() {
-      let session = null;
-      try {
-        const res = await fetch('/api/auth/session');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.authenticated) {
-            session = data;
-          }
+      return await VanniAuth.requireAuthSession({
+        onSession: function(session) {
+          const orgName = session.activeOrganizationName || (session.memberships && session.memberships[0] && session.memberships[0].organizationName) || 'My Business';
+          const industry = (session.memberships && session.memberships[0] && session.memberships[0].industry) || 'AGENCY';
+          hydrateOrgAndProfile(orgName, industry);
         }
-      } catch (e) {
-        console.warn('API session check failed, checking localStorage fallback', e);
-      }
-
-      if (!session) {
-        const local = localStorage.getItem('vanni_session');
-        if (local) {
-          try {
-            const parsed = JSON.parse(local);
-            if (parsed && (parsed.authenticated || parsed.user)) {
-              session = parsed;
-            }
-          } catch (e) {}
-        }
-      }
-
-      if (!session) {
-        window.location.href = '/login';
-        return null;
-      }
-
-      const orgName = localStorage.getItem('vanni_org_name') || session.organization?.name || session.activeMembership?.organizationName || 'My Business';
-      const industry = localStorage.getItem('vanni_industry') || session.organization?.industry || 'AGENCY';
-
-      hydrateOrgAndProfile(orgName, industry);
-      return session;
+      });
     }
 
     function hydrateOrgAndProfile(orgName, industry) {

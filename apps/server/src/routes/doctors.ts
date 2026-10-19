@@ -37,9 +37,12 @@ interface HealthcareContext {
 /**
  * Resolves the authenticated workspace context for healthcare routes
  */
-async function resolveHealthcareContext(req: FastifyRequest): Promise<HealthcareContext | null> {
+async function resolveHealthcareContext(req: FastifyRequest, reply?: FastifyReply): Promise<HealthcareContext | null> {
   const session = getSessionFromRequest(req);
-  if (!session) return null;
+  if (!session) {
+    if (reply) reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    return null;
+  }
 
   const orgId = session.activeOrganizationId;
   const cookieWs = (req as any).cookies?.['vanni_active_workspace'];
@@ -51,9 +54,12 @@ async function resolveHealthcareContext(req: FastifyRequest): Promise<Healthcare
 
   if (requestedWsId) {
     const ws = await globalDb.getClientWorkspaceById(requestedWsId);
-    if (ws && session.memberships.some(m => m.organizationId === ws.organizationId)) {
-      workspaceId = ws.id;
+    // Security: reject unknown workspaces or workspaces from other tenants. Never fall back.
+    if (!ws || !session.memberships.some(m => m.organizationId === ws.organizationId)) {
+      if (reply) reply.status(404).send({ error: 'NOT_FOUND', message: 'Workspace not found' });
+      return null;
     }
+    workspaceId = ws.id;
   }
 
   return {
@@ -126,8 +132,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Retrieve clinic operating hours, buffer settings, emergency and webhook config
    */
   fastify.get('/api/healthcare/config', async (req: FastifyRequest, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const ws = await globalDb.getClientWorkspaceById(ctx.workspaceId);
     if (!ws) {
@@ -166,8 +172,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Update clinic configuration (non-viewer required)
    */
   fastify.put('/api/healthcare/config', async (req: FastifyRequest<{ Body: ClinicConfigDTO }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot modify clinic settings.' });
 
     const ws = await globalDb.getClientWorkspaceById(ctx.workspaceId);
@@ -196,8 +202,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * List healthcare providers / doctors for the workspace
    */
   fastify.get('/api/doctors', async (req: FastifyRequest<{ Querystring: { specialization?: string; activeOnly?: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     let staff = await globalDb.getStaff(ctx.workspaceId);
     // Also check organization level if none directly on workspace
@@ -225,8 +231,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Get single doctor roster details with shift hours, breaks, and leaves
    */
   fastify.get('/api/doctors/:id', async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const { id } = req.params;
     let doctor = await globalDb.getStaffById(id, ctx.workspaceId);
@@ -249,8 +255,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Add a new doctor / healthcare provider to the clinic roster
    */
   fastify.post('/api/doctors', async (req: FastifyRequest<{ Body: Partial<BusinessStaffDTO> }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot add doctors to roster.' });
 
     const body = req.body || {};
@@ -297,8 +303,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Update doctor details, shift timings, or add leaves
    */
   fastify.put('/api/doctors/:id', async (req: FastifyRequest<{ Params: { id: string }; Body: Partial<BusinessStaffDTO> }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot modify doctor rosters.' });
 
     const { id } = req.params;
@@ -324,8 +330,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Deactivate doctor roster entry without deleting historical appointments
    */
   fastify.delete('/api/doctors/:id', async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot remove doctor rosters.' });
 
     const { id } = req.params;
@@ -351,8 +357,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Compute real available appointment slots for a given date
    */
   fastify.get('/api/doctors/:id/availability', async (req: FastifyRequest<{ Params: { id: string }; Querystring: { date: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const { id } = req.params;
     const { date } = req.query;
@@ -509,8 +515,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Book an appointment with concurrency check & idempotency
    */
   fastify.post('/api/appointments', async (req: FastifyRequest<{ Body: Partial<AppointmentSlotDTO> & { date?: string; time?: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const body = req.body || {};
     const { doctorId, customerName, customerPhone, serviceType, scheduledTime, durationMinutes, notes, idempotencyKey } = body;
@@ -608,8 +614,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * List appointments for the active workspace
    */
   fastify.get('/api/appointments', async (req: FastifyRequest<{ Querystring: { date?: string; doctorId?: string; status?: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     let appointments = await globalDb.getAppointments(ctx.workspaceId);
     if (appointments.length === 0 && ctx.workspaceId !== ctx.organizationId) {
@@ -639,8 +645,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Get single appointment details with audit trail
    */
   fastify.get('/api/appointments/:id', async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const { id } = req.params;
     let appointment = await globalDb.getAppointmentById(id, ctx.workspaceId);
@@ -661,8 +667,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Confirm a pending appointment
    */
   fastify.post('/api/appointments/:id/confirm', async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const { id } = req.params;
     let appointment = await globalDb.getAppointmentById(id, ctx.workspaceId);
@@ -699,8 +705,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Reschedule appointment to a new slot with availability check
    */
   fastify.post('/api/appointments/:id/reschedule', async (req: FastifyRequest<{ Params: { id: string }; Body: { newScheduledTime: string; reason?: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const { id } = req.params;
     const { newScheduledTime, reason } = req.body || {};
@@ -763,8 +769,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Cancel an appointment with mandatory cancellation reason
    */
   fastify.post('/api/appointments/:id/cancel', async (req: FastifyRequest<{ Params: { id: string }; Body: { reason?: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const { id } = req.params;
     const reason = req.body?.reason || 'Cancelled by patient';
@@ -808,8 +814,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * List approved and draft FAQs for clinic workspace
    */
   fastify.get('/api/healthcare/faqs', async (req: FastifyRequest<{ Querystring: { status?: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     let faqs = await globalDb.getFAQs(ctx.workspaceId);
     if (faqs.length === 0 && ctx.workspaceId !== ctx.organizationId) {
@@ -833,8 +839,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Create an administrative FAQ entry (Hours, Location, Billing, Consultation Prep)
    */
   fastify.post('/api/healthcare/faqs', async (req: FastifyRequest<{ Body: Partial<BusinessFAQDTO> }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot create FAQ entries.' });
 
     const body = req.body || {};
@@ -871,8 +877,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Update FAQ content or approval status
    */
   fastify.put('/api/healthcare/faqs/:id', async (req: FastifyRequest<{ Params: { id: string }; Body: Partial<BusinessFAQDTO> }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot edit FAQ entries.' });
 
     const { id } = req.params;
@@ -902,8 +908,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Remove FAQ entry
    */
   fastify.delete('/api/healthcare/faqs/:id', async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot delete FAQs.' });
 
     const { id } = req.params;
@@ -924,8 +930,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Retrieve clinic's emergency safeguard instructions
    */
   fastify.get('/api/healthcare/emergency-protocol', async (req: FastifyRequest, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
 
     const ws = await globalDb.getClientWorkspaceById(ctx.workspaceId);
     const config = ws?.clinicConfig || {};
@@ -973,8 +979,8 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
    * Test webhook connectivity with HMAC-SHA256 signature verification
    */
   fastify.post('/api/healthcare/integrations/webhook/test', async (req: FastifyRequest<{ Body: { webhookUrl: string; webhookSecret?: string } }>, reply: FastifyReply) => {
-    const ctx = await resolveHealthcareContext(req);
-    if (!ctx) return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    const ctx = await resolveHealthcareContext(req, reply);
+    if (!ctx) return;
     if (ctx.isViewer) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewers cannot test integrations.' });
 
     const { webhookUrl, webhookSecret } = req.body || {};

@@ -29,12 +29,25 @@ interface RealEstateContext {
   isViewer: boolean;
 }
 
+const VALID_PROPERTY_TYPES: PropertyType[] = ['PLOT', 'VILLA', 'APARTMENT', 'HOUSE', 'COMMERCIAL'];
+const VALID_AVAILABILITY_STATUSES: PropertyAvailabilityStatus[] = ['AVAILABLE', 'ON_HOLD', 'RESERVED', 'SOLD', 'INACTIVE'];
+const VALID_DIMENSION_UNITS = ['SQFT', 'SQYARDS', 'CENTS', 'ACRES'] as const;
+
+function isValidPhone(phone: string): boolean {
+  if (!phone || typeof phone !== 'string') return false;
+  const cleaned = phone.trim().replace(/[\s\-()]/g, '');
+  return /^\+?[0-9]{10,15}$/.test(cleaned);
+}
+
 /**
  * Resolves the authenticated workspace context for real estate routes
  */
-async function resolveRealEstateContext(req: FastifyRequest): Promise<RealEstateContext | null> {
+async function resolveRealEstateContext(req: FastifyRequest, reply?: FastifyReply): Promise<RealEstateContext | null> {
   const session = getSessionFromRequest(req);
-  if (!session) return null;
+  if (!session) {
+    if (reply) reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
+    return null;
+  }
 
   const orgId = session.activeOrganizationId;
   const cookieWs = (req as any).cookies?.['vanni_active_workspace'];
@@ -45,17 +58,19 @@ async function resolveRealEstateContext(req: FastifyRequest): Promise<RealEstate
 
   if (workspaceId) {
     const ws = await globalDb.getClientWorkspaceById(workspaceId, orgId);
-    if (ws) {
-      return {
-        session,
-        workspaceId: ws.id,
-        organizationId: orgId,
-        isViewer: session.activeRole === 'VIEWER',
-      };
+    if (!ws) {
+      if (reply) reply.status(404).send({ success: false, error: 'NOT_FOUND: Workspace not found' });
+      return null;
     }
+    return {
+      session,
+      workspaceId: ws.id,
+      organizationId: orgId,
+      isViewer: session.activeRole === 'VIEWER',
+    };
   }
 
-  // Fallback to first workspace in organization
+  // No specific workspace requested: use first workspace in organization
   const workspaces = await globalDb.getClientWorkspacesByOrg(orgId);
   const targetWs = workspaces[0];
 
@@ -75,10 +90,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/real-estate/config',
     async (request: FastifyRequest<{ Querystring: { workspaceId?: string } }>, reply: FastifyReply) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
       const ws = await globalDb.getClientWorkspaceById(ctx.workspaceId, ctx.organizationId);
       const config: RealEstateConfigDTO = ws?.realEstateConfig || {
@@ -108,10 +121,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot modify real estate settings' });
       }
@@ -156,10 +167,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
       const minPrice = request.query.minPrice ? Number(request.query.minPrice) : undefined;
       const maxPrice = request.query.maxPrice ? Number(request.query.maxPrice) : undefined;
@@ -173,7 +182,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         minPrice,
         maxPrice,
         search: request.query.search,
-      });
+      }, ctx.organizationId);
 
       const startIndex = (page - 1) * limit;
       const paginated = all.slice(startIndex, startIndex + limit);
@@ -199,12 +208,10 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
-      const property = await globalDb.getPropertyById(request.params.id, ctx.workspaceId);
+      const property = await globalDb.getPropertyById(request.params.id, ctx.workspaceId, ctx.organizationId);
       if (!property) {
         return reply.status(404).send({ success: false, error: 'Property not found in authorized workspace' });
       }
@@ -258,10 +265,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot add properties' });
       }
@@ -274,8 +279,22 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         });
       }
 
+      if (body.propertyType && !VALID_PROPERTY_TYPES.includes(body.propertyType)) {
+        return reply.status(400).send({
+          success: false,
+          error: `Invalid propertyType. Must be one of: ${VALID_PROPERTY_TYPES.join(', ')}`,
+        });
+      }
+
+      if (body.status && !VALID_AVAILABILITY_STATUSES.includes(body.status)) {
+        return reply.status(400).send({
+          success: false,
+          error: `Invalid status. Must be one of: ${VALID_AVAILABILITY_STATUSES.join(', ')}`,
+        });
+      }
+
       // Check unique referenceCode in workspace
-      const existing = await globalDb.getPropertyById(body.referenceCode, ctx.workspaceId);
+      const existing = await globalDb.getPropertyById(body.referenceCode, ctx.workspaceId, ctx.organizationId);
       if (existing) {
         return reply.status(409).send({
           success: false,
@@ -285,10 +304,17 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
 
       // Validate dimensions & unit
       const dims = body.dimensions;
-      if (!dims.totalArea || dims.totalArea <= 0 || !dims.unit) {
+      if (!dims.totalArea || typeof dims.totalArea !== 'number' || dims.totalArea <= 0 || !dims.unit) {
         return reply.status(400).send({
           success: false,
           error: 'Dimensions must specify positive totalArea and explicit unit (SQFT, SQYARDS, CENTS, ACRES)',
+        });
+      }
+
+      if (!VALID_DIMENSION_UNITS.includes(dims.unit)) {
+        return reply.status(400).send({
+          success: false,
+          error: `Invalid dimension unit. Must be one of: ${VALID_DIMENSION_UNITS.join(', ')}`,
         });
       }
 
@@ -309,19 +335,18 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }
 
       // Pricing validation
-      if (!body.pricing.basePrice || body.pricing.basePrice <= 0) {
+      if (!body.pricing.basePrice || typeof body.pricing.basePrice !== 'number' || body.pricing.basePrice <= 0) {
         return reply.status(400).send({
           success: false,
-          error: 'Base price must be a positive amount in INR',
+          error: 'Base price must be a positive number in INR',
         });
       }
 
       // RERA validation & compliance check
-      const rera = body.reraDetails || { verificationStatus: 'UNVERIFIED' };
+      const rera = body.reraDetails || { verificationStatus: 'UNVERIFIED' as ReraVerificationStatus };
       let reraStatus: ReraVerificationStatus = rera.verificationStatus || 'UNVERIFIED';
       let verifiedAt: string | undefined = undefined;
 
-      // Strict compliance rule: Do not claim VERIFIED unless registrationNumber and source provided
       if (reraStatus === 'VERIFIED') {
         if (!rera.registrationNumber || rera.registrationNumber.trim().length === 0) {
           return reply.status(400).send({
@@ -395,17 +420,57 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot update properties' });
       }
 
-      const updated = await globalDb.updateProperty(request.params.id, request.body, ctx.workspaceId);
+      const body = request.body;
+      if (body.propertyType && !VALID_PROPERTY_TYPES.includes(body.propertyType)) {
+        return reply.status(400).send({
+          success: false,
+          error: `Invalid propertyType. Must be one of: ${VALID_PROPERTY_TYPES.join(', ')}`,
+        });
+      }
+
+      if (body.status && !VALID_AVAILABILITY_STATUSES.includes(body.status)) {
+        return reply.status(400).send({
+          success: false,
+          error: `Invalid status. Must be one of: ${VALID_AVAILABILITY_STATUSES.join(', ')}`,
+        });
+      }
+
+      if (body.pricing && body.pricing.basePrice !== undefined) {
+        if (typeof body.pricing.basePrice !== 'number' || body.pricing.basePrice <= 0) {
+          return reply.status(400).send({ success: false, error: 'Base price must be a positive number in INR' });
+        }
+      }
+
+      if (body.dimensions && body.dimensions.totalArea !== undefined) {
+        if (typeof body.dimensions.totalArea !== 'number' || body.dimensions.totalArea <= 0) {
+          return reply.status(400).send({ success: false, error: 'Total area must be a positive number' });
+        }
+        if (body.dimensions.unit && !VALID_DIMENSION_UNITS.includes(body.dimensions.unit)) {
+          return reply.status(400).send({ success: false, error: 'Invalid dimension unit' });
+        }
+      }
+
+      if (body.reraDetails?.verificationStatus === 'VERIFIED') {
+        if (!body.reraDetails.registrationNumber || body.reraDetails.registrationNumber.trim().length === 0) {
+          return reply.status(400).send({ success: false, error: 'RERA registrationNumber is required when status is VERIFIED' });
+        }
+      }
+
+      // Security: strip immutables
+      const sanitized = { ...body };
+      delete (sanitized as any).id;
+      delete (sanitized as any).organizationId;
+      delete (sanitized as any).workspaceId;
+
+      const updated = await globalDb.updateProperty(request.params.id, sanitized, ctx.workspaceId, ctx.organizationId);
       if (!updated) {
-        return reply.status(404).send({ success: false, error: 'Property not found' });
+        return reply.status(404).send({ success: false, error: 'Property not found in authorized workspace' });
       }
 
       return reply.send({ success: true, property: updated });
@@ -421,15 +486,30 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot delete properties' });
       }
 
-      const deleted = await globalDb.deleteProperty(request.params.id, ctx.workspaceId);
+      const prop = await globalDb.getPropertyById(request.params.id, ctx.workspaceId, ctx.organizationId);
+      if (!prop) {
+        return reply.status(404).send({ success: false, error: 'Property not found' });
+      }
+
+      // Concurrency & data loss prevention: check for active upcoming site visits on this property
+      const appointments = await globalDb.getAppointments(ctx.organizationId);
+      const activeVisits = appointments.filter(
+        (a) => a.propertyId === prop.id && a.status !== 'CANCELLED' && new Date(a.scheduledTime).getTime() >= Date.now() - 300000
+      );
+      if (activeVisits.length > 0) {
+        return reply.status(409).send({
+          success: false,
+          error: `Cannot delete property with ${activeVisits.length} active scheduled site visit(s). Cancel or reschedule visits first.`,
+        });
+      }
+
+      const deleted = await globalDb.deleteProperty(prop.id, ctx.workspaceId, ctx.organizationId);
       if (!deleted) {
         return reply.status(404).send({ success: false, error: 'Property not found' });
       }
@@ -439,7 +519,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
   );
 
   // =========================================================================
-  // 3. SITE VISIT AVAILABILITY & SCHEDULING (REUSING APPOINTMENT ENGINE)
+  // 3. SITE VISIT AVAILABILITY & SCHEDULING (CONCURRENCY-SAFE)
   // =========================================================================
 
   fastify.get(
@@ -454,17 +534,26 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
       const { propertyId, date } = request.query;
       if (!propertyId || !date) {
         return reply.status(400).send({ success: false, error: 'propertyId and date (YYYY-MM-DD) are required' });
       }
 
-      const property = await globalDb.getPropertyById(propertyId, ctx.workspaceId);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return reply.status(400).send({ success: false, error: 'date must be in YYYY-MM-DD format' });
+      }
+
+      // Past date check in local IST calendar (UTC+5:30)
+      const nowIST = new Date(Date.now() + 5.5 * 3600000);
+      const todayIST = nowIST.toISOString().split('T')[0];
+      if (date < todayIST) {
+        return reply.status(400).send({ success: false, error: 'Cannot check availability for past dates' });
+      }
+
+      const property = await globalDb.getPropertyById(propertyId, ctx.workspaceId, ctx.organizationId);
       if (!property) {
         return reply.status(404).send({ success: false, error: 'Property not found' });
       }
@@ -479,12 +568,12 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       const maxCapacity = config.maxVisitorsPerSlot || 4;
       const blockedDates = config.blockedDates || [];
 
-      // Check if entire date is blocked (Holiday or Site Closed)
       if (blockedDates.includes(date)) {
         return reply.send({
           success: true,
           propertyId,
           date,
+          timeZone: 'Asia/Kolkata',
           totalSlots: 0,
           availableSlotsCount: 0,
           notice: 'Site visits unavailable on this date (Holiday / Site maintenance)',
@@ -492,7 +581,6 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Check day of week
       const targetDate = new Date(date + 'T00:00:00Z');
       const dayOfWeek = targetDate.getUTCDay();
       if (!visitDays.includes(dayOfWeek)) {
@@ -500,6 +588,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
           success: true,
           propertyId,
           date,
+          timeZone: 'Asia/Kolkata',
           totalSlots: 0,
           availableSlotsCount: 0,
           notice: 'Site visits not scheduled on this day of the week',
@@ -507,7 +596,6 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Parse timings to minutes
       const [startH, startM] = startStr.split(':').map(Number);
       const [endH, endM] = endStr.split(':').map(Number);
       const startMin = startH * 60 + startM;
@@ -530,11 +618,20 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         const slotHour = Math.floor(current / 60).toString().padStart(2, '0');
         const slotMinute = (current % 60).toString().padStart(2, '0');
         const timeStr = `${slotHour}:${slotMinute}`;
-        const isoSlot = `${date}T${timeStr}:00Z`;
+        const isoSlot = `${date}T${timeStr}:00+05:30`;
 
-        // Calculate booked visitor count for this slot
-        const slotBookings = activeVisits.filter((a: AppointmentSlotDTO) => a.scheduledTime.startsWith(`${date}T${timeStr}`));
-        const currentBookedVisitors = slotBookings.reduce((sum: number, b: AppointmentSlotDTO) => sum + (b.visitorCount || 1), 0);
+        // Check authoritative capacity slot or existing appointments
+        const capacitySlot = await globalDb.getSiteVisitCapacitySlot(ctx.workspaceId, property.id, isoSlot, ctx.organizationId);
+        
+        let currentBookedVisitors = 0;
+        if (capacitySlot) {
+          currentBookedVisitors = capacitySlot.bookedCount;
+        } else {
+          const slotBookings = activeVisits.filter((a: AppointmentSlotDTO) =>
+            a.scheduledTime.includes(`T${timeStr}`) || a.scheduledTime.startsWith(`${date}T${timeStr}`)
+          );
+          currentBookedVisitors = slotBookings.reduce((sum: number, b: AppointmentSlotDTO) => sum + (b.visitorCount || 1), 0);
+        }
 
         const remainingCapacity = Math.max(0, maxCapacity - currentBookedVisitors);
         const isAvailable = remainingCapacity > 0;
@@ -542,6 +639,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         slots.push({
           startTime: timeStr,
           isoString: isoSlot,
+          timeZone: 'Asia/Kolkata',
           durationMinutes: slotDuration,
           maxCapacity,
           bookedVisitors: currentBookedVisitors,
@@ -558,6 +656,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         propertyId: property.id,
         propertyName: property.name,
         date,
+        timeZone: 'Asia/Kolkata',
         totalSlots: slots.length,
         availableSlotsCount: slots.filter((s) => s.isAvailable).length,
         maxCapacityPerSlot: maxCapacity,
@@ -569,14 +668,14 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/real-estate/site-visits',
     async (request: FastifyRequest<{ Querystring: { workspaceId?: string } }>, reply: FastifyReply) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
       const all = await globalDb.getAppointments(ctx.organizationId);
       const siteVisits = all.filter(
-        (a: AppointmentSlotDTO) => a.appointmentType === 'SITE_VISIT' || (a.propertyId && a.propertyId.length > 0)
+        (a: AppointmentSlotDTO) =>
+          (a.workspaceId === ctx.workspaceId || !a.workspaceId) &&
+          (a.appointmentType === 'SITE_VISIT' || (a.propertyId && a.propertyId.length > 0))
       );
 
       return reply.send({ success: true, count: siteVisits.length, siteVisits });
@@ -601,10 +700,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot book site visits' });
       }
@@ -616,6 +713,22 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         return reply.status(400).send({
           success: false,
           error: 'propertyId, customerName, customerPhone, and scheduledTime are required',
+        });
+      }
+
+      if (!isValidPhone(customerPhone)) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Invalid customerPhone format. Must be a valid 10-15 digit phone number.',
+        });
+      }
+
+      // Past date validation
+      const bookingTime = new Date(scheduledTime);
+      if (isNaN(bookingTime.getTime()) || bookingTime.getTime() < Date.now() - 60000) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Cannot book site visit for past date and time.',
         });
       }
 
@@ -632,7 +745,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         }
       }
 
-      const property = await globalDb.getPropertyById(propertyId, ctx.workspaceId);
+      const property = await globalDb.getPropertyById(propertyId, ctx.workspaceId, ctx.organizationId);
       if (!property) {
         return reply.status(404).send({ success: false, error: 'Property not found in workspace' });
       }
@@ -642,20 +755,27 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       const config = ws?.realEstateConfig || {};
       const maxCapacity = config.maxVisitorsPerSlot || 4;
 
-      // Real-time capacity and double booking prevention
-      const all = await globalDb.getAppointments(ctx.organizationId);
-      const existingAtSlot = all.filter(
-        (a: AppointmentSlotDTO) =>
-          a.status !== 'CANCELLED' &&
-          a.propertyId === property.id &&
-          a.scheduledTime === scheduledTime
-      );
+      if (requestedVisitors < 1 || requestedVisitors > maxCapacity) {
+        return reply.status(400).send({
+          success: false,
+          error: `visitorCount must be between 1 and ${maxCapacity}`,
+        });
+      }
 
-      const currentlyBooked = existingAtSlot.reduce((sum: number, b: AppointmentSlotDTO) => sum + (b.visitorCount || 1), 0);
-      if (currentlyBooked + requestedVisitors > maxCapacity) {
+      // Database-enforced atomic capacity reservation
+      const reservation = await globalDb.reserveSiteVisitSlot({
+        organizationId: ctx.organizationId,
+        workspaceId: ctx.workspaceId,
+        propertyId: property.id,
+        slotTime: scheduledTime,
+        visitorCount: requestedVisitors,
+        maxCapacity,
+      });
+
+      if (!reservation.success) {
         return reply.status(409).send({
           success: false,
-          error: `Slot capacity exceeded. Currently booked: ${currentlyBooked}/${maxCapacity}. Requested: ${requestedVisitors}.`,
+          error: reservation.error || 'Slot capacity exceeded. No available slots.',
         });
       }
 
@@ -685,7 +805,19 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         ],
       };
 
-      await globalDb.saveAppointment(siteVisit);
+      try {
+        await globalDb.saveAppointment(siteVisit);
+      } catch (saveErr: any) {
+        // Compensating rollback: release reserved slot if appointment persistence fails
+        await globalDb.releaseSiteVisitSlot({
+          organizationId: ctx.organizationId,
+          workspaceId: ctx.workspaceId,
+          propertyId: property.id,
+          slotTime: scheduledTime,
+          visitorCount: requestedVisitors,
+        });
+        throw saveErr;
+      }
 
       // Trigger Webhook if configured
       if (config.webhookEnabled && config.webhookUrl && config.webhookSecret) {
@@ -735,10 +867,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot reschedule site visits' });
       }
@@ -753,22 +883,40 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         return reply.status(400).send({ success: false, error: 'newScheduledTime is required' });
       }
 
-      // Check slot capacity at new scheduled time
-      const all = await globalDb.getAppointments(ctx.organizationId);
+      // Past date check
+      const targetTime = new Date(newScheduledTime);
+      if (isNaN(targetTime.getTime()) || targetTime.getTime() < Date.now() - 60000) {
+        return reply.status(400).send({ success: false, error: 'Cannot reschedule site visit to a past date/time' });
+      }
+
       const ws = await globalDb.getClientWorkspaceById(existing.workspaceId || ctx.workspaceId, ctx.organizationId);
       const config = ws?.realEstateConfig || {};
       const maxCapacity = config.maxVisitorsPerSlot || 4;
+      const visitors = existing.visitorCount || 1;
 
-      const atNewSlot = all.filter(
-        (a: AppointmentSlotDTO) =>
-          a.id !== existing.id &&
-          a.status !== 'CANCELLED' &&
-          a.propertyId === existing.propertyId &&
-          a.scheduledTime === newScheduledTime
-      );
-      const bookedVisitors = atNewSlot.reduce((sum: number, b: AppointmentSlotDTO) => sum + (b.visitorCount || 1), 0);
-      if (bookedVisitors + (existing.visitorCount || 1) > maxCapacity) {
-        return reply.status(409).send({ success: false, error: 'New slot has insufficient capacity' });
+      // Atomically reserve new slot first
+      const reservation = await globalDb.reserveSiteVisitSlot({
+        organizationId: ctx.organizationId,
+        workspaceId: existing.workspaceId || ctx.workspaceId,
+        propertyId: existing.propertyId || '',
+        slotTime: newScheduledTime,
+        visitorCount: visitors,
+        maxCapacity,
+      });
+
+      if (!reservation.success) {
+        return reply.status(409).send({ success: false, error: reservation.error || 'New slot has insufficient capacity' });
+      }
+
+      // Release old slot
+      if (existing.propertyId) {
+        await globalDb.releaseSiteVisitSlot({
+          organizationId: ctx.organizationId,
+          workspaceId: existing.workspaceId || ctx.workspaceId,
+          propertyId: existing.propertyId,
+          slotTime: existing.scheduledTime,
+          visitorCount: visitors,
+        });
       }
 
       const auditHistory = existing.auditHistory || [];
@@ -799,10 +947,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot cancel site visits' });
       }
@@ -810,6 +956,17 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       const existing = await globalDb.getAppointmentById(request.params.id, ctx.organizationId);
       if (!existing) {
         return reply.status(404).send({ success: false, error: 'Site visit not found' });
+      }
+
+      // Release reserved slot capacity
+      if (existing.propertyId) {
+        await globalDb.releaseSiteVisitSlot({
+          organizationId: ctx.organizationId,
+          workspaceId: existing.workspaceId || ctx.workspaceId,
+          propertyId: existing.propertyId,
+          slotTime: existing.scheduledTime,
+          visitorCount: existing.visitorCount || 1,
+        });
       }
 
       const auditHistory = existing.auditHistory || [];
@@ -837,13 +994,13 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/real-estate/leads',
     async (request: FastifyRequest<{ Querystring: { workspaceId?: string } }>, reply: FastifyReply) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
       const leads = await globalDb.getLeads(ctx.organizationId);
-      return reply.send({ success: true, count: leads.length, leads });
+      // Strictly scope to workspace
+      const filtered = leads.filter(l => (l as any).workspaceId === ctx.workspaceId || !(l as any).workspaceId);
+      return reply.send({ success: true, count: filtered.length, leads: filtered });
     }
   );
 
@@ -870,17 +1027,15 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
       if (ctx.isViewer) {
         return reply.status(403).send({ success: false, error: 'Viewer role cannot update lead qualification' });
       }
 
       const body = request.body;
-      if (!body.contactPhone) {
-        return reply.status(400).send({ success: false, error: 'contactPhone is required' });
+      if (!body.contactPhone || !isValidPhone(body.contactPhone)) {
+        return reply.status(400).send({ success: false, error: 'Valid contactPhone is required' });
       }
 
       // Check existing lead
@@ -905,11 +1060,13 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
           leadRating: body.status === 'SITE_VISIT_CONFIRMED' || body.purchaseTimeline === 'IMMEDIATE' ? 'HOT' : 'WARM',
           createdAt: new Date().toISOString(),
         };
+        (lead as any).workspaceId = ctx.workspaceId;
       } else {
         lead.budgetOrFee = budgetText;
         lead.requirementSummary = `Property Enquiry - ${body.propertyInterest || lead.requirementSummary}`;
         if (body.contactName) lead.callerName = body.contactName;
         lead.confirmedOutcome = body.status || lead.confirmedOutcome;
+        (lead as any).workspaceId = ctx.workspaceId;
       }
 
       await globalDb.saveLead(lead);
@@ -934,10 +1091,8 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
       const { queryText, language = 'kn-IN' } = request.body;
       if (!queryText) {
@@ -945,7 +1100,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }
 
       // Fetch verified properties from workspace catalog
-      const properties = await globalDb.getProperties(ctx.workspaceId);
+      const properties = await globalDb.getProperties(ctx.workspaceId, undefined, ctx.organizationId);
       const q = queryText.toLowerCase();
 
       // Look up matching property by name, referenceCode, or dimensions
@@ -960,7 +1115,6 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       });
 
       if (!matched) {
-        // Honest disclosure: Never invent a property
         const responseText = language === 'kn-IN'
           ? `ಕ್ಷಮಿಸಿ, ನೀವು ಕೇಳಿದ ಪ್ರಾಪರ್ಟಿ ಮಾಹಿತಿ ನಮ್ಮ ಅಧಿಕೃತ ಕ್ಯಾಟಲಾಗ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ನಮ್ಮ ಸೇಲ್ಸ್ ಮ್ಯಾನೇಜರ್‌ಗೆ ನಿಮ್ಮ ವಿವರಗಳನ್ನು ವರ್ಗಾಯಿಸುತ್ತೇನೆ.`
           : `I apologize, but that property record is not available in our verified inventory. Let me connect you with our sales coordinator for details.`;
@@ -991,7 +1145,6 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Approved fact response without hallucinating
       const dimStr = matched.dimensions.dimensionText || `${matched.dimensions.totalArea} ${matched.dimensions.unit}`;
       const priceLakhs = (matched.pricing.basePrice / 100000).toFixed(1);
       const reraText = matched.reraDetails?.verificationStatus === 'VERIFIED'
@@ -1040,14 +1193,12 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply
     ) => {
-      const ctx = await resolveRealEstateContext(request);
-      if (!ctx) {
-        return reply.status(401).send({ success: false, error: 'Unauthorized: Session missing' });
-      }
+      const ctx = await resolveRealEstateContext(request, reply);
+      if (!ctx) return;
 
       const body = request.body;
-      if (!body.phone) {
-        return reply.status(400).send({ success: false, error: 'phone is required' });
+      if (!body.phone || !isValidPhone(body.phone)) {
+        return reply.status(400).send({ success: false, error: 'Valid phone is required' });
       }
 
       // Check deduplication
@@ -1072,6 +1223,7 @@ export async function realEstateRoutes(fastify: FastifyInstance) {
         leadRating: 'WARM',
         createdAt: new Date().toISOString(),
       };
+      (lead as any).workspaceId = ctx.workspaceId;
       (lead as any).idempotencyKey = body.idempotencyKey;
 
       await globalDb.saveLead(lead);

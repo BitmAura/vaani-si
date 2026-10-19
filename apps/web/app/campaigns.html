@@ -48,7 +48,7 @@
       <h1 class="title">Outbound Follow-Up Campaigns</h1>
       <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Controlled, compliance-aware autonomous voice outreach workflows.</p>
     </div>
-    <a href="/app/campaigns/new.html" class="btn-new">+ New Campaign</a>
+    <a href="/app/campaigns/new" class="btn-new">+ New Campaign</a>
   </div>
 
   <div class="stats-row">
@@ -123,26 +123,37 @@
     async function toggleCampaign(campId, btn) {
       const isPause = btn.textContent.trim().toLowerCase() === 'pause';
       const targetState = isPause ? 'PAUSED' : 'ACTIVE';
-      const actionText = isPause ? 'Pause' : 'Resume';
+      const originalText = btn.textContent;
       btn.disabled = true;
+      btn.textContent = 'Updating...';
+
       try {
-        await fetch('/api/campaigns/' + encodeURIComponent(campId) + '/status', {
+        const res = await fetch('/api/campaigns/' + encodeURIComponent(campId) + '/status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: targetState })
         });
-      } catch (e) {}
-      
-      const row = btn.closest('tr');
-      if (row) {
-        const pill = row.querySelector('.status-pill');
-        if (pill) {
-          pill.textContent = targetState;
-          pill.className = 'status-pill ' + (targetState === 'ACTIVE' ? 'status-active' : 'status-paused');
+        const data = await res.json();
+        if (res.ok && data.success) {
+          const row = btn.closest('tr');
+          if (row) {
+            const pill = row.querySelector('.status-pill');
+            if (pill) {
+              pill.textContent = targetState;
+              pill.className = 'status-pill ' + (targetState === 'ACTIVE' ? 'status-active' : 'status-paused');
+            }
+          }
+          btn.textContent = isPause ? 'Resume' : 'Pause';
+        } else {
+          alert('Failed to update campaign status: ' + (data.error || data.message || 'Server returned status ' + res.status));
+          btn.textContent = originalText;
         }
+      } catch (e) {
+        alert('Network error while updating campaign: ' + e.message);
+        btn.textContent = originalText;
+      } finally {
+        btn.disabled = false;
       }
-      btn.textContent = isPause ? 'Resume' : 'Pause';
-      btn.disabled = false;
     }
   </script>
 </body>

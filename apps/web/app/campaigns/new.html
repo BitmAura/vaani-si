@@ -101,20 +101,39 @@
   <script>
     async function submitCampaign(btn) {
       const nameInput = document.querySelector('input[type="text"]');
-      const name = nameInput ? nameInput.value : 'New Campaign';
+      const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : '';
+      if (!name) {
+        alert('Please enter a valid campaign name before launching.');
+        return;
+      }
       if (btn) {
         btn.disabled = true;
         btn.textContent = 'Activating Campaign...';
       }
       try {
-        await fetch('/api/campaigns', {
+        const res = await fetch('/api/campaigns', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, status: 'ACTIVE' })
         });
-      } catch (e) {}
-      alert('Campaign "' + name + '" has been reviewed and activated successfully!');
-      window.location.href = '/app/campaigns.html';
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Campaign "' + name + '" has been reviewed and activated successfully!');
+          window.location.href = '/app/campaigns';
+        } else {
+          alert('Failed to launch campaign: ' + (data.error || data.message || 'Server error (' + res.status + ')'));
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Launch Campaign';
+          }
+        }
+      } catch (e) {
+        alert('Network error while launching campaign: ' + e.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Launch Campaign';
+        }
+      }
     }
   </script>
 </body>

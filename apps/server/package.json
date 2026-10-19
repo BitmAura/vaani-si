@@ -23,7 +23,8 @@
     "ws": "^8.18.0",
     "@vanni/providers": "1.0.0",
     "tsx": "^4.19.0",
-    "@vanni/billing": "*"
+    "@vanni/billing": "*",
+    "@vanni/campaign-engine": "1.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",

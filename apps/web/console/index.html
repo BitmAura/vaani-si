@@ -2967,6 +2967,17 @@
   }
 
   // 13. Profile & Org Settings Modal
+  // Modal Helpers
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add('active');
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('active');
+  }
+
   function openProfileModal() {
     const modal = document.getElementById('profile-modal');
     if (modal) modal.classList.add('active');
@@ -2989,28 +3000,52 @@
   }
 
   async function saveProfileChanges() {
+    const saveBtn = document.querySelector('#profile-modal .btn-primary');
+    const originalText = saveBtn ? saveBtn.textContent : 'Save Changes';
     const orgName = document.getElementById('prof-org-name')?.value?.trim();
     const industry = document.getElementById('prof-industry')?.value;
     const fullName = document.getElementById('prof-user-name')?.value?.trim();
     const phone = document.getElementById('prof-phone')?.value?.trim();
 
+    if (!orgName) {
+      alert('Organization name cannot be empty');
+      return;
+    }
+
     try {
-      if (orgName || industry) {
-        await fetch('/api/organization', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: orgName, industry })
-        });
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+      }
+
+      const res = await fetch('/api/organization', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: orgName, industry, phone })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || ('Server responded with status ' + res.status));
       }
 
       if (phone) {
         localStorage.setItem('vanni_phone', phone);
       }
 
+      const sideOrg = document.getElementById('sidebar-org-name');
+      if (sideOrg) sideOrg.textContent = orgName;
+
       closeProfileModal();
-      window.location.reload();
+      alert('Organization settings saved successfully');
     } catch (e) {
       console.error('[Save Profile Error]', e);
+      alert('Failed to save organization settings: ' + (e.message || 'Unknown error'));
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
+      }
     }
   }
 
@@ -3024,6 +3059,11 @@
 
   // 15. View Navigation & Routing
   function navigateToView(viewId) {
+    if (viewId === 'campaigns') { window.location.href = '/app/campaigns'; return; }
+    if (viewId === 'analytics') { window.location.href = '/app/analytics'; return; }
+    if (viewId === 'billing') { window.location.href = '/app/billing'; return; }
+    if (viewId === 'integrations') { window.location.href = '/app/integrations'; return; }
+
     const sections = ['agency-overview', 'realestate-inventory', 'realestate-sitevisits', 'realestate-leads', 'realestate-config', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'overview', 'calls-full', 'leads-full', 'appointments-full'];
     sections.forEach(s => {
       const el = document.getElementById(`view-${s}`);
@@ -3553,7 +3593,7 @@
       return;
     }
 
-    const scheduledTime = `${date}T${time}:00Z`;
+    const scheduledTime = `${date}T${time}:00+05:30`;
     const btn = document.getElementById('btn-submit-opd');
     if (btn) btn.disabled = true;
 
@@ -4065,7 +4105,7 @@
       return;
     }
 
-    const scheduledTime = `${date}T${time}:00Z`;
+    const scheduledTime = `${date}T${time}:00+05:30`;
     const btn = document.getElementById('btn-submit-sitevisit');
     if (btn) btn.disabled = true;
 
@@ -4138,7 +4178,7 @@
           <span style="font-weight: 500; font-size: 12px;">${v.serviceType}</span>
         </td>
         <td>
-          <span style="font-weight: 600; font-size: 12px;">${new Date(v.scheduledTime).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+          <span style="font-weight: 600; font-size: 12px;">${new Date(v.scheduledTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}</span>
         </td>
         <td>${v.visitorCount || 1} Person(s)</td>
         <td>

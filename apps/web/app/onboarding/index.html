@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vanni.css">
+  <script src="/assets/vanni-auth.js"></script>
   <style>
     :root {
       --bg: #F8FAFC;
@@ -632,11 +633,14 @@
 
     // Initialize Onboarding State on Load
     async function initOnboarding() {
+      // Canonical auth verification: redirect unauthenticated or show connection error
+      const session = await VanniAuth.requireAuthSession();
+      if (!session) return;
+
       try {
         const res = await fetch('/api/onboarding/state');
         if (res.status === 401) {
-          // If unauthenticated, redirect to login with return path
-          window.location.href = '/login?returnUrl=' + encodeURIComponent(window.location.pathname);
+          window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
           return;
         }
 

@@ -131,3 +131,23 @@ export function deserializeSession(token: string | undefined | null): AuthSessio
     return null;
   }
 }
+
+/**
+ * Standardizes post-login redirect paths.
+ * Enforces safe internal application routes and rejects external/open redirects.
+ */
+export function sanitizeReturnUrl(rawUrl: string | null | undefined, defaultPath: string = '/app/dashboard'): string {
+  if (!rawUrl || typeof rawUrl !== 'string') {
+    return defaultPath;
+  }
+  const trimmed = rawUrl.trim();
+  // Safe relative path: must start with single '/' and not '//' or '/\'
+  // Must not contain ':' before '?' (rejects javascript:, http:, https:, etc.)
+  if (/^\/(?!\/|\\)[a-zA-Z0-9_\-\/.?=&%#]*$/.test(trimmed)) {
+    const pathPart = trimmed.split('?')[0];
+    if (!pathPart.includes(':') && !pathPart.includes('\\')) {
+      return trimmed;
+    }
+  }
+  return defaultPath;
+}

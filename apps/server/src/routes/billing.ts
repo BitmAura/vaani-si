@@ -95,13 +95,14 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
     const org = await globalDb.getOrganizationById(orgId);
     const orgName = org?.name || 'Vaani-Si Customer';
 
+    const interval = ((body as any).billingInterval || body.billingPeriod || 'MONTHLY') as 'MONTHLY' | 'ANNUAL';
     // Call Provider to create subscription
     const checkoutResult = await billingProvider.createSubscription({
       organizationId: orgId,
       customerId: `cust_${orgId}`,
       planId: plan.id,
       planVersionId: body.planVersionId || plan.activeVersion,
-      billingInterval: (body.billingPeriod as 'MONTHLY' | 'ANNUAL') || 'MONTHLY',
+      billingInterval: interval,
     });
 
     const now = new Date().toISOString();
@@ -113,7 +114,7 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
       billingAccountId: `ba_${orgId}`,
       planId: plan.id,
       planVersionId: body.planVersionId || plan.activeVersion,
-      billingInterval: (body.billingPeriod as 'MONTHLY' | 'ANNUAL') || 'MONTHLY',
+      billingInterval: interval,
       status: 'ACTIVE',
       currentPeriodStart: now,
       currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -137,10 +138,16 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
       occurredAt: now,
     });
 
+    const effectiveUrl = checkoutResult.shortUrl || (checkoutResult as any).checkoutUrl || '';
+    const planPrice = interval === 'ANNUAL' ? plan.annualPrice : plan.monthlyPrice;
+
     return reply.send({
       success: true,
       data: {
-        checkoutUrl: checkoutResult.shortUrl || '',
+        checkoutUrl: effectiveUrl,
+        shortUrl: effectiveUrl,
+        planName: plan.name,
+        amount: planPrice,
         providerSubscriptionId: checkoutResult.providerSubscriptionId,
         subscription: subscriptionRecord,
       },
@@ -264,6 +271,15 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
 
   // 6. POST /api/billing/webhooks/razorpay — Authoritative Razorpay Webhook Receiver
   fastify.post('/api/billing/webhooks/razorpay', async (req: FastifyRequest, reply: FastifyReply) => {
+    if (process.env.NODE_ENV === 'production' && !process.env.RAZORPAY_WEBHOOK_SECRET) {
+      fastify.log.error('[Razorpay Webhook] RAZORPAY_WEBHOOK_SECRET is not configured — failing closed in production');
+      return reply.status(503).send({
+        success: false,
+        error: 'SERVICE_UNAVAILABLE',
+        message: 'Razorpay webhook secret not configured in production',
+      });
+    }
+
     const signature = (req.headers['x-razorpay-signature'] as string) || '';
     const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 

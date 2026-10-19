@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vanni.css">
+  <script src="/assets/vanni-auth.js"></script>
   <style>
     body {
       margin: 0;
@@ -135,82 +136,46 @@
     function loginAsDemo(industry) {
       const demos = {
         AGENCY: {
-          org: 'Apex Growth Marketing Agency',
-          email: 'agency.demo@vanni.ai',
-          phone: '+91 80 4719 2000',
-          tenantKey: 'agency',
-          name: 'Aditya Rao (Agency Director)'
+          email: 'agency.demo@vanni.ai'
         },
         REAL_ESTATE: {
-          org: 'Ballari Residential Layouts',
-          email: 'realestate.demo@vanni.ai',
-          phone: '+91 80 4719 2001',
-          tenantKey: 'real_estate',
-          name: 'Suresh Patil (Managing Partner)'
+          email: 'realestate.demo@vanni.ai'
         },
         HEALTHCARE_HOSPITAL: {
-          org: 'Apollo Specialty Clinic & Hospital',
-          email: 'healthcare.demo@vanni.ai',
-          phone: '+91 80 4719 2002',
-          tenantKey: 'hospital',
-          name: 'Dr. Ramesh Kumar (Medical Director)'
+          email: 'healthcare.demo@vanni.ai'
         }
       };
 
       const d = demos[industry] || demos.REAL_ESTATE;
-      const orgId = 'org_demo_' + industry.toLowerCase();
-      const userId = 'usr_demo_' + industry.toLowerCase();
-
-      const userObj = {
-        id: userId,
-        email: d.email,
-        name: d.name,
-        fullName: d.name,
-        phone: d.phone
-      };
-
-      const sess = {
-        userId: userId,
-        email: d.email,
-        fullName: d.name,
-        activeOrganizationId: orgId,
-        activeOrganizationName: d.org,
-        role: 'owner',
-        activeRole: 'ORGANIZATION OWNER',
-        memberships: [{
-          organizationId: orgId,
-          organizationName: d.org,
-          industry: industry,
-          role: 'owner'
-        }]
-      };
-
-      localStorage.setItem('vanni_session', JSON.stringify(sess));
-      localStorage.setItem('vanni_user', JSON.stringify(userObj));
-      localStorage.setItem('vanni_org_name', d.org);
-      localStorage.setItem('vanni_industry', industry);
-      localStorage.setItem('vanni_phone', d.phone);
-      localStorage.setItem('vanni_email', d.email);
-      localStorage.setItem('vanni_active_tenant', orgId);
-      localStorage.setItem('dhwani_active_tenant', d.tenantKey);
-      localStorage.setItem('vanni_onboarding_completed', 'true');
-
-      window.location.href = '/app/dashboard';
+      // In development/test, demo accounts are seeded on the server with DemoPassword123!
+      // Submit credentials through the canonical POST /api/auth/login endpoint
+      quickLogin(d.email, 'DemoPassword123!');
     }
 
     async function quickLogin(email, password) {
-      document.getElementById('login-email').value = email;
-      document.getElementById('login-password').value = password;
-      document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true }));
+      const emailInput = document.getElementById('login-email');
+      const passInput = document.getElementById('login-password');
+      if (emailInput) emailInput.value = email;
+      if (passInput) passInput.value = password;
+      const form = document.getElementById('login-form');
+      if (form) {
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+      }
     }
 
     async function handleLoginSubmit(e) {
       e.preventDefault();
       const errEl = document.getElementById('login-error');
       const btn = document.getElementById('login-submit-btn');
-      errEl.style.display = 'none';
-      btn.disabled = true;
-      btn.innerHTML = '<span>Verifying credentials...</span>';
+      if (errEl) errEl.style.display = 'none';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>Verifying credentials...</span>';
+      }
 
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
@@ -219,6 +184,7 @@
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
@@ -227,29 +193,28 @@
           throw new Error(data.error || data.message || 'Invalid email or password. Please verify your credentials.');
         }
 
-        const session = data.session;
-        const orgId = session?.activeOrganizationId || 'org_' + Date.now();
-        const tenantKey = (session?.activeRole === 'owner') ? 'agency' : 'real_estate';
+        // Verify session is established on the server before redirecting
+        const sessionCheck = await fetch('/api/auth/session', { credentials: 'same-origin' });
+        const checkData = await sessionCheck.json();
+        if (!sessionCheck.ok || !checkData.authenticated) {
+          throw new Error('Authentication succeeded, but signed session cookie could not be verified.');
+        }
 
-        document.cookie = "vanni_active_tenant=" + encodeURIComponent(orgId) + "; path=/; max-age=604800; SameSite=Lax";
-        document.cookie = "dhwani_active_tenant=" + encodeURIComponent(tenantKey) + "; path=/; max-age=604800; SameSite=Lax";
-
-        btn.innerHTML = '<span>Authentication successful! Redirecting...</span>';
+        if (btn) btn.innerHTML = '<span>Authentication successful! Redirecting...</span>';
         
-        const returnUrl = new URLSearchParams(window.location.search).get('returnUrl');
+        const safeRedirect = (window.VanniAuth && window.VanniAuth.getSafeRedirectUrl('/app/dashboard')) || '/app/dashboard';
         setTimeout(() => {
-          if (returnUrl) {
-            window.location.href = returnUrl;
-          } else {
-            window.location.href = '/app-dashboard.html';
-          }
-        }, 500);
-        return;
+          window.location.href = safeRedirect;
+        }, 400);
       } catch (err) {
-        errEl.innerText = err.message || 'An error occurred during login.';
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        btn.innerHTML = '<span>Sign In to Console</span>';
+        if (errEl) {
+          errEl.innerText = err.message || 'An error occurred during login.';
+          errEl.style.display = 'block';
+        }
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Sign In to Console</span>';
+        }
       }
     }
   </script>

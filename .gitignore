@@ -58,3 +58,5 @@ scratch/
 
 # Local database runtime snapshots
 data/vanni_database.json*
+
+data/auth_store.json

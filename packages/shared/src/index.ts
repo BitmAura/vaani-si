@@ -2775,3 +2775,43 @@ export interface RealEstateLeadQualificationDTO {
   preferredCallbackTime?: string;
   siteVisitInterest?: 'YES' | 'NO' | 'UNDECIDED';
 }
+
+
+export interface SiteVisitCapacitySlotDTO {
+  id: string;
+  organizationId: string;
+  workspaceId: string;
+  propertyId: string;
+  slotTime: string;
+  maxCapacity: number;
+  bookedCount: number;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReserveSiteVisitSlotInput {
+  organizationId: string;
+  workspaceId: string;
+  propertyId: string;
+  slotTime: string;
+  visitorCount: number;
+  maxCapacity: number;
+}
+
+export interface SiteVisitReservationResult {
+  success: boolean;
+  remainingCapacity: number;
+  bookedCount: number;
+  maxCapacity: number;
+  slot?: SiteVisitCapacitySlotDTO;
+  error?: string;
+}
+
+export interface ReleaseSiteVisitSlotInput {
+  workspaceId: string;
+  propertyId: string;
+  slotTime: string;
+  visitorCount: number;
+  organizationId?: string;
+}

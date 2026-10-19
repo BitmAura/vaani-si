@@ -41,7 +41,7 @@
       <h1 class="title">Appointments & Site Visits</h1>
       <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Real-time verified bookings scheduled via the Tool Execution Engine.</p>
     </div>
-    <div class="badge">Atomic Conflict Guard Active</div>
+    <div style="display: flex; gap: 8px;"><div class="badge" style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4);">Sample / Demo Records</div><div class="badge">Atomic Conflict Guard Active</div></div>
   </div>
 
   <div class="table-container">
@@ -95,7 +95,7 @@
           body: JSON.stringify({ newScheduledTime: newTime })
         });
         const data = await res.json();
-        if (res.ok) {
+        if (res.ok && data.success) {
           alert('Appointment rescheduled successfully to ' + newTime);
           const row = btn.closest('tr');
           if (row) {
@@ -103,10 +103,10 @@
             if (slot) slot.textContent = newTime;
           }
         } else {
-          alert('Notice: ' + (data.message || 'Reschedule request submitted for ' + customerName));
+          alert('Failed to reschedule: ' + (data.error || data.message || 'Server error ' + res.status));
         }
       } catch (err) {
-        alert('Reschedule updated locally for ' + customerName + ' at ' + newTime);
+        alert('Network error while rescheduling appointment: ' + err.message);
       } finally {
         if (btn) {
           btn.disabled = false;

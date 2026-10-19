@@ -232,10 +232,10 @@
     async function handleSignup(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('signup-submit-btn');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span>Creating Organization Tenant...</span>';
-      }
+      const errEl = document.getElementById('signup-error');
+      const indErr = document.getElementById('industry-error');
+      if (errEl) errEl.style.display = 'none';
+      if (indErr) indErr.style.display = 'none';
 
       const fullName = document.getElementById('signup-name').value.trim();
       const company = document.getElementById('signup-company').value.trim();
@@ -245,48 +245,20 @@
       const password = document.getElementById('signup-pass').value;
 
       if (!industry) {
-        const err = document.getElementById('industry-error');
-        if (err) err.style.display = 'block';
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<span>Create Account &amp; Access Console</span>';
-        }
+        if (indErr) indErr.style.display = 'block';
         return;
       }
 
-      const orgId = 'org_' + Date.now();
-      const userId = 'usr_' + Date.now();
-      const tenantKey = industry === 'AGENCY' ? 'agency' : (industry.includes('HOSPITAL') ? 'hospital' : 'real_estate');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Creating Organization Tenant...</span>';
+      }
 
-      const userObj = {
-        id: userId,
-        email: email,
-        name: fullName || email.split('@')[0],
-        fullName: fullName || email.split('@')[0],
-        phone: phone
-      };
-
-      const sessionObj = {
-        userId: userId,
-        email: email,
-        fullName: fullName || email.split('@')[0],
-        activeOrganizationId: orgId,
-        activeOrganizationName: company,
-        role: 'owner',
-        activeRole: 'ORGANIZATION OWNER',
-        memberships: [{
-          organizationId: orgId,
-          organizationName: company,
-          industry: industry,
-          role: 'owner'
-        }]
-      };
-
-      // 1. Attempt POST /api/auth/signup with { fullName, organizationName: company, email, phone, password, industry }
       try {
-        fetch('/api/auth/signup', {
+        const res = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({
             fullName,
             organizationName: company,
@@ -295,29 +267,37 @@
             password,
             industry
           })
-        }).catch(err => {
-          console.warn('Backend API signup non-blocking notice (running edge/static):', err);
         });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Signup failed. Please check your details and try again.');
+        }
+
+        // Verify session was established on the server before navigating
+        const sessionCheck = await fetch('/api/auth/session', { credentials: 'same-origin' });
+        const checkData = await sessionCheck.json();
+        if (!sessionCheck.ok || !checkData.authenticated) {
+          throw new Error('Account was created, but session cookie could not be verified. Please sign in.');
+        }
+
+        if (submitBtn) {
+          submitBtn.innerHTML = '<span>Tenant created! Redirecting to setup...</span>';
+        }
+
+        setTimeout(() => {
+          window.location.href = '/app/onboarding';
+        }, 400);
       } catch (err) {
-        console.warn('Signup fetch exception:', err);
+        if (errEl) {
+          errEl.innerText = err.message || 'An error occurred during account creation.';
+          errEl.style.display = 'block';
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Create Account &amp; Access Console</span>';
+        }
       }
-
-      // 2. Credentials processed exclusively via server endpoint /api/auth/signup
-      // No sensitive plain or base64 passwords saved to client-side localStorage
-
-      // 3. Set vanni_session, vanni_user, vanni_org_name, vanni_phone, vanni_email, vanni_industry, and vanni_onboarding_completed = 'false'
-      localStorage.setItem('vanni_session', JSON.stringify(sessionObj));
-      localStorage.setItem('vanni_user', JSON.stringify(userObj));
-      localStorage.setItem('vanni_active_tenant', orgId);
-      localStorage.setItem('dhwani_active_tenant', tenantKey);
-      localStorage.setItem('vanni_org_name', company);
-      localStorage.setItem('vanni_phone', phone);
-      localStorage.setItem('vanni_email', email);
-      localStorage.setItem('vanni_industry', industry);
-      localStorage.setItem('vanni_onboarding_completed', 'false');
-
-      // 4. Redirect to /app/onboarding
-      window.location.href = '/app/onboarding';
     }
   </script>
 </body>

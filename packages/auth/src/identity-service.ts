@@ -86,6 +86,9 @@ export class IdentityService {
         this.persistPath = path.join(dataDir, 'auth_store.json');
       }
       this.loadSnapshot();
+      if (this.users.size === 0 && process.env.NODE_ENV !== 'production' && !isTest && process.env.SEED_DEV_ACCOUNTS !== 'false') {
+        this.seedDevAccountsIfEmpty();
+      }
     }
   }
 
@@ -635,4 +638,103 @@ export class IdentityService {
       (m) => m.organizationId === organizationId
     );
   }
+
+  /**
+   * Safely seeds local development demo accounts when running locally without Supabase.
+   * EXPLICIT SECURITY INVARIANT:
+   * Strictly blocked in production (NODE_ENV === 'production') and during automated test runs.
+   * Passwords are cryptographically hashed using scrypt.
+   */
+  public seedDevAccountsIfEmpty(force?: boolean): boolean {
+    if (process.env.NODE_ENV === 'production') {
+      // STRICT HARD INVARIANT: Demo accounts are NEVER seeded in production
+      return false;
+    }
+    if (!force && process.env.NODE_ENV === 'test') {
+      return false;
+    }
+    const now = new Date().toISOString();
+    const demoConfigs = [
+      {
+        userId: 'usr_demo_agency',
+        email: 'agency.demo@vanni.ai',
+        fullName: 'Aditya Rao (Agency Director)',
+        orgId: 'org_demo_agency',
+        orgName: 'Apex Growth Marketing Agency',
+        slug: 'apex-agency',
+        industry: 'AGENCY' as const,
+        role: 'OWNER' as const,
+      },
+      {
+        userId: 'usr_demo_real_estate',
+        email: 'realestate.demo@vanni.ai',
+        fullName: 'Suresh Patil (Managing Partner)',
+        orgId: 'org_demo_real_estate',
+        orgName: 'Ballari Residential Layouts',
+        slug: 'ballari-layouts',
+        industry: 'REAL_ESTATE' as const,
+        role: 'OWNER' as const,
+      },
+      {
+        userId: 'usr_demo_healthcare',
+        email: 'healthcare.demo@vanni.ai',
+        fullName: 'Dr. Ramesh Kumar (Medical Director)',
+        orgId: 'org_demo_healthcare',
+        orgName: 'Apollo Specialty Clinic & Hospital',
+        slug: 'apollo-clinic',
+        industry: 'HEALTHCARE_HOSPITAL' as const,
+        role: 'OWNER' as const,
+      },
+    ];
+
+    const passwordHash = this.hashPassword('DemoPassword123!');
+
+    for (const d of demoConfigs) {
+      const user: StoredUser = {
+        id: d.userId,
+        email: d.email.toLowerCase().trim(),
+        passwordHash,
+        fullName: d.fullName,
+        timezone: 'Asia/Kolkata',
+        locale: 'en-IN',
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.users.set(d.userId, user);
+      this.usersByEmail.set(d.email.toLowerCase().trim(), d.userId);
+
+      const org: OrganizationDTO = {
+        id: d.orgId,
+        name: d.orgName,
+        slug: d.slug,
+        industry: d.industry,
+        status: 'ACTIVE',
+        timezone: 'Asia/Kolkata',
+        onboardingStatus: 'ready',
+        billingTier: 'GROWTH',
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.organizations.set(d.orgId, org);
+      this.orgsBySlug.set(d.slug, d.orgId);
+
+      const memberId = `mem_${d.userId}_${d.orgId}`;
+      const member: OrganizationMemberDTO = {
+        id: memberId,
+        organizationId: d.orgId,
+        userId: d.userId,
+        role: d.role,
+        status: 'ACTIVE',
+        userEmail: d.email,
+        userFullName: d.fullName,
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.members.set(memberId, member);
+    }
+
+    this.saveSnapshot();
+    return true;
+  }
+
 }

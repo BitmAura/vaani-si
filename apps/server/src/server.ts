@@ -31,10 +31,12 @@ import {
   requireOrganizationRole,
   requirePermission,
   ForbiddenError,
+  sanitizeReturnUrl,
 } from '@vanni/auth';
 import {
   AuthSessionDTO,
   UserRole,
+  OrganizationDTO,
   CreateLocationInputSchema,
   CreateServiceInputSchema,
   CreateStaffInputSchema,
@@ -96,6 +98,7 @@ import { doctorRoutes } from './routes/doctors';
 import { plotRoutes } from './routes/plots';
 import { realEstateRoutes } from './routes/real-estate';
 import { registerBillingRoutes } from './routes/billing';
+import { registerCampaignRoutes } from './routes/campaigns';
 import { registerAnalyticsRoutes } from './routes/analytics';
 import { registerWebhookRoutes } from './routes/webhooks';
 import { registerWorkspaceRoutes } from './routes/workspaces';
@@ -259,6 +262,7 @@ export async function buildServer() {
   await fastify.register(plotRoutes);
   await fastify.register(realEstateRoutes);
   await fastify.register(registerBillingRoutes);
+  await fastify.register(registerCampaignRoutes);
   await fastify.register(registerAnalyticsRoutes);
   await fastify.register(registerWebhookRoutes);
   await fastify.register(registerWorkspaceRoutes);
@@ -401,11 +405,14 @@ export async function buildServer() {
 
   for (const [routePath, fileName] of Object.entries(PUBLIC_MARKETING_ROUTES)) {
     fastify.get(routePath, async (req, reply) => {
-      // If already logged in and visiting /login or /signup, direct them to /app/dashboard
+      // If already logged in and visiting /login or /signup, direct them safely to requested returnUrl or /app/dashboard
       if (routePath === '/login' || routePath === '/signup') {
         const session = getSessionFromRequest(req);
         if (session) {
-          return reply.redirect('/app/dashboard');
+          const url = new URL(req.raw.url || '', 'http://localhost');
+          const redirectParam = url.searchParams.get('redirect') || url.searchParams.get('returnUrl');
+          const safeTarget = sanitizeReturnUrl(redirectParam, '/app/dashboard');
+          return reply.redirect(safeTarget);
         }
       }
       serveWebHtml(fileName, reply);
@@ -423,6 +430,7 @@ export async function buildServer() {
     '/app/calls',
     '/app/leads',
     '/app/campaigns',
+    '/app/campaigns/new',
     '/app/appointments',
     '/app/knowledge',
     '/app/integrations',
@@ -482,6 +490,34 @@ export async function buildServer() {
         return serveWebHtml('app-agents.html', reply);
       }
 
+      if (routePath === '/app/campaigns') {
+        return serveWebHtml('app/campaigns.html', reply);
+      }
+
+      if (routePath === '/app/campaigns/new') {
+        return serveWebHtml('app/campaigns/new.html', reply);
+      }
+
+      if (routePath === '/app/billing') {
+        return serveWebHtml('app/billing.html', reply);
+      }
+
+      if (routePath === '/app/appointments') {
+        return serveWebHtml('app/appointments.html', reply);
+      }
+
+      if (routePath === '/app/analytics') {
+        return serveWebHtml('app/analytics.html', reply);
+      }
+
+      if (routePath === '/app/calls') {
+        return serveWebHtml('app/calls.html', reply);
+      }
+
+      if (routePath === '/app/leads') {
+        return serveWebHtml('app/leads.html', reply);
+      }
+
       // Default route redirect: /app -> /app/dashboard
       if (routePath === '/app') {
         return reply.redirect('/app/dashboard');
@@ -528,6 +564,21 @@ export async function buildServer() {
   fastify.get('/app-onboarding.html', async (_req, reply) => {
     reply.redirect('/app/onboarding');
   });
+  fastify.get('/app/campaigns.html', async (_req, reply) => {
+    reply.redirect('/app/campaigns');
+  });
+  fastify.get('/app/campaigns/new.html', async (_req, reply) => {
+    reply.redirect('/app/campaigns/new');
+  });
+  fastify.get('/app/billing.html', async (_req, reply) => {
+    reply.redirect('/app/billing');
+  });
+  fastify.get('/app/appointments.html', async (_req, reply) => {
+    reply.redirect('/app/appointments');
+  });
+  fastify.get('/app/analytics.html', async (_req, reply) => {
+    reply.redirect('/app/analytics');
+  });
 
   // Serve VANNI Enterprise Design System Stylesheet
   fastify.get('/assets/vanni.css', async (req, reply) => {
@@ -545,9 +596,36 @@ export async function buildServer() {
     reply.redirect('/assets/vanni.css');
   });
 
+  // Serve VANNI Client Authentication Guard
+  fastify.get('/assets/vanni-auth.js', async (req, reply) => {
+    const jsPath = path.resolve(process.cwd(), 'apps/web/assets/vanni-auth.js');
+    const altPath = path.resolve(__dirname, '../../web/assets/vanni-auth.js');
+    const target = fs.existsSync(jsPath) ? jsPath : altPath;
+    if (fs.existsSync(target)) {
+      reply.type('application/javascript').send(fs.readFileSync(target, 'utf-8'));
+    } else {
+      reply.status(404).send('/* VANNI Auth Script Not Found */');
+    }
+  });
+
+  // Serve static assets from apps/web/assets
+  fastify.get('/assets/*', async (req, reply) => {
+    const wildcard = (req.params as any)['*'];
+    const filePath = path.resolve(process.cwd(), 'apps/web/assets', wildcard);
+    const altPath = path.resolve(__dirname, '../../web/assets', wildcard);
+    const target = fs.existsSync(filePath) ? filePath : altPath;
+    if (fs.existsSync(target) && fs.statSync(target).isFile()) {
+      if (target.endsWith('.js')) reply.type('application/javascript');
+      else if (target.endsWith('.css')) reply.type('text/css');
+      return reply.send(fs.readFileSync(target));
+    }
+    return reply.status(404).send('Asset not found');
+  });
+
   // ==============================================================================
   // 0.3 META LEAD AD SPEED-TO-LEAD WEBHOOK & SIMULATOR
   // ==============================================================================
+  const processedMetaEvents = new Set<string>();
   const handleMetaLeadWebhook = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const payload = request.body as any;
@@ -585,7 +663,7 @@ export async function buildServer() {
         }
       }
 
-      // 2. Extract lead details
+      // 2. Extract lead details & check idempotency
       const query = request.query as { tenant?: string } | undefined;
       let tenantKey = query?.tenant || 'real_estate';
       let phone = '+919988776655';
@@ -598,6 +676,22 @@ export async function buildServer() {
       } else if (payload?.phone) {
         phone = payload.phone;
         name = payload.name || name;
+      }
+
+      const eventId = payload?.entry?.[0]?.changes?.[0]?.value?.leadgen_id
+        || payload?.lead_id
+        || (phone ? `meta_${phone}_${Math.floor(Date.now() / 60000)}` : null);
+
+      if (eventId) {
+        if (processedMetaEvents.has(eventId)) {
+          fastify.log.info({ eventId }, '[Meta Lead Webhook] Ignored duplicate event (Idempotent)');
+          return reply.status(200).send({ success: true, status: 'IGNORED_DUPLICATE' });
+        }
+        processedMetaEvents.add(eventId);
+        if (processedMetaEvents.size > 10000) {
+          const oldest = processedMetaEvents.values().next().value;
+          if (oldest) processedMetaEvents.delete(oldest);
+        }
       }
 
       const tenant = DEMO_TENANTS[tenantKey] || DEMO_TENANTS.real_estate;
@@ -713,6 +807,21 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         industry: body.industry || 'REAL_ESTATE',
       };
       const { session, user, organization } = await identityService.signup(payload);
+      // Synchronize created organization and owner membership with authoritative globalDb
+      await globalDb.saveOrganization(organization);
+      if (session.memberships && session.memberships[0]) {
+        await globalDb.saveMember({
+          id: `mem_${user.id}_${organization.id}`,
+          organizationId: organization.id,
+          userId: user.id,
+          role: 'OWNER',
+          status: 'ACTIVE',
+          userEmail: (user as any).email || body.email,
+          userFullName: user.fullName,
+          createdAt: organization.createdAt,
+          updatedAt: organization.updatedAt,
+        });
+      }
       const token = serializeSession(session);
       reply.setCookie(SESSION_COOKIE_NAME, token, DEFAULT_COOKIE_OPTIONS);
       return reply.send({ success: true, session, user, organization });
@@ -781,6 +890,19 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     try {
       const { organization, updatedSession } = await identityService.createOrganization(session, request.body);
+      // Synchronize created organization and membership with globalDb
+      await globalDb.saveOrganization(organization);
+      await globalDb.saveMember({
+        id: `mem_${session.userId}_${organization.id}`,
+        organizationId: organization.id,
+        userId: session.userId,
+        role: 'OWNER',
+        status: 'ACTIVE',
+        userEmail: session.email,
+        userFullName: session.fullName,
+        createdAt: organization.createdAt,
+        updatedAt: organization.updatedAt,
+      });
       const token = serializeSession(updatedSession);
       reply.setCookie(SESSION_COOKIE_NAME, token, DEFAULT_COOKIE_OPTIONS);
       return reply.send({ success: true, organization, session: updatedSession });
@@ -813,10 +935,55 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       language: 'kn',
       agentName: 'Sahana',
       status: 'ACTIVE',
-      billingTier: 'PRO',
+      billingTier: 'GROWTH',
       createdAt: '2026-01-15T09:00:00.000Z',
     };
     return reply.send({ success: true, organization: org });
+  });
+
+  // 1.7c PATCH /api/organization: Update org details (requires OWNER or ADMIN role)
+  fastify.patch('/api/organization', async (request, reply) => {
+    const session = getSessionFromRequest(request);
+    if (!session) {
+      return reply.status(401).send({ success: false, error: 'Authentication required' });
+    }
+
+    const orgId = session.activeOrganizationId;
+    const member = session.memberships.find(m => m.organizationId === orgId);
+    if (!member || (member.role !== 'OWNER' && member.role !== 'ADMIN')) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Forbidden: Insufficient permissions to update organization settings'
+      });
+    }
+
+    const body = (request.body as { name?: string; industry?: string; phone?: string; city?: string; state?: string }) || {};
+    if (typeof body !== 'object') {
+      return reply.status(400).send({ success: false, error: 'Invalid request payload' });
+    }
+
+    const existing: OrganizationDTO = await globalDb.getOrganizationById(orgId) || {
+      id: orgId,
+      name: 'Ballari Residential Layouts',
+      slug: 'ballari-plots',
+      industry: 'REAL_ESTATE',
+      status: 'ACTIVE',
+      timezone: 'Asia/Kolkata',
+      onboardingStatus: 'ready',
+      billingTier: 'GROWTH',
+      createdAt: '2026-01-15T09:00:00.000Z',
+      updatedAt: '2026-01-15T09:00:00.000Z',
+    };
+
+    const updated: OrganizationDTO = {
+      ...existing,
+      ...(body.name && typeof body.name === 'string' && body.name.trim() ? { name: body.name.trim() } : {}),
+      ...(body.industry && typeof body.industry === 'string' && body.industry.trim() ? { industry: body.industry.trim() } : {}),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await globalDb.saveOrganization(updated);
+    return reply.send({ success: true, organization: updated });
   });
 
   // 1.8 POST /api/orgs/:id/members/invite: Invite member (requires ADMIN or OWNER)
@@ -2174,8 +2341,33 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       return reply.status(400).send({ error: phoneVal.error });
     }
 
+    const session = getSessionFromRequest(request);
+    let orgId: string;
+
+    if (session) {
+      if (session.activeRole === 'VIEWER') {
+        return reply.status(403).send({ success: false, error: 'FORBIDDEN', message: 'Viewer role cannot initiate outbound calls' });
+      }
+      if (body.organizationId && body.organizationId !== session.activeOrganizationId) {
+        const isMember = session.memberships.some(m => m.organizationId === body.organizationId);
+        if (!isMember) {
+          return reply.status(403).send({ success: false, error: 'FORBIDDEN', message: 'Not an authorized member of requested organization' });
+        }
+        orgId = body.organizationId;
+      } else {
+        orgId = session.activeOrganizationId;
+      }
+    } else {
+      if (process.env.NODE_ENV === 'production') {
+        return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication required to initiate outbound calls' });
+      }
+      if (!body.organizationId) {
+        return reply.status(401).send({ success: false, error: 'UNAUTHORIZED', message: 'Authentication or organizationId required' });
+      }
+      orgId = body.organizationId;
+    }
+
     const host = request.headers.host || 'localhost:4000';
-    const orgId = body.organizationId || 'a0000000-0000-0000-0000-000000000001';
 
     // Server-Side Entitlement Check: Verify organization has outbound calling and voice minutes allowance
     const entitlementCheck = await globalEntitlementEngine.canInitiateOutboundCall(orgId);
@@ -2519,6 +2711,14 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
   // 2.5 Outbound Inception Call Trigger
   fastify.post('/api/calls/outbound-inception', async (request, reply) => {
+    const session = getSessionFromRequest(request);
+    if (!session) {
+      return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required to initiate inception calls' });
+    }
+    if (session && session.activeRole === 'VIEWER') {
+      return reply.status(403).send({ error: 'FORBIDDEN', message: 'Viewer role cannot initiate inception calls' });
+    }
+
     const body = request.body as {
       targetPhone: string;
       businessName: string;
@@ -2548,6 +2748,11 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
   // 2.6 TTS Synthesis Endpoint for Voice Testing
   fastify.post('/api/tts/synthesize', async (request, reply) => {
+    const session = getSessionFromRequest(request);
+    if (!session && process.env.NODE_ENV === 'production') {
+      return reply.status(401).send({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+    }
+
     const body = request.body as {
       text: string;
       targetLanguageCode?: string;
@@ -2557,8 +2762,11 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       apiKey?: string;
     };
 
-    if (!body?.text) {
-      return reply.status(400).send({ error: 'Missing text parameter' });
+    if (!body?.text || typeof body.text !== 'string' || !body.text.trim()) {
+      return reply.status(400).send({ error: 'Missing or invalid text parameter' });
+    }
+    if (body.text.length > 5000) {
+      return reply.status(400).send({ error: 'Text exceeds maximum length of 5000 characters' });
     }
 
     const requestedLang = body.targetLanguageCode || 'kn-IN';
@@ -3365,13 +3573,22 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       return;
     }
 
-    const tenantKey = url.searchParams.get('tenant') || 'real_estate';
+    const rawTenant = url.searchParams.get('tenant') || url.searchParams.get('workspaceId');
+    const tenantKey = rawTenant !== null && rawTenant !== undefined ? rawTenant : (process.env.NODE_ENV !== 'production' ? 'real_estate' : '');
     const isInception = tenantKey === 'inception';
-    let resolvedTenant = DEMO_TENANTS[tenantKey];
+    let resolvedTenant = tenantKey ? DEMO_TENANTS[tenantKey] : undefined;
+
     if (!resolvedTenant && tenantKey) {
       try {
         const clientWs = await globalDb.getClientWorkspaceById(tenantKey);
         if (clientWs) {
+          // Security: verify caller belongs to owning organization
+          if (session && !session.memberships.some(m => m.organizationId === clientWs.organizationId)) {
+            fastify.log.warn({ tenantKey, userId: session.userId }, '[WebSocket Cross-Tenant Access Denied]');
+            socket.close(1008, 'Unauthorized: Cross-tenant access forbidden');
+            return;
+          }
+
           const industry = clientWs.industryCategory === 'HEALTHCARE' ? 'HEALTHCARE_HOSPITAL' : (clientWs.industryCategory === 'DIGITAL_AGENCY' ? 'AGENCY' : 'REAL_ESTATE');
           resolvedTenant = {
             id: clientWs.id,
@@ -3399,7 +3616,38 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         fastify.log.warn({ err: e }, '[Dynamic Tenant Lookup Error]');
       }
     }
-    const tenant = resolvedTenant || DEMO_TENANTS.real_estate;
+
+    // Security: Fail closed if workspace is unknown or unauthorized. Never fall back to demo tenant.
+    if (!resolvedTenant) {
+      fastify.log.warn({ tenantKey }, '[WebSocket Rejected] Unknown or unauthorized tenant workspace');
+      socket.close(1008, 'Unauthorized: Unknown or unauthorized tenant workspace');
+      return;
+    }
+
+    const tenant = resolvedTenant;
+
+    // Security: Frame size validation and message rate limit per connection
+    let frameCount = 0;
+    let windowReset = Date.now() + 1000;
+    socket.on('message', (raw: any) => {
+      const len = Buffer.isBuffer(raw) ? raw.length : (typeof raw === 'string' ? Buffer.byteLength(raw) : 0);
+      if (len > 256 * 1024) { // 256KB max frame
+        fastify.log.warn({ len }, '[WebSocket Frame Too Large]');
+        socket.close(1009, 'Message too large');
+        return;
+      }
+      const now = Date.now();
+      if (now > windowReset) {
+        frameCount = 0;
+        windowReset = now + 1000;
+      }
+      frameCount++;
+      if (frameCount > 200) {
+        fastify.log.warn('[WebSocket Rate Limit Exceeded]');
+        socket.close(1008, 'Message rate limit exceeded');
+        return;
+      }
+    });
     let isTelephony = url.searchParams.get('source') === 'telephony';
     let currentStreamSid = url.searchParams.get('streamSid') || url.searchParams.get('callSid') || '';
 

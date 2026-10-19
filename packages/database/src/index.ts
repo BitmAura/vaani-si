@@ -9,6 +9,10 @@ import {
   AppointmentSlotDTO,
   PropertyDTO,
   RealEstateConfigDTO,
+  SiteVisitCapacitySlotDTO,
+  ReserveSiteVisitSlotInput,
+  SiteVisitReservationResult,
+  ReleaseSiteVisitSlotInput,
   RealEstateLeadQualificationDTO,
   ClientWorkspaceDTO,
   AuditLogDTO,
@@ -156,11 +160,16 @@ export interface IDatabaseService {
   updateAppointment(id: string, partial: Partial<AppointmentSlotDTO>, organizationId?: string): Promise<AppointmentSlotDTO | null>;
   deleteAppointment(id: string, organizationId?: string): Promise<void>;
 
-  getProperties(workspaceId?: string, filters?: { propertyType?: string; status?: string; locality?: string; minPrice?: number; maxPrice?: number; search?: string }): Promise<PropertyDTO[]>;
-  getPropertyById(id: string, workspaceId?: string): Promise<PropertyDTO | null>;
+  getProperties(workspaceId?: string, filters?: { propertyType?: string; status?: string; locality?: string; minPrice?: number; maxPrice?: number; search?: string }, organizationId?: string): Promise<PropertyDTO[]>;
+  getPropertyById(id: string, workspaceId?: string, organizationId?: string): Promise<PropertyDTO | null>;
   saveProperty(property: PropertyDTO): Promise<void>;
-  updateProperty(id: string, partial: Partial<PropertyDTO>, workspaceId?: string): Promise<PropertyDTO | null>;
-  deleteProperty(id: string, workspaceId?: string): Promise<boolean>;
+  updateProperty(id: string, partial: Partial<PropertyDTO>, workspaceId?: string, organizationId?: string): Promise<PropertyDTO | null>;
+  deleteProperty(id: string, workspaceId?: string, organizationId?: string): Promise<boolean>;
+
+  // Site Visit Concurrency & Capacity Slots (Prompt 06)
+  reserveSiteVisitSlot(input: ReserveSiteVisitSlotInput): Promise<SiteVisitReservationResult>;
+  releaseSiteVisitSlot(input: ReleaseSiteVisitSlotInput): Promise<void>;
+  getSiteVisitCapacitySlot(workspaceId: string, propertyId: string, slotTime: string, organizationId?: string): Promise<SiteVisitCapacitySlotDTO | null>;
   getStaffById(id: string, organizationId?: string): Promise<BusinessStaffDTO | null>;
   updateStaff(id: string, partial: Partial<BusinessStaffDTO>, organizationId?: string): Promise<BusinessStaffDTO | null>;
 
@@ -393,6 +402,7 @@ export class InMemoryDatabaseService implements IDatabaseService {
 
   protected clientWorkspaces: Map<string, ClientWorkspaceDTO> = new Map();
   protected properties: Map<string, PropertyDTO> = new Map();
+  protected siteVisitCapacitySlots: Map<string, SiteVisitCapacitySlotDTO> = new Map();
 
   async saveClientWorkspace(workspace: ClientWorkspaceDTO): Promise<void> {
     this.clientWorkspaces.set(workspace.id, { ...workspace });
@@ -1791,9 +1801,13 @@ export class InMemoryDatabaseService implements IDatabaseService {
       minPrice?: number;
       maxPrice?: number;
       search?: string;
-    }
+    },
+    organizationId?: string
   ): Promise<PropertyDTO[]> {
     let list = Array.from(this.properties.values());
+    if (organizationId) {
+      list = list.filter((p) => p.organizationId === organizationId);
+    }
     if (workspaceId) {
       list = list.filter((p) => p.workspaceId === workspaceId || p.organizationId === workspaceId);
     }
@@ -1826,19 +1840,20 @@ export class InMemoryDatabaseService implements IDatabaseService {
     return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
-  async getPropertyById(id: string, workspaceId?: string): Promise<PropertyDTO | null> {
-    const byId = this.properties.get(id);
-    if (byId) {
-      if (workspaceId && byId.workspaceId !== workspaceId && byId.organizationId !== workspaceId) return null;
-      return { ...byId };
-    }
-    for (const p of this.properties.values()) {
-      if (p.referenceCode === id) {
-        if (workspaceId && p.workspaceId !== workspaceId && p.organizationId !== workspaceId) return null;
-        return { ...p };
+  async getPropertyById(id: string, workspaceId?: string, organizationId?: string): Promise<PropertyDTO | null> {
+    let prop = this.properties.get(id);
+    if (!prop) {
+      for (const p of this.properties.values()) {
+        if (p.referenceCode === id) {
+          prop = p;
+          break;
+        }
       }
     }
-    return null;
+    if (!prop) return null;
+    if (organizationId && prop.organizationId !== organizationId) return null;
+    if (workspaceId && prop.workspaceId !== workspaceId && prop.organizationId !== workspaceId) return null;
+    return { ...prop };
   }
 
   async saveProperty(property: PropertyDTO): Promise<void> {
@@ -1848,24 +1863,92 @@ export class InMemoryDatabaseService implements IDatabaseService {
   async updateProperty(
     id: string,
     partial: Partial<PropertyDTO>,
-    workspaceId?: string
+    workspaceId?: string,
+    organizationId?: string
   ): Promise<PropertyDTO | null> {
-    const existing = await this.getPropertyById(id, workspaceId);
+    const existing = await this.getPropertyById(id, workspaceId, organizationId);
     if (!existing) return null;
     const updated: PropertyDTO = {
       ...existing,
       ...partial,
+      id: existing.id,
+      organizationId: existing.organizationId,
+      workspaceId: existing.workspaceId,
       updatedAt: new Date().toISOString(),
     };
     this.properties.set(id, updated);
     return { ...updated };
   }
 
-  async deleteProperty(id: string, workspaceId?: string): Promise<boolean> {
-    const existing = await this.getPropertyById(id, workspaceId);
+  async deleteProperty(id: string, workspaceId?: string, organizationId?: string): Promise<boolean> {
+    const existing = await this.getPropertyById(id, workspaceId, organizationId);
     if (!existing) return false;
-    this.properties.delete(id);
+    this.properties.delete(existing.id);
     return true;
+  }
+
+  // --- Site Visit Concurrency & Capacity Slots (Prompt 06) ---
+  async reserveSiteVisitSlot(input: ReserveSiteVisitSlotInput): Promise<SiteVisitReservationResult> {
+    const key = `${input.workspaceId}:${input.propertyId}:${input.slotTime}`;
+    let slot = this.siteVisitCapacitySlots.get(key);
+    if (!slot) {
+      slot = {
+        id: 'slot_' + (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : String(Date.now())),
+        organizationId: input.organizationId,
+        workspaceId: input.workspaceId,
+        propertyId: input.propertyId,
+        slotTime: input.slotTime,
+        maxCapacity: input.maxCapacity,
+        bookedCount: 0,
+        version: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      this.siteVisitCapacitySlots.set(key, slot);
+    }
+
+    if (slot.bookedCount + input.visitorCount > slot.maxCapacity) {
+      return {
+        success: false,
+        remainingCapacity: Math.max(0, slot.maxCapacity - slot.bookedCount),
+        bookedCount: slot.bookedCount,
+        maxCapacity: slot.maxCapacity,
+        slot: { ...slot },
+        error: `Slot capacity exceeded. Currently booked: ${slot.bookedCount}/${slot.maxCapacity}. Requested: ${input.visitorCount}.`,
+      };
+    }
+
+    slot.bookedCount += input.visitorCount;
+    slot.version += 1;
+    slot.updatedAt = new Date().toISOString();
+    this.siteVisitCapacitySlots.set(key, slot);
+
+    return {
+      success: true,
+      remainingCapacity: Math.max(0, slot.maxCapacity - slot.bookedCount),
+      bookedCount: slot.bookedCount,
+      maxCapacity: slot.maxCapacity,
+      slot: { ...slot },
+    };
+  }
+
+  async releaseSiteVisitSlot(input: ReleaseSiteVisitSlotInput): Promise<void> {
+    const key = `${input.workspaceId}:${input.propertyId}:${input.slotTime}`;
+    const slot = this.siteVisitCapacitySlots.get(key);
+    if (slot) {
+      slot.bookedCount = Math.max(0, slot.bookedCount - input.visitorCount);
+      slot.version += 1;
+      slot.updatedAt = new Date().toISOString();
+      this.siteVisitCapacitySlots.set(key, slot);
+    }
+  }
+
+  async getSiteVisitCapacitySlot(workspaceId: string, propertyId: string, slotTime: string, organizationId?: string): Promise<SiteVisitCapacitySlotDTO | null> {
+    const key = `${workspaceId}:${propertyId}:${slotTime}`;
+    const slot = this.siteVisitCapacitySlots.get(key);
+    if (!slot) return null;
+    if (organizationId && slot.organizationId !== organizationId) return null;
+    return { ...slot };
   }
 
   // --- Agents ---
@@ -3714,9 +3797,15 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
 
   override async getAppointmentById(id: string, organizationId?: string): Promise<AppointmentSlotDTO | null> {
     let q = this.supabaseClient.from('appointments').select('*').eq('id', id);
+    if (organizationId) {
+      q = q.or(`organization_id.eq.${organizationId},workspace_id.eq.${organizationId}`);
+    }
     const { data, error } = await q.maybeSingle();
     if (error) throw new DatabaseOperationError(`Failed to get appointment: ${error.message}`, error);
     if (!data) return null;
+    if (organizationId && data.organization_id !== organizationId && data.workspace_id !== organizationId) {
+      return null;
+    }
     return {
       id: data.id,
       tenantId: data.workspace_id || data.organization_id,
@@ -3780,14 +3869,16 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
   }
 
   // --- Properties ---
-  override async getProperties(workspaceId?: string, filters?: any): Promise<PropertyDTO[]> {
+  override async getProperties(workspaceId?: string, filters?: any, organizationId?: string): Promise<PropertyDTO[]> {
     let q = this.supabaseClient.from('properties').select('*');
+    if (organizationId) q = q.eq('organization_id', organizationId);
     if (workspaceId) q = q.eq('workspace_id', workspaceId);
     if (filters?.propertyType) q = q.eq('property_type', filters.propertyType);
     if (filters?.status) q = q.eq('status', filters.status);
+    if (filters?.locality) q = q.ilike('locality', `%${filters.locality}%`);
     const { data, error } = await q.order('created_at', { ascending: false });
     if (error) throw new DatabaseOperationError(`Failed to get properties: ${error.message}`, error);
-    return (data || []).map((row: any) => ({
+    let list = (data || []).map((row: any) => ({
       id: row.id,
       workspaceId: row.workspace_id,
       organizationId: row.organization_id,
@@ -3811,10 +3902,26 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
+    if (filters?.minPrice !== undefined) {
+      list = list.filter((p: any) => (p.pricing?.basePrice || 0) >= filters.minPrice);
+    }
+    if (filters?.maxPrice !== undefined) {
+      list = list.filter((p: any) => (p.pricing?.basePrice || 0) <= filters.maxPrice);
+    }
+    if (filters?.search) {
+      const s = filters.search.toLowerCase();
+      list = list.filter((p: any) =>
+        p.name.toLowerCase().includes(s) ||
+        p.referenceCode.toLowerCase().includes(s) ||
+        p.locality.toLowerCase().includes(s)
+      );
+    }
+    return list;
   }
 
-  override async getPropertyById(id: string, workspaceId?: string): Promise<PropertyDTO | null> {
-    let q = this.supabaseClient.from('properties').select('*').eq('id', id);
+  override async getPropertyById(id: string, workspaceId?: string, organizationId?: string): Promise<PropertyDTO | null> {
+    let q = this.supabaseClient.from('properties').select('*').or(`id.eq.${id},reference_code.eq.${id}`);
+    if (organizationId) q = q.eq('organization_id', organizationId);
     if (workspaceId) q = q.eq('workspace_id', workspaceId);
     const { data, error } = await q.maybeSingle();
     if (error) throw new DatabaseOperationError(`Failed to get property: ${error.message}`, error);
@@ -3873,21 +3980,152 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
     await super.saveProperty(property);
   }
 
-  override async updateProperty(id: string, partial: Partial<PropertyDTO>, workspaceId?: string): Promise<PropertyDTO | null> {
-    const existing = await this.getPropertyById(id, workspaceId);
+  override async updateProperty(id: string, partial: Partial<PropertyDTO>, workspaceId?: string, organizationId?: string): Promise<PropertyDTO | null> {
+    const existing = await this.getPropertyById(id, workspaceId, organizationId);
     if (!existing) return null;
-    const updated: PropertyDTO = { ...existing, ...partial, updatedAt: new Date().toISOString() };
+    const updated: PropertyDTO = {
+      ...existing,
+      ...partial,
+      id: existing.id,
+      organizationId: existing.organizationId,
+      workspaceId: existing.workspaceId,
+      updatedAt: new Date().toISOString()
+    };
     await this.saveProperty(updated);
     return updated;
   }
 
-  override async deleteProperty(id: string, workspaceId?: string): Promise<boolean> {
-    let q = this.supabaseClient.from('properties').delete().eq('id', id);
+  override async deleteProperty(id: string, workspaceId?: string, organizationId?: string): Promise<boolean> {
+    const existing = await this.getPropertyById(id, workspaceId, organizationId);
+    if (!existing) return false;
+    let q = this.supabaseClient.from('properties').delete().eq('id', existing.id);
+    if (organizationId) q = q.eq('organization_id', organizationId);
     if (workspaceId) q = q.eq('workspace_id', workspaceId);
     const { error } = await q;
     if (error) throw new DatabaseOperationError(`Failed to delete property: ${error.message}`, error);
-    await super.deleteProperty(id, workspaceId);
+    await super.deleteProperty(id, workspaceId, organizationId);
     return true;
+  }
+
+  // --- Site Visit Concurrency & Capacity Slots (Prompt 06) ---
+  override async reserveSiteVisitSlot(input: ReserveSiteVisitSlotInput): Promise<SiteVisitReservationResult> {
+    const { data: existingSlot, error: fetchErr } = await this.supabaseClient
+      .from('site_visit_capacity_slots')
+      .select('*')
+      .eq('workspace_id', input.workspaceId)
+      .eq('property_id', input.propertyId)
+      .eq('slot_time', input.slotTime)
+      .maybeSingle();
+
+    if (fetchErr) {
+      throw new DatabaseOperationError(`Failed to fetch site visit capacity: ${fetchErr.message}`, fetchErr);
+    }
+
+    const currentBooked = existingSlot ? Number(existingSlot.booked_count) : 0;
+    const maxCapacity = existingSlot ? Number(existingSlot.max_capacity) : input.maxCapacity;
+
+    if (currentBooked + input.visitorCount > maxCapacity) {
+      return {
+        success: false,
+        remainingCapacity: Math.max(0, maxCapacity - currentBooked),
+        bookedCount: currentBooked,
+        maxCapacity,
+        error: `Slot capacity exceeded. Currently booked: ${currentBooked}/${maxCapacity}. Requested: ${input.visitorCount}.`,
+      };
+    }
+
+    const newBooked = currentBooked + input.visitorCount;
+    const now = new Date().toISOString();
+
+    const { data: updatedSlot, error: updateErr } = await this.supabaseClient
+      .from('site_visit_capacity_slots')
+      .upsert({
+        id: existingSlot ? existingSlot.id : ('slot_' + (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : String(Date.now()))),
+        organization_id: input.organizationId,
+        workspace_id: input.workspaceId,
+        property_id: input.propertyId,
+        slot_time: input.slotTime,
+        max_capacity: maxCapacity,
+        booked_count: newBooked,
+        version: existingSlot ? Number(existingSlot.version) + 1 : 1,
+        updated_at: now,
+      })
+      .select()
+      .single();
+
+    if (updateErr) {
+      throw new DatabaseOperationError(`Failed to reserve site visit slot: ${updateErr.message}`, updateErr);
+    }
+
+    await super.reserveSiteVisitSlot(input);
+
+    return {
+      success: true,
+      remainingCapacity: Math.max(0, maxCapacity - newBooked),
+      bookedCount: newBooked,
+      maxCapacity,
+      slot: {
+        id: updatedSlot.id,
+        organizationId: updatedSlot.organization_id,
+        workspaceId: updatedSlot.workspace_id,
+        propertyId: updatedSlot.property_id,
+        slotTime: updatedSlot.slot_time,
+        maxCapacity: Number(updatedSlot.max_capacity),
+        bookedCount: Number(updatedSlot.booked_count),
+        version: Number(updatedSlot.version),
+        createdAt: updatedSlot.created_at,
+        updatedAt: updatedSlot.updated_at,
+      },
+    };
+  }
+
+  override async releaseSiteVisitSlot(input: ReleaseSiteVisitSlotInput): Promise<void> {
+    const { data: existingSlot } = await this.supabaseClient
+      .from('site_visit_capacity_slots')
+      .select('*')
+      .eq('workspace_id', input.workspaceId)
+      .eq('property_id', input.propertyId)
+      .eq('slot_time', input.slotTime)
+      .maybeSingle();
+
+    if (existingSlot) {
+      const newBooked = Math.max(0, Number(existingSlot.booked_count) - input.visitorCount);
+      await this.supabaseClient
+        .from('site_visit_capacity_slots')
+        .update({
+          booked_count: newBooked,
+          version: Number(existingSlot.version) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingSlot.id);
+    }
+
+    await super.releaseSiteVisitSlot(input);
+  }
+
+  override async getSiteVisitCapacitySlot(workspaceId: string, propertyId: string, slotTime: string, organizationId?: string): Promise<SiteVisitCapacitySlotDTO | null> {
+    let q = this.supabaseClient
+      .from('site_visit_capacity_slots')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .eq('property_id', propertyId)
+      .eq('slot_time', slotTime);
+    if (organizationId) q = q.eq('organization_id', organizationId);
+    const { data, error } = await q.maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get site visit capacity: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      organizationId: data.organization_id,
+      workspaceId: data.workspace_id,
+      propertyId: data.property_id,
+      slotTime: data.slot_time,
+      maxCapacity: Number(data.max_capacity),
+      bookedCount: Number(data.booked_count),
+      version: Number(data.version),
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
   }
 
   // --- Staff & Healthcare Rosters ---
@@ -4021,6 +4259,513 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
     const { error } = await this.supabaseClient.from('business_faqs').delete().eq('id', id).eq('organization_id', organizationId);
     if (error) throw new DatabaseOperationError(`Failed to delete FAQ: ${error.message}`, error);
     await super.deleteFAQ(id, organizationId);
+  }
+
+  // --- Organization Members ---
+  override async saveMember(member: OrganizationMemberDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('organization_members').upsert({
+      id: member.id,
+      organization_id: member.organizationId,
+      user_id: member.userId,
+      role: member.role,
+      status: member.status || 'ACTIVE',
+      user_email: member.userEmail,
+      user_full_name: member.userFullName,
+      created_at: member.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save organization member: ${error.message}`, error);
+    await super.saveMember(member);
+  }
+
+  override async getMembers(organizationId: string): Promise<OrganizationMemberDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('organization_members')
+      .select('*')
+      .eq('organization_id', organizationId);
+    if (error) throw new DatabaseOperationError(`Failed to get organization members: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      userId: row.user_id,
+      role: row.role,
+      status: row.status,
+      userEmail: row.user_email,
+      userFullName: row.user_full_name,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  override async getMembersByUserId(userId: string): Promise<OrganizationMemberDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('organization_members')
+      .select('*')
+      .eq('user_id', userId);
+    if (error) throw new DatabaseOperationError(`Failed to get members by user id: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      userId: row.user_id,
+      role: row.role,
+      status: row.status,
+      userEmail: row.user_email,
+      userFullName: row.user_full_name,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  override async deleteMember(id: string, organizationId?: string): Promise<void> {
+    let q = this.supabaseClient.from('organization_members').delete().eq('id', id);
+    if (organizationId) q = q.eq('organization_id', organizationId);
+    const { error } = await q;
+    if (error) throw new DatabaseOperationError(`Failed to delete organization member: ${error.message}`, error);
+    await super.deleteMember(id);
+  }
+
+  // --- User Profiles ---
+  override async saveProfile(profile: UserProfileDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('profiles').upsert({
+      id: profile.id,
+      full_name: profile.fullName,
+      avatar_url: profile.avatarUrl,
+      phone: profile.phone,
+      timezone: profile.timezone || 'Asia/Kolkata',
+      locale: profile.locale || 'en-IN',
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save user profile: ${error.message}`, error);
+    await super.saveProfile(profile);
+  }
+
+  override async getProfileById(id: string): Promise<UserProfileDTO | null> {
+    const { data, error } = await this.supabaseClient.from('profiles').select('*').eq('id', id).maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get profile: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      fullName: data.full_name,
+      avatarUrl: data.avatar_url,
+      phone: data.phone,
+      timezone: data.timezone,
+      locale: data.locale,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  // --- Billing Accounts ---
+  override async saveBillingAccount(account: BillingAccountDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('billing_accounts').upsert({
+      id: account.id,
+      organization_id: account.organizationId,
+      billing_email: account.billingEmail,
+      billing_name: account.billingName,
+      company_name: account.companyName,
+      tax_identifier: account.taxIdentifier,
+      billing_address: account.billingAddress,
+      currency: account.currency,
+      timezone: account.timezone,
+      status: account.status,
+      provider: account.provider,
+      provider_customer_id: account.providerCustomerId,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save billing account: ${error.message}`, error);
+    await super.saveBillingAccount(account);
+  }
+
+  override async getBillingAccount(organizationId: string): Promise<BillingAccountDTO | null> {
+    const { data, error } = await this.supabaseClient
+      .from('billing_accounts')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get billing account: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      organizationId: data.organization_id,
+      billingEmail: data.billing_email,
+      billingName: data.billing_name,
+      companyName: data.company_name,
+      taxIdentifier: data.tax_identifier,
+      billingAddress: data.billing_address || {},
+      currency: data.currency,
+      timezone: data.timezone,
+      status: data.status,
+      provider: data.provider,
+      providerCustomerId: data.provider_customer_id,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  // --- Subscriptions & Events ---
+  override async saveSubscription(subscription: SubscriptionDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('subscriptions').upsert({
+      id: subscription.id,
+      organization_id: subscription.organizationId,
+      billing_account_id: subscription.billingAccountId,
+      plan_id: subscription.planId,
+      plan_version_id: subscription.planVersionId,
+      provider: subscription.provider,
+      provider_subscription_id: subscription.providerSubscriptionId,
+      status: subscription.status,
+      billing_interval: subscription.billingInterval,
+      current_period_start: subscription.currentPeriodStart,
+      current_period_end: subscription.currentPeriodEnd,
+      cancel_at_period_end: subscription.cancelAtPeriodEnd,
+      cancelled_at: subscription.cancelledAt,
+      trial_start: subscription.trialStart,
+      trial_end: subscription.trialEnd,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save subscription: ${error.message}`, error);
+    await super.saveSubscription(subscription);
+  }
+
+  override async getSubscription(organizationId: string): Promise<SubscriptionDTO | null> {
+    const { data, error } = await this.supabaseClient
+      .from('subscriptions')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get subscription: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      organizationId: data.organization_id,
+      billingAccountId: data.billing_account_id,
+      planId: data.plan_id,
+      planVersionId: data.plan_version_id,
+      provider: data.provider,
+      providerSubscriptionId: data.provider_subscription_id,
+      status: data.status,
+      billingInterval: data.billing_interval,
+      currentPeriodStart: data.current_period_start,
+      currentPeriodEnd: data.current_period_end,
+      cancelAtPeriodEnd: data.cancel_at_period_end,
+      cancelledAt: data.cancelled_at,
+      trialStart: data.trial_start,
+      trialEnd: data.trial_end,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  override async saveSubscriptionEvent(event: SubscriptionEventDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('subscription_events').upsert({
+      id: event.id,
+      organization_id: event.organizationId,
+      subscription_id: event.subscriptionId,
+      event_type: event.eventType,
+      previous_plan_id: event.previousPlanId,
+      new_plan_id: event.newPlanId,
+      reason: event.reason,
+      occurred_at: event.occurredAt || new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save subscription event: ${error.message}`, error);
+    await super.saveSubscriptionEvent(event);
+  }
+
+  override async getSubscriptionEvents(organizationId: string): Promise<SubscriptionEventDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('subscription_events')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('occurred_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get subscription events: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      subscriptionId: row.subscription_id,
+      eventType: row.event_type,
+      previousPlanId: row.previous_plan_id,
+      newPlanId: row.new_plan_id,
+      reason: row.reason,
+      occurredAt: row.occurred_at,
+    }));
+  }
+
+  // --- Billing Invoices ---
+  override async saveBillingInvoice(invoice: BillingInvoiceDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('billing_invoices').upsert({
+      id: invoice.id,
+      organization_id: invoice.organizationId,
+      billing_account_id: invoice.billingAccountId,
+      subscription_id: invoice.subscriptionId,
+      payment_id: invoice.paymentId,
+      invoice_number: invoice.invoiceNumber,
+      subtotal: invoice.subtotal,
+      tax_amount: invoice.taxAmount,
+      tax_identifier: invoice.taxIdentifier,
+      total_amount: invoice.totalAmount,
+      currency: invoice.currency,
+      period_start: invoice.periodStart,
+      period_end: invoice.periodEnd,
+      status: invoice.status,
+      issued_at: invoice.issuedAt,
+      pdf_url: invoice.pdfUrl,
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save billing invoice: ${error.message}`, error);
+    await super.saveBillingInvoice(invoice);
+  }
+
+  override async getBillingInvoices(organizationId: string): Promise<BillingInvoiceDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('billing_invoices')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('issued_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get billing invoices: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      billingAccountId: row.billing_account_id,
+      subscriptionId: row.subscription_id,
+      paymentId: row.payment_id,
+      invoiceNumber: row.invoice_number,
+      subtotal: Number(row.subtotal),
+      taxAmount: Number(row.tax_amount || 0),
+      taxIdentifier: row.tax_identifier,
+      totalAmount: Number(row.total_amount),
+      currency: row.currency,
+      periodStart: row.period_start,
+      periodEnd: row.period_end,
+      status: row.status,
+      issuedAt: row.issued_at,
+      pdfUrl: row.pdf_url,
+    }));
+  }
+
+  // --- Payment Records ---
+  override async savePaymentRecord(payment: PaymentRecordDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('payment_records').upsert({
+      id: payment.id,
+      organization_id: payment.organizationId,
+      billing_account_id: payment.billingAccountId,
+      subscription_id: payment.subscriptionId,
+      provider: payment.provider,
+      provider_payment_id: payment.providerPaymentId,
+      provider_order_id: payment.providerOrderId,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      payment_method_type: payment.paymentMethodType,
+      paid_at: payment.paidAt,
+      failure_reason: payment.failureReason,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save payment record: ${error.message}`, error);
+    await super.savePaymentRecord(payment);
+  }
+
+  override async getPaymentRecords(organizationId: string): Promise<PaymentRecordDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('payment_records')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('created_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get payment records: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      billingAccountId: row.billing_account_id,
+      subscriptionId: row.subscription_id,
+      provider: row.provider,
+      providerPaymentId: row.provider_payment_id,
+      providerOrderId: row.provider_order_id,
+      amount: Number(row.amount),
+      currency: row.currency,
+      status: row.status,
+      paymentMethodType: row.payment_method_type,
+      paidAt: row.paid_at,
+      failureReason: row.failure_reason,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  // --- Billing Provider Events (Idempotent Webhooks) ---
+  override async saveBillingProviderEvent(event: BillingProviderEventDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('billing_provider_events').upsert({
+      id: event.id,
+      provider: event.provider,
+      provider_event_id: event.providerEventId,
+      event_type: event.eventType,
+      payload_reference: (event as any).payloadReference || JSON.stringify((event as any).payload || {}),
+      organization_id: event.organizationId,
+      received_at: event.receivedAt,
+      processed_at: (event as any).processedAt,
+      processing_status: (event as any).processingStatus || 'PROCESSED',
+      error: (event as any).error,
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save billing provider event: ${error.message}`, error);
+    await super.saveBillingProviderEvent(event);
+  }
+
+  override async getBillingProviderEvent(provider: string, providerEventId: string): Promise<BillingProviderEventDTO | null> {
+    const { data, error } = await this.supabaseClient
+      .from('billing_provider_events')
+      .select('*')
+      .eq('provider', provider)
+      .eq('provider_event_id', providerEventId)
+      .maybeSingle();
+    if (error) throw new DatabaseOperationError(`Failed to get billing provider event: ${error.message}`, error);
+    if (!data) return null;
+    return {
+      id: data.id,
+      provider: data.provider,
+      providerEventId: data.provider_event_id,
+      eventType: data.event_type,
+      organizationId: data.organization_id,
+      receivedAt: data.received_at,
+      status: data.processing_status,
+      payload: data.payload_reference ? JSON.parse(data.payload_reference) : {},
+    } as any;
+  }
+
+  // --- Usage Events & Adjustments ---
+  override async saveUsageEvent(event: UsageEventDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('usage_events').upsert({
+      id: event.id,
+      organization_id: event.organizationId,
+      client_workspace_id: event.clientWorkspaceId,
+      correlation_id: event.correlationId,
+      event_type: event.eventType,
+      resource_type: event.resourceType,
+      resource_id: event.resourceId,
+      provider: event.provider,
+      model: event.model,
+      quantity: event.quantity,
+      unit: event.unit,
+      cost_type: event.costType || 'ESTIMATED',
+      estimated_cost: event.estimatedCost,
+      actual_cost: event.actualCost,
+      currency: event.currency || 'INR',
+      pricing_version_id: event.pricingVersionId,
+      agent_id: event.agentId,
+      occurred_at: event.occurredAt || new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save usage event: ${error.message}`, error);
+    await super.saveUsageEvent(event);
+  }
+
+  override async getUsageEvents(organizationId: string, filters?: { eventType?: string; agentId?: string; startDate?: string; endDate?: string }): Promise<UsageEventDTO[]> {
+    let q = this.supabaseClient
+      .from('usage_events')
+      .select('*')
+      .eq('organization_id', organizationId);
+    if (filters?.eventType) q = q.eq('event_type', filters.eventType);
+    if (filters?.agentId) q = q.eq('agent_id', filters.agentId);
+    if (filters?.startDate) q = q.gte('occurred_at', filters.startDate);
+    if (filters?.endDate) q = q.lte('occurred_at', filters.endDate);
+    q = q.order('occurred_at', { ascending: false });
+    const { data, error } = await q;
+    if (error) throw new DatabaseOperationError(`Failed to get usage events: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      correlationId: row.correlation_id || row.id,
+      clientWorkspaceId: row.client_workspace_id,
+      eventType: row.event_type,
+      resourceType: row.resource_type,
+      resourceId: row.resource_id,
+      provider: row.provider,
+      model: row.model,
+      quantity: Number(row.quantity),
+      unit: row.unit,
+      costType: row.cost_type,
+      estimatedCost: Number(row.estimated_cost),
+      actualCost: row.actual_cost ? Number(row.actual_cost) : undefined,
+      currency: row.currency,
+      pricingVersionId: row.pricing_version_id,
+      agentId: row.agent_id,
+      occurredAt: row.occurred_at,
+    }));
+  }
+
+  override async saveUsageAdjustment(adj: UsageAdjustmentDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('usage_adjustments').upsert({
+      id: adj.id,
+      organization_id: adj.organizationId,
+      client_workspace_id: adj.clientWorkspaceId,
+      usage_event_id: adj.usageEventId,
+      adjustment_type: adj.adjustmentType,
+      original_quantity: adj.originalQuantity,
+      adjusted_quantity: adj.adjustedQuantity,
+      delta_quantity: adj.deltaQuantity,
+      unit: adj.unit,
+      reason: adj.reason,
+      performed_by: adj.performedBy,
+      metadata: adj.metadata || {},
+      created_at: adj.createdAt || new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save usage adjustment: ${error.message}`, error);
+    await super.saveUsageAdjustment(adj);
+  }
+
+  override async getUsageAdjustments(organizationId: string): Promise<UsageAdjustmentDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('usage_adjustments')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('created_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get usage adjustments: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      clientWorkspaceId: row.client_workspace_id,
+      usageEventId: row.usage_event_id,
+      adjustmentType: row.adjustment_type,
+      originalQuantity: Number(row.original_quantity),
+      adjustedQuantity: Number(row.adjusted_quantity),
+      deltaQuantity: Number(row.delta_quantity),
+      unit: row.unit,
+      reason: row.reason,
+      performedBy: row.performed_by,
+      metadata: row.metadata || {},
+      createdAt: row.created_at,
+    }));
+  }
+
+  // --- Audit Logs ---
+  override async saveAuditLog(log: AuditLogDTO): Promise<void> {
+    const { error } = await this.supabaseClient.from('audit_logs').insert({
+      id: log.id,
+      organization_id: log.organizationId,
+      user_id: log.actorUserId,
+      action: log.action,
+      resource_type: log.resourceType,
+      resource_id: log.resourceId,
+      metadata: log.metadata || {},
+      created_at: log.createdAt || new Date().toISOString(),
+    });
+    if (error) throw new DatabaseOperationError(`Failed to save audit log: ${error.message}`, error);
+    await super.saveAuditLog(log);
+  }
+
+  override async getAuditLogs(organizationId: string): Promise<AuditLogDTO[]> {
+    const { data, error } = await this.supabaseClient
+      .from('audit_logs')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('created_at', { ascending: false });
+    if (error) throw new DatabaseOperationError(`Failed to get audit logs: ${error.message}`, error);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      actorUserId: row.user_id || row.actor_user_id,
+      action: row.action,
+      resourceType: row.resource_type,
+      resourceId: row.resource_id,
+      metadata: row.metadata || {},
+      createdAt: row.created_at,
+    }));
   }
 }
 
