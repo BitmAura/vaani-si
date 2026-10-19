@@ -738,6 +738,11 @@ EXAMPLE RESPONSES:
         return 'Haudu sir! Star Health, Care Health, HDFC Ergo mathu Ayushman Bharat card galige cashless TPA desk 24 gante available ide sir.';
       }
 
+      // Diagnosis / Symptom Interpretation Refusal (Strictly Administrative)
+      if (text.includes('diagnos') || text.includes('what disease') || text.includes('symptom') || text.includes('treatment') || text.includes('treat') || text.includes('cure') || text.includes('roga')) {
+        return 'Kshamisee sir, as an administrative AI assistant, I cannot diagnose medical conditions, interpret symptoms, or recommend treatment. Please schedule an OPD consultation with our qualified doctors at Apollo Specialty Clinic for a thorough medical evaluation.';
+      }
+
       // Prescription / Phone Medicine Inquiry
       if (text.includes('medicine') || text.includes('tablet') || text.includes('tonic') || text.includes('prescription') || text.includes('phone nalli medicine')) {
         return 'Kshamisee sir, safety regulations prakara phone nalli medicine prescribe madoke baralla. Dayavittu direct OPD consultation ge banni sir.';

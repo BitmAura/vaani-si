@@ -26,6 +26,56 @@ import {
 } from '@vanni/shared';
 import { getSessionFromRequest } from '../http-auth.js';
 import { EmergencyHandler } from '../emergency-handler.js';
+import { validateIndianPhoneNumber } from '@vanni/providers';
+
+
+/**
+ * Helper to convert HH:MM string to total minutes from midnight
+ */
+function toMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+/**
+ * Helper to convert total minutes to HH:MM string
+ */
+function toTimeStr(totalMins: number): string {
+  const h = Math.floor(totalMins / 60).toString().padStart(2, '0');
+  const m = (totalMins % 60).toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+/**
+ * Resolves local date YYYY-MM-DD in clinic timezone for an ISO timestamp
+ */
+function getLocalDateInTimezone(isoString: string, timezone = 'Asia/Kolkata'): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(new Date(isoString));
+  } catch {
+    return isoString.slice(0, 10);
+  }
+}
+
+/**
+ * Extracts local minutes from midnight in clinic timezone for an ISO timestamp
+ */
+function getLocalMinutesInTimezone(isoString: string, timezone = 'Asia/Kolkata'): number {
+  try {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(new Date(isoString));
+    const h = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+    const m = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+    return h * 60 + m;
+  } catch {
+    const timePart = isoString.includes('T') ? isoString.split('T')[1].slice(0, 5) : isoString.slice(11, 16);
+    return toMinutes(timePart);
+  }
+}
 
 interface HealthcareContext {
   session: AuthSessionDTO;
@@ -116,7 +166,7 @@ async function triggerAppointmentWebhook(ws: ClientWorkspaceDTO, event: string, 
     });
     clearTimeout(timeout);
   } catch (err: any) {
-    // Non-blocking error logged for observability
+          // Non-blocking error logged for observability
     console.warn(`[Healthcare Webhook Error] Failed to dispatch to ${config.webhookUrl}:`, err.message);
   }
 }
@@ -264,6 +314,36 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Doctor full name is required' });
     }
 
+    // Validate consultation fee
+    if (typeof body.consultationFee === 'number' && body.consultationFee < 0) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Consultation fee must be non-negative' });
+    }
+
+    // Validate shift hours
+    const shiftStart = body.shiftStart || '09:00';
+    const shiftEnd = body.shiftEnd || '17:00';
+    if (toMinutes(shiftStart) >= toMinutes(shiftEnd)) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Shift start time must be before shift end time' });
+    }
+
+    // Validate break hours
+    const breakStart = body.breakStart || '13:00';
+    const breakEnd = body.breakEnd || '14:00';
+    if (toMinutes(breakStart) >= toMinutes(breakEnd)) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Break start time must be before break end time' });
+    }
+    if (toMinutes(breakStart) < toMinutes(shiftStart) || toMinutes(breakEnd) > toMinutes(shiftEnd)) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Break hours must fall within shift timings' });
+    }
+
+    // Validate slot durations
+    if (typeof body.slotDurationMinutes === 'number' && body.slotDurationMinutes <= 0) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Slot duration must be greater than zero' });
+    }
+    if (typeof body.bufferMinutes === 'number' && body.bufferMinutes < 0) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Buffer minutes cannot be negative' });
+    }
+
     const doctorId = `doc_${crypto.randomUUID()}`;
     const newDoctor: BusinessStaffDTO = {
       id: doctorId,
@@ -274,10 +354,10 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       specialization: body.specialization?.trim() || 'General Medicine',
       consultationFee: typeof body.consultationFee === 'number' ? body.consultationFee : 500,
       availableDays: Array.isArray(body.availableDays) ? body.availableDays : [1, 2, 3, 4, 5, 6], // Mon-Sat
-      shiftStart: body.shiftStart || '09:00',
-      shiftEnd: body.shiftEnd || '17:00',
-      breakStart: body.breakStart || '13:00',
-      breakEnd: body.breakEnd || '14:00',
+      shiftStart,
+      shiftEnd,
+      breakStart,
+      breakEnd,
       slotDurationMinutes: typeof body.slotDurationMinutes === 'number' ? body.slotDurationMinutes : 15,
       bufferMinutes: typeof body.bufferMinutes === 'number' ? body.bufferMinutes : 5,
       leaves: Array.isArray(body.leaves) ? body.leaves : [],
@@ -315,6 +395,29 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     const body = req.body || {};
     delete (body as any).id;
     delete (body as any).organizationId;
+
+    if (typeof body.consultationFee === 'number' && body.consultationFee < 0) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Consultation fee must be non-negative' });
+    }
+
+    const shiftStart = body.shiftStart || existing.shiftStart || '09:00';
+    const shiftEnd = body.shiftEnd || existing.shiftEnd || '17:00';
+    if (body.shiftStart || body.shiftEnd) {
+      if (toMinutes(shiftStart) >= toMinutes(shiftEnd)) {
+        return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Shift start time must be before shift end time' });
+      }
+    }
+
+    const breakStart = body.breakStart || existing.breakStart || '13:00';
+    const breakEnd = body.breakEnd || existing.breakEnd || '14:00';
+    if (body.breakStart || body.breakEnd) {
+      if (toMinutes(breakStart) >= toMinutes(breakEnd)) {
+        return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Break start time must be before break end time' });
+      }
+      if (toMinutes(breakStart) < toMinutes(shiftStart) || toMinutes(breakEnd) > toMinutes(shiftEnd)) {
+        return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Break hours must fall within shift timings' });
+      }
+    }
 
     const updated = await globalDb.updateStaff(id, body, existing.organizationId);
 
@@ -384,8 +487,14 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       });
     }
 
-    const requestedDate = new Date(`${date}T00:00:00Z`);
+    // Timezone-safe day of week calculation for the calendar date
+    const [year, month, day] = date.split('-').map(Number);
+    const requestedDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Noon UTC guarantees same calendar day across all timezones
     const dayOfWeek = requestedDate.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+
+    // Resolve clinic timezone
+    const ws = await globalDb.getClientWorkspaceById(ctx.workspaceId);
+    const clinicTz = ws?.timezone || 'Asia/Kolkata';
 
     // Check if doctor works on this day
     const availableDays = doctor.availableDays || [1, 2, 3, 4, 5, 6];
@@ -426,34 +535,33 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     const slotDuration = typeof doctor.slotDurationMinutes === 'number' ? doctor.slotDurationMinutes : 15;
     const buffer = typeof doctor.bufferMinutes === 'number' ? doctor.bufferMinutes : 5;
 
-    const toMinutes = (hhmm: string) => {
-      const [h, m] = hhmm.split(':').map(Number);
-      return h * 60 + m;
-    };
-    const toTimeStr = (totalMins: number) => {
-      const h = Math.floor(totalMins / 60).toString().padStart(2, '0');
-      const m = (totalMins % 60).toString().padStart(2, '0');
-      return `${h}:${m}`;
-    };
+
 
     const shiftStartMin = toMinutes(shiftStart);
     const shiftEndMin = toMinutes(shiftEnd);
     const breakStartMin = toMinutes(breakStart);
     const breakEndMin = toMinutes(breakEnd);
 
-    // Fetch existing appointments for doctor on this date
+    // Fetch existing appointments for doctor on this date (timezone-aware)
     const allAppointments = await globalDb.getAppointments(ctx.workspaceId);
     const dayAppointments = allAppointments.filter(a => {
       if (a.doctorId !== doctor.id && a.doctorId !== undefined) return false;
       if (a.status === 'CANCELLED') return false;
-      return a.scheduledTime.startsWith(date);
+      // Match if exact prefix matches OR if timezone-converted date matches
+      if (a.scheduledTime.startsWith(date)) return true;
+      return getLocalDateInTimezone(a.scheduledTime, clinicTz) === date;
     });
 
     const bookedMinutes = new Set<number>();
     dayAppointments.forEach(a => {
       try {
-        const timePart = a.scheduledTime.includes('T') ? a.scheduledTime.split('T')[1].slice(0, 5) : a.scheduledTime.slice(11, 16);
-        const bookedMin = toMinutes(timePart);
+        let bookedMin: number;
+        if (a.scheduledTime.startsWith(date)) {
+          const timePart = a.scheduledTime.includes('T') ? a.scheduledTime.split('T')[1].slice(0, 5) : a.scheduledTime.slice(11, 16);
+          bookedMin = toMinutes(timePart);
+        } else {
+          bookedMin = getLocalMinutesInTimezone(a.scheduledTime, clinicTz);
+        }
         const dur = a.durationMinutes || slotDuration;
         for (let m = bookedMin; m < bookedMin + dur; m += 5) {
           bookedMinutes.add(m);
@@ -521,8 +629,14 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     const body = req.body || {};
     const { doctorId, customerName, customerPhone, serviceType, scheduledTime, durationMinutes, notes, idempotencyKey } = body;
 
-    if (!customerName || !customerPhone) {
+    if (!customerName || !customerName.trim() || !customerPhone || !customerPhone.trim()) {
       return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Patient name and phone number required' });
+    }
+
+    // Validate phone number format
+    const phoneVal = validateIndianPhoneNumber(customerPhone);
+    if (!phoneVal.isValid) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: phoneVal.error || 'Invalid Indian phone number' });
     }
 
     // Determine final scheduledTime
@@ -534,7 +648,18 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Appointment scheduledTime required' });
     }
 
-    // 1. Idempotency Check
+    // 1. Validate scheduled time format and past-date guard
+    const reqTimestamp = new Date(finalScheduledTime).getTime();
+    if (isNaN(reqTimestamp)) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Invalid scheduledTime format' });
+    }
+
+    // Reject bookings in the past (allow 5-minute clock tolerance)
+    if (reqTimestamp < Date.now() - 5 * 60 * 1000) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Cannot schedule appointments in the past' });
+    }
+
+    // 2. Idempotency Check
     if (idempotencyKey) {
       const existingKeyApt = (await globalDb.getAppointments(ctx.workspaceId)).find(a => a.idempotencyKey === idempotencyKey);
       if (existingKeyApt) {
@@ -547,16 +672,11 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       }
     }
 
-    // 2. Concurrency & Double-Booking Prevention Guard
+    // 3. Concurrency & Double-Booking Prevention Pre-check
     const slotDuration = durationMinutes || 15;
-    const reqTimestamp = new Date(finalScheduledTime).getTime();
-    if (isNaN(reqTimestamp)) {
-      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Invalid scheduledTime format' });
-    }
-
     const existingAppointments = await globalDb.getAppointments(ctx.workspaceId);
-    const conflicting = existingAppointments.find(a => {
-      if (a.status === 'CANCELLED') return false;
+        const conflicting = existingAppointments.find(a => {
+      if (a.status === 'CANCELLED' || (a.status as string) === 'RESCHEDULED') return false;
       if (doctorId && a.doctorId && a.doctorId !== doctorId) return false;
       const existingTime = new Date(a.scheduledTime).getTime();
       const existingDur = (a.durationMinutes || 15) * 60 * 1000;
@@ -565,7 +685,7 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     if (conflicting) {
-      return reply.status(409).send({
+            return reply.status(409).send({
         error: 'SLOT_UNAVAILABLE',
         message: 'This appointment slot has already been booked or is no longer available. Please select another slot.',
       });
@@ -594,7 +714,28 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       idempotencyKey,
     };
 
-    await globalDb.saveAppointment(newAppointment);
+    try {
+      await globalDb.saveAppointment(newAppointment);
+    } catch (err: any) {
+      if (err.code === '23505' || err.message?.includes('uq_appointments_doctor_slot') || err.message?.includes('duplicate key') || err.message?.includes('Unique constraint violation')) {
+        if (err.message?.includes('uq_appointments_idempotency') && idempotencyKey) {
+          const replayed = (await globalDb.getAppointments(ctx.workspaceId)).find(a => a.idempotencyKey === idempotencyKey);
+          if (replayed) {
+            return reply.status(200).send({
+              success: true,
+              idempotentReplay: true,
+              appointment: replayed,
+              message: 'Appointment booking replayed idempotently',
+            });
+          }
+        }
+        return reply.status(409).send({
+          error: 'SLOT_UNAVAILABLE',
+          message: 'This appointment slot has already been booked or is no longer available. Please select another slot.',
+        });
+      }
+      throw err;
+    }
 
     // Trigger webhook if enabled
     const ws = await globalDb.getClientWorkspaceById(ctx.workspaceId);
@@ -719,12 +860,24 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     if (!appointment) appointment = await globalDb.getAppointmentById(id, ctx.organizationId);
     if (!appointment) return reply.status(404).send({ error: 'NOT_FOUND', message: 'Appointment not found' });
 
-    // Check availability of new slot
+    // Validate format and past-date
     const newTimestamp = new Date(newScheduledTime).getTime();
+    if (isNaN(newTimestamp)) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Invalid newScheduledTime format' });
+    }
+    if (newTimestamp < Date.now() - 5 * 60 * 1000) {
+      return reply.status(400).send({ error: 'VALIDATION_ERROR', message: 'Cannot reschedule appointments into the past' });
+    }
+
+    if (appointment.status === 'CANCELLED') {
+      return reply.status(400).send({ error: 'INVALID_STATE', message: 'Cannot reschedule a cancelled appointment. Please book a new appointment.' });
+    }
+
+    // Check availability of new slot
     const slotDur = (appointment.durationMinutes || 15) * 60 * 1000;
     const allAppointments = await globalDb.getAppointments(appointment.tenantId);
     const conflict = allAppointments.find(a => {
-      if (a.id === id || a.status === 'CANCELLED') return false;
+      if (a.id === id || a.status === 'CANCELLED' || (a.status as string) === 'RESCHEDULED') return false;
       if (appointment.doctorId && a.doctorId && a.doctorId !== appointment.doctorId) return false;
       const exTime = new Date(a.scheduledTime).getTime();
       return Math.abs(exTime - newTimestamp) < slotDur;
@@ -746,11 +899,22 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       note: reason || 'Patient requested reschedule',
     });
 
-    const updated = await globalDb.updateAppointment(id, {
-      scheduledTime: newScheduledTime,
-      status: 'CONFIRMED',
-      auditHistory,
-    }, appointment.tenantId);
+    let updated;
+    try {
+      updated = await globalDb.updateAppointment(id, {
+        scheduledTime: newScheduledTime,
+        status: 'CONFIRMED',
+        auditHistory,
+      }, appointment.tenantId);
+    } catch (err: any) {
+      if (err.code === '23505' || err.message?.includes('uq_appointments_doctor_slot') || err.message?.includes('Unique constraint violation')) {
+        return reply.status(409).send({
+          error: 'SLOT_UNAVAILABLE',
+          message: 'The requested reschedule slot is already booked. Please choose an alternate time.',
+        });
+      }
+      throw err;
+    }
 
     const ws = await globalDb.getClientWorkspaceById(ctx.workspaceId);
     if (ws && updated) {
@@ -778,6 +942,14 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     let appointment = await globalDb.getAppointmentById(id, ctx.workspaceId);
     if (!appointment) appointment = await globalDb.getAppointmentById(id, ctx.organizationId);
     if (!appointment) return reply.status(404).send({ error: 'NOT_FOUND', message: 'Appointment not found' });
+
+    if (appointment.status === 'CANCELLED') {
+      return reply.status(200).send({
+        success: true,
+        appointment,
+        message: 'Appointment was already cancelled',
+      });
+    }
 
     const auditHistory = appointment.auditHistory || [];
     auditHistory.push({

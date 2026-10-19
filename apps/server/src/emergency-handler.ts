@@ -111,7 +111,7 @@ export class EmergencyHandler {
         emergencyType: 'MODERATE',
         recommendedAction: 'SCHEDULE_ASAP',
         detectedKeywords,
-        escalationMessage: 'Sir/Madam, based on your symptoms, I recommend seeing a doctor today itself. Let me check the earliest available slot for you.',
+        escalationMessage: 'Sir/Madam, I can assist you with scheduling an in-person doctor consultation at the clinic for professional medical evaluation. Let me check our doctor schedule for you.',
       };
     }
 

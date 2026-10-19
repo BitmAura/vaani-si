@@ -1759,13 +1759,52 @@ export class InMemoryDatabaseService implements IDatabaseService {
     return apt;
   }
   async saveAppointment(appointment: AppointmentSlotDTO): Promise<void> {
+    const isSameTenant = (a: AppointmentSlotDTO, b: AppointmentSlotDTO): boolean => {
+      if (a.tenantId && b.tenantId && a.tenantId === b.tenantId) return true;
+      if ((a as any).workspaceId && (b as any).workspaceId && (a as any).workspaceId === (b as any).workspaceId) return true;
+      return false;
+    };
+
+    if (appointment.doctorId && appointment.status !== 'CANCELLED' && (appointment.status as string) !== 'RESCHEDULED') {
+      const conflicting = Array.from(this.appointments.values()).find(a => 
+        a.id !== appointment.id &&
+        a.status !== 'CANCELLED' &&
+        (a.status as string) !== 'RESCHEDULED' &&
+        a.doctorId === appointment.doctorId &&
+        isSameTenant(a, appointment) &&
+        a.scheduledTime === appointment.scheduledTime
+      );
+      if (conflicting) {
+        const err = new DatabaseOperationError(
+          `Unique constraint violation: uq_appointments_doctor_slot. Doctor ${appointment.doctorId} is already booked at ${appointment.scheduledTime}`,
+          { code: '23505', constraint: 'uq_appointments_doctor_slot' }
+        );
+        (err as any).code = '23505';
+        throw err;
+      }
+    }
+    if (appointment.idempotencyKey) {
+      const existingKeyApt = Array.from(this.appointments.values()).find(a =>
+        a.id !== appointment.id &&
+        isSameTenant(a, appointment) &&
+        a.idempotencyKey === appointment.idempotencyKey
+      );
+      if (existingKeyApt) {
+        const err = new DatabaseOperationError(
+          `Unique constraint violation: uq_appointments_idempotency. Key ${appointment.idempotencyKey} already exists.`,
+          { code: '23505', constraint: 'uq_appointments_idempotency' }
+        );
+        (err as any).code = '23505';
+        throw err;
+      }
+    }
     this.appointments.set(appointment.id, appointment);
   }
   async updateAppointment(id: string, partial: Partial<AppointmentSlotDTO>, organizationId?: string): Promise<AppointmentSlotDTO | null> {
     const existing = await this.getAppointmentById(id, organizationId);
     if (!existing) return null;
     const updated = { ...existing, ...partial };
-    this.appointments.set(id, updated);
+    await this.saveAppointment(updated);
     return updated;
   }
   async deleteAppointment(id: string, organizationId?: string): Promise<void> {
@@ -3156,7 +3195,7 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
           for (const l of data.leads) super.saveLead(l);
         }
         if (Array.isArray(data.appointments)) {
-          for (const a of data.appointments) super.saveAppointment(a);
+          for (const a of data.appointments) (this as any).appointments.set(a.id, a);
         }
         if (Array.isArray(data.members)) {
           for (const m of data.members) super.saveMember(m);
@@ -3850,7 +3889,11 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
       audit_history: appointment.auditHistory || [],
       idempotency_key: appointment.idempotencyKey,
     });
-    if (error) throw new DatabaseOperationError(`Failed to save appointment: ${error.message}`, error);
+    if (error) {
+      const dbErr = new DatabaseOperationError(`Failed to save appointment: ${error.message}`, error);
+      if ((error as any).code) (dbErr as any).code = (error as any).code;
+      throw dbErr;
+    }
     await super.saveAppointment(appointment);
   }
 
@@ -3863,7 +3906,11 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
   }
 
   override async deleteAppointment(id: string, organizationId?: string): Promise<void> {
-    const { error } = await this.supabaseClient.from('appointments').delete().eq('id', id);
+    let q = this.supabaseClient.from('appointments').delete().eq('id', id);
+    if (organizationId) {
+      q = q.or(`organization_id.eq.${organizationId},workspace_id.eq.${organizationId}`);
+    }
+    const { error } = await q;
     if (error) throw new DatabaseOperationError(`Failed to delete appointment: ${error.message}`, error);
     await super.deleteAppointment(id, organizationId);
   }
