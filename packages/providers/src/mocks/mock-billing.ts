@@ -2,6 +2,7 @@
  * @vanni/providers — Mock Billing Provider for Unit & Integration Testing
  */
 
+import crypto from 'node:crypto';
 import {
   IBillingProvider,
   CreateCustomerRequest,
@@ -45,7 +46,18 @@ export class MockBillingProvider implements IBillingProvider {
   }
 
   verifyWebhookSignature(payload: WebhookVerificationPayload): boolean {
-    return payload.signature === 'valid_mock_signature';
+    if (payload.signature === 'valid_mock_signature') return true;
+    const secret = payload.webhookSecret;
+    if (!secret || !payload.signature) return false;
+    try {
+      const expected = crypto.createHmac('sha256', secret).update(payload.rawBody).digest('hex');
+      const a = Buffer.from(payload.signature);
+      const b = Buffer.from(expected);
+      if (a.length !== b.length) return false;
+      return crypto.timingSafeEqual(a, b);
+    } catch {
+      return false;
+    }
   }
 
   normalizeWebhookEvent(rawEvent: Record<string, any>): {
@@ -57,14 +69,19 @@ export class MockBillingProvider implements IBillingProvider {
     currency?: string;
     status?: string;
   } {
+    const eventType = rawEvent.event || 'subscription.charged';
+    const payload = rawEvent.payload || {};
+    const subscription = payload.subscription?.entity;
+    const payment = payload.payment?.entity;
+
     return {
       providerEventId: rawEvent.id || `evt_${Date.now()}`,
-      eventType: rawEvent.event || 'subscription.charged',
-      subscriptionId: rawEvent.subscriptionId || 'sub_mock_123',
-      paymentId: rawEvent.paymentId || 'pay_mock_123',
-      amount: rawEvent.amount || 4999,
-      currency: 'INR',
-      status: 'captured',
+      eventType,
+      subscriptionId: subscription?.id || rawEvent.subscriptionId || 'sub_mock_123',
+      paymentId: payment?.id || rawEvent.paymentId || 'pay_mock_123',
+      amount: payment ? payment.amount / 100 : (rawEvent.amount || 4999),
+      currency: payment?.currency || rawEvent.currency || 'INR',
+      status: subscription?.status || payment?.status || 'captured',
     };
   }
 }

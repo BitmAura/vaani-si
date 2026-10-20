@@ -321,9 +321,7 @@
         const res = await fetch('/api/billing/checkout', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'x-organization-id': orgId,
-            'x-user-role': 'ADMIN'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ planId, billingInterval: 'MONTHLY' })
         });
@@ -350,9 +348,7 @@
         const res = await fetch('/api/billing/subscription/cancel', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'x-organization-id': orgId,
-            'x-user-role': 'ADMIN'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ immediately: false })
         });
@@ -372,7 +368,10 @@
 
   <script>
     function viewReceipt(paymentId, amount) {
-      alert('VANNI TAX INVOICE RECEIPT\nPayment ID: ' + paymentId + '\nAmount Paid: ₹' + (amount || 0).toLocaleString('en-IN') + '\nStatus: CAPTURED\nGSTIN: 29AABCU9603R1ZM\nThank you for your business!');
+      const p = (window._currentBillingSnapshot?.recentPayments || []).find(pay => pay.providerPaymentId === paymentId);
+      const invoice = (window._currentBillingSnapshot?.invoices || [])[0];
+      const invNum = invoice?.invoiceNumber || ('INV-' + new Date().getFullYear() + '-0001');
+      alert('VANNI TAX INVOICE RECEIPT\nInvoice Number: ' + invNum + '\nPayment ID: ' + paymentId + '\nAmount Paid: ₹' + (amount || 0).toLocaleString('en-IN') + '\nStatus: CAPTURED\nGSTIN: 29AABCU9603R1ZM\nThank you for your business!');
     }
   </script>
 </body>

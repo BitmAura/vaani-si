@@ -510,14 +510,14 @@ export class InMemoryDatabaseService implements IDatabaseService {
   private costAnomalyAlerts: Map<string, CostAnomalyAlertDTO> = new Map();
 
   // Billing, Plans & Subscriptions Collections (Module 19)
-  private billingAccounts: Map<string, BillingAccountDTO> = new Map();
-  private plans: Map<string, PlanDTO> = new Map();
-  private planVersions: Map<string, PlanVersionDTO> = new Map();
-  private subscriptions: Map<string, SubscriptionDTO> = new Map();
-  private subscriptionEvents: Map<string, SubscriptionEventDTO> = new Map();
-  private paymentRecords: Map<string, PaymentRecordDTO> = new Map();
-  private billingInvoices: Map<string, BillingInvoiceDTO> = new Map();
-  private billingProviderEvents: Map<string, BillingProviderEventDTO> = new Map();
+  protected billingAccounts: Map<string, BillingAccountDTO> = new Map();
+  protected plans: Map<string, PlanDTO> = new Map();
+  protected planVersions: Map<string, PlanVersionDTO> = new Map();
+  protected subscriptions: Map<string, SubscriptionDTO> = new Map();
+  protected subscriptionEvents: Map<string, SubscriptionEventDTO> = new Map();
+  protected paymentRecords: Map<string, PaymentRecordDTO> = new Map();
+  protected billingInvoices: Map<string, BillingInvoiceDTO> = new Map();
+  protected billingProviderEvents: Map<string, BillingProviderEventDTO> = new Map();
 
   constructor() {
     this.seedCanonicalPlans();
@@ -3056,16 +3056,16 @@ export class InMemoryDatabaseService implements IDatabaseService {
     const appointments = Array.from(this.appointments.values()).filter(a => a.tenantId === organizationId);
 
     // Calculate voice minutes used in current billing period
-    const events = Array.from(this.usageEvents.values()).filter(e => {
-      if (e.organizationId !== organizationId) return false;
-      return e.occurredAt >= subscription!.currentPeriodStart && e.occurredAt <= subscription!.currentPeriodEnd;
+    const events = await this.getUsageEvents(organizationId, {
+      startDate: subscription!.currentPeriodStart,
+      endDate: subscription!.currentPeriodEnd,
     });
 
     const voiceMinutesUsed = events
       .filter(e => e.eventType === 'VOICE_DURATION')
       .reduce((acc, e) => acc + (e.unit === 'seconds' ? e.quantity / 60 : e.quantity), 0);
 
-    const clientWorkspaces = Array.from(this.clientWorkspaces.values()).filter(w => w.organizationId === organizationId);
+    const clientWorkspaces = await this.getClientWorkspacesByOrg(organizationId);
     const clientUsageBreakdown = clientWorkspaces.map(ws => {
       const wsEvents = events.filter(e => e.clientWorkspaceId === ws.id || e.resourceId === ws.id);
       const wsMinutes = wsEvents
@@ -3201,7 +3201,19 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
           for (const m of data.members) super.saveMember(m);
         }
         if (Array.isArray(data.subscriptions)) {
-          for (const s of data.subscriptions) super.saveSubscription(s);
+          for (const s of data.subscriptions) (this as any).subscriptions.set(s.organizationId, s);
+        }
+        if (Array.isArray(data.subscriptionEvents)) {
+          for (const se of data.subscriptionEvents) (this as any).subscriptionEvents.set(se.id, se);
+        }
+        if (Array.isArray(data.paymentRecords)) {
+          for (const pr of data.paymentRecords) (this as any).paymentRecords.set(pr.id, pr);
+        }
+        if (Array.isArray(data.billingInvoices)) {
+          for (const bi of data.billingInvoices) (this as any).billingInvoices.set(bi.id, bi);
+        }
+        if (Array.isArray(data.billingProviderEvents)) {
+          for (const bpe of data.billingProviderEvents) (this as any).billingProviderEvents.set(`${bpe.provider}:${bpe.providerEventId}`, bpe);
         }
         if (Array.isArray(data.staff)) {
           for (const st of data.staff) super.saveStaff(st);
@@ -3260,6 +3272,10 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         appointments: Array.from((this as any).appointments.values()),
         members: Array.from((this as any).members.values()),
         subscriptions: Array.from((this as any).subscriptions.values()),
+        subscriptionEvents: Array.from((this as any).subscriptionEvents.values()),
+        paymentRecords: Array.from((this as any).paymentRecords.values()),
+        billingInvoices: Array.from((this as any).billingInvoices.values()),
+        billingProviderEvents: Array.from((this as any).billingProviderEvents.values()),
         clientWorkspaces: Array.from((this as any).clientWorkspaces.values()),
         staff: Array.from((this as any).staffMembers.values()),
         faqs: Array.from((this as any).faqs.values()),
@@ -3393,6 +3409,26 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
 
   override async saveSubscription(sub: SubscriptionDTO): Promise<void> {
     await super.saveSubscription(sub);
+    this.persistSnapshot();
+  }
+
+  override async saveSubscriptionEvent(event: SubscriptionEventDTO): Promise<void> {
+    await super.saveSubscriptionEvent(event);
+    this.persistSnapshot();
+  }
+
+  override async savePaymentRecord(payment: PaymentRecordDTO): Promise<void> {
+    await super.savePaymentRecord(payment);
+    this.persistSnapshot();
+  }
+
+  override async saveBillingInvoice(invoice: BillingInvoiceDTO): Promise<void> {
+    await super.saveBillingInvoice(invoice);
+    this.persistSnapshot();
+  }
+
+  override async saveBillingProviderEvent(event: BillingProviderEventDTO): Promise<void> {
+    await super.saveBillingProviderEvent(event);
     this.persistSnapshot();
   }
 

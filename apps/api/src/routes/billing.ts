@@ -130,8 +130,9 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
     return reply.send({
       success: true,
       data: {
+        checkoutUrl: subResult.shortUrl || '',
+        shortUrl: subResult.shortUrl || '',
         providerSubscriptionId: subResult.providerSubscriptionId,
-        shortUrl: subResult.shortUrl,
         planName: targetPlan.name,
         amount,
         currency: targetPlan.currency,
@@ -143,8 +144,12 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
 
   // 4. POST /api/billing/subscription/cancel — Request cancellation
   fastify.post('/api/billing/subscription/cancel', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
-    const role = (req.headers['x-user-role'] as UserRole) || 'ADMIN';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
+    }
+    const orgId = auth.organizationId;
+    const role = auth.role;
 
     if (!canManageBilling(role)) {
       return reply.status(403).send({
@@ -198,8 +203,12 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
 
   // 5. POST /api/billing/subscription/change — Upgrade or Downgrade Plan
   fastify.post('/api/billing/subscription/change', async (req: FastifyRequest, reply: FastifyReply) => {
-    const orgId = (req.headers['x-organization-id'] as string) || 'a0000000-0000-0000-0000-000000000001';
-    const role = (req.headers['x-user-role'] as UserRole) || 'ADMIN';
+    const auth = PermissionService.resolveAuthContext(req.headers);
+    if (!auth.isAuthenticated) {
+      return reply.status(401).send({ success: false, error: 'UNAUTHORIZED' });
+    }
+    const orgId = auth.organizationId;
+    const role = auth.role;
 
     if (!canManageBilling(role)) {
       return reply.status(403).send({
@@ -288,9 +297,15 @@ export async function registerBillingRoutes(fastify: FastifyInstance) {
     }
 
     const orgId = rawPayload?.payload?.subscription?.entity?.notes?.organization_id
-      || rawPayload?.payload?.payment?.entity?.notes?.organization_id
-      || (req.headers['x-organization-id'] as string)
-      || 'a0000000-0000-0000-0000-000000000001';
+      || rawPayload?.payload?.payment?.entity?.notes?.organization_id;
+
+    if (!orgId) {
+      return reply.status(400).send({
+        success: false,
+        error: 'MISSING_ORGANIZATION_ID',
+        message: 'Webhook payload notes must contain organization_id.',
+      });
+    }
 
     // Persist event in audit store
     await globalDb.saveBillingProviderEvent({
