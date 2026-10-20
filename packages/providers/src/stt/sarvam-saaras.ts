@@ -51,7 +51,7 @@ export class SarvamSaarasSTTProvider implements ISTTProvider {
   private baseUrl = 'https://api.sarvam.ai';
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.SARVAM_API_KEY || '';
+    this.apiKey = apiKey !== undefined ? apiKey : (process.env.SARVAM_API_KEY || '');
   }
 
   public ensureWavHeader(
@@ -76,28 +76,42 @@ export class SarvamSaarasSTTProvider implements ISTTProvider {
     formData.append('language_code', options?.languageCode || 'kn-IN');
     formData.append('model', 'saaras:v3');
 
-    const response = await fetch(`${this.baseUrl}/speech-to-text`, {
-      method: 'POST',
-      headers: {
-        'api-subscription-key': this.apiKey,
-      },
-      body: formData,
-    });
+    const controller = new AbortController();
+    const timeoutMs = 8000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`[SarvamSaaras v3 STT Error] HTTP ${response.status}: ${err}`);
+    try {
+      const response = await fetch(`${this.baseUrl}/speech-to-text`, {
+        method: 'POST',
+        headers: {
+          'api-subscription-key': this.apiKey,
+        },
+        body: formData,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`[SarvamSaaras v3 STT Error] HTTP ${response.status}: ${err}`);
+      }
+
+      const data = await response.json() as any;
+      const text = typeof data?.transcript === 'string' ? data.transcript.trim() : '';
+
+      return {
+        text,
+        languageCode: data?.language_code || options?.languageCode || 'kn-IN',
+        confidence: typeof data?.confidence === 'number' ? data.confidence : 0.95,
+        isFinal: true,
+        durationMs: 1500,
+      };
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        throw new Error(`[SarvamSaaras v3 STT Error] Request timed out after ${timeoutMs}ms`);
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const data = await response.json() as any;
-    const text = data.transcript || '';
-
-    return {
-      text,
-      languageCode: data.language_code || 'kn-IN',
-      confidence: data.confidence || 0.95,
-      isFinal: true,
-      durationMs: 1500,
-    };
   }
 }

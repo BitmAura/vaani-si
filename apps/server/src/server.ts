@@ -2229,7 +2229,11 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     const secret = process.env.EXOTEL_WEBHOOK_SECRET || process.env.EXOTEL_API_TOKEN;
     const signature = request.headers['x-exotel-signature'] as string;
 
-    if (secret && process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production') {
+      if (!secret) {
+        fastify.log.error('[Exotel CDR] EXOTEL_WEBHOOK_SECRET is not configured — failing closed in production');
+        return reply.status(503).send({ error: 'SERVICE_UNAVAILABLE: Webhook secret not configured' });
+      }
       if (!signature) {
         fastify.log.warn('[Exotel CDR] Missing x-exotel-signature header');
         return reply.status(401).send({ error: 'UNAUTHORIZED: Missing Exotel signature' });
@@ -3758,6 +3762,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     socket.on('close', () => {
       fastify.log.info('[WebSocket Disconnected]');
+      pipeline.destroy();
       if (currentStreamSid) {
         callLifecycle.transition({
           callId: currentStreamSid,

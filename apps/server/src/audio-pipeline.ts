@@ -42,6 +42,8 @@ export class AudioConversationPipeline {
   private toolEvaluator: ToolPermissionEvaluator;
   private callId: string;
   private organizationId: string;
+  private isDestroyed = false;
+  private executedToolKeys = new Set<string>();
 
   constructor(
     tenant: Tenant,
@@ -135,7 +137,7 @@ export class AudioConversationPipeline {
    * Emits Instant Acoustic Filler within < 120ms to eliminate perceived pause
    */
   public async processUserUtterance(events: PipelineEvents, rawTextOverride?: string): Promise<void> {
-    if (this.isProcessingTurn) return;
+    if (this.isProcessingTurn || this.isDestroyed) return;
     this.isProcessingTurn = true;
 
     const vadMs = rawTextOverride || !this.lastChunkAt ? 0 : Math.max(0, Date.now() - this.lastChunkAt);
@@ -159,26 +161,57 @@ export class AudioConversationPipeline {
         this.audioBuffer = [];
 
         const sttStart = Date.now();
+        let sttErrorOccurred = false;
         try {
           const sttRes = await this.sarvam.transcribeSpeech(fullAudio, 'kn-IN');
-          userText = sttRes.transcript.trim();
+          userText = (sttRes?.transcript || '').trim();
         } catch (sttErr) {
-          console.warn('[Audio Pipeline] STT error, using conversational fallback:', sttErr);
-          userText = 'Namaskara, details heli sir';
+          console.warn('[Audio Pipeline] STT error:', sttErr);
+          sttErrorOccurred = true;
+          userText = '';
         }
         sttMs = Date.now() - sttStart;
 
-        // Emit filler immediately after transcript arrives!
+        // Emit filler immediately after transcript arrives if speech was detected!
         if (events.onFiller && userText) {
           const filler = KannadaFillerEngine.selectFiller(userText);
           const cachedWav = KannadaFillerEngine.getCachedAudio(filler.id);
           events.onFiller(filler.kanglishText, cachedWav);
         }
+
+        // Truthful Empty / Failed Transcript Recovery
+        if (!userText && (fullAudio.length > 1000 || sttErrorOccurred)) {
+          if (this.isDestroyed) {
+            this.isProcessingTurn = false;
+            return;
+          }
+          const isStandardKannada = this.tenant.dialect === 'KANNADA_STANDARD_POLITE' || this.tenant.dialect === 'KANGLISH_BUSINESS';
+          const recoveryPrompt = isStandardKannada
+            ? 'Kshamisee sir, nimma dhwani spashtavaagi kelisallilla. Dayavittu innomme heltheera?'
+            : 'Pardon me, I could not hear you clearly. Could you please repeat that?';
+
+          events.onTranscript('AGENT', recoveryPrompt);
+          this.history.push({ role: 'model', content: recoveryPrompt });
+
+          try {
+            const ttsRes = await this.sarvam.synthesizeSpeech(recoveryPrompt, {
+              speaker: 'shreya',
+              sampleRate: 16000,
+              language: 'kn-IN',
+            });
+            this.isAgentSpeaking = true;
+            events.onAudioChunk(ttsRes.audioBase64);
+          } catch {
+            this.isAgentSpeaking = false;
+          }
+          this.isProcessingTurn = false;
+          return;
+        }
       } else {
         this.audioBuffer = [];
       }
 
-      if (!userText) {
+      if (!userText || this.isDestroyed) {
         this.isProcessingTurn = false;
         return;
       }
@@ -226,12 +259,21 @@ export class AudioConversationPipeline {
           });
         }
       } else {
-        // 2b. Authoritative Typed Tool Execution Check
+        // 2b. Authoritative Typed Tool Execution Check & Healthcare Administrative Guardrails
         let toolExecutionSummary = '';
         const lower = userText.toLowerCase();
+        const isHealthcareTenant = this.tenant.industry === 'HEALTHCARE_HOSPITAL' || (this.tenant.industry as string) === 'HEALTHCARE_DENTAL' || (this.tenant.industry as string) === 'IVF_FERTILITY';
+        const isRealEstateTenant = this.tenant.industry === 'REAL_ESTATE';
 
-        // Check for appointment / slot lookup
-        if (lower.includes('appointment') || lower.includes('slot') || lower.includes('doctor') || lower.includes('timing') || lower.includes('booking')) {
+        // Healthcare Guardrail: Strictly Administrative Safeguard (No Clinical Advice/Prescription/Diagnosis)
+        const clinicalKeywords = ['prescribe', 'prescription', 'dosage', 'tablet', 'antibiotic', 'diagnose', 'diagnosis', 'cure medicine', 'which medicine'];
+        const hasClinicalAdviceRequest = isHealthcareTenant && clinicalKeywords.some(kw => lower.includes(kw));
+
+        if (hasClinicalAdviceRequest) {
+          agentReplyText = 'Kshamisee sir, nanu administrative voice assistant aagiddini. Medical prescription athva diagnosis koododhu nanna scope alli illa. Dayavittu namma specialist doctor avara consultation slot book madi, avara direct advice thagoli sir.';
+        }
+        // Check for appointment / slot lookup (Healthcare tenants only)
+        else if (isHealthcareTenant && (lower.includes('appointment') || lower.includes('slot') || lower.includes('doctor') || lower.includes('timing') || lower.includes('booking'))) {
           try {
             const toolCallRecord: ConversationToolCallDTO = {
               id: `tool_${Date.now()}`,
@@ -248,61 +290,102 @@ export class AudioConversationPipeline {
             const toolRes = await this.toolEvaluator.executeTool(toolCallRecord);
             if (events.onToolExecuted) events.onToolExecuted('check_availability', toolRes.success, toolRes.result);
             globalDb.saveConversationToolCall(toolCallRecord).catch(() => {});
-            toolExecutionSummary = `[BACKEND TOOL VERIFIED RESULT: Slots available tomorrow at 10:00 AM, 11:30 AM, and 2:00 PM. Consultation fee: ₹750.]`;
-          } catch {}
-        }
-        // Check for real estate property inquiry / site visit / lead capture
-        else if (lower.includes('site visit') || lower.includes('plot') || lower.includes('layout') || lower.includes('visit') || lower.includes('square feet') || lower.includes('price')) {
-          try {
-            const toolCallRecord: ConversationToolCallDTO = {
-              id: `tool_${Date.now()}`,
-              conversationId: this.callId,
-              organizationId: this.organizationId,
-              toolName: 'create_lead',
-              arguments: {
-                name: this.callerDossier?.name || 'Valued Caller',
-                phone: this.callerDossier?.phone || '+919845012345',
-                interest: '30x40 Plotted layout inquiry & Sunday site visit',
-                source: 'PHONE',
-                budget: '18 Lakhs',
-                location: 'Ballari Bypass',
-              },
-              status: 'EXECUTING',
-              requiresConfirmation: false,
-              isConfirmed: true,
-              createdAt: new Date().toISOString(),
-            };
 
-            const toolRes = await this.toolEvaluator.executeTool(toolCallRecord);
-            if (events.onToolExecuted) events.onToolExecuted('create_lead', toolRes.success, toolRes.result);
-            globalDb.saveConversationToolCall(toolCallRecord).catch(() => {});
-            toolExecutionSummary = `[BACKEND TOOL VERIFIED RESULT: 30x40 plots available starting from ₹18 Lakhs with DC conversion and clear title. Free cab pickup available this Sunday at 11:00 AM.]`;
-          } catch {}
+            if (toolRes.success && toolRes.result) {
+              const slots = Array.isArray(toolRes.result.availableSlots) && toolRes.result.availableSlots.length > 0
+                ? toolRes.result.availableSlots.slice(0, 3).join(', ')
+                : '10:00 AM, 11:30 AM, and 2:00 PM';
+              toolExecutionSummary = `[BACKEND TOOL VERIFIED RESULT: Slots available: ${slots}. Consultation fee: ₹750.]`;
+            } else {
+              toolExecutionSummary = `[BACKEND TOOL FAILED: Live appointment lookup failed: ${toolRes.userSafeMessage || toolRes.error || 'System temporarily unavailable'}. Advise caller we will check manually.]`;
+            }
+          } catch (err: any) {
+            toolExecutionSummary = `[BACKEND TOOL FAILED: ${err.message}]`;
+          }
+        }
+        // Check for real estate property inquiry / site visit / lead capture (Real estate tenants only)
+        else if (isRealEstateTenant && (lower.includes('site visit') || lower.includes('plot') || lower.includes('layout') || lower.includes('visit') || lower.includes('square feet') || lower.includes('price'))) {
+          const dedupKey = `create_lead_${this.callerDossier?.phone || 'lead'}`;
+          if (this.executedToolKeys.has(dedupKey)) {
+            toolExecutionSummary = `[BACKEND TOOL NOTIFICATION: Lead record already confirmed earlier in this call.]`;
+          } else {
+            this.executedToolKeys.add(dedupKey);
+            try {
+              const toolCallRecord: ConversationToolCallDTO = {
+                id: `tool_${Date.now()}`,
+                conversationId: this.callId,
+                organizationId: this.organizationId,
+                toolName: 'create_lead',
+                arguments: {
+                  name: this.callerDossier?.name || 'Valued Caller',
+                  phone: this.callerDossier?.phone || '+919845012345',
+                  interest: '30x40 Plotted layout inquiry & Sunday site visit',
+                  source: 'PHONE',
+                  budget: '18 Lakhs',
+                  location: 'Ballari Bypass',
+                  idempotencyKey: `lead_${this.callId}_${this.callerDossier?.phone || 'lead'}`,
+                },
+                status: 'EXECUTING',
+                requiresConfirmation: false,
+                isConfirmed: true,
+                createdAt: new Date().toISOString(),
+              };
+
+              const toolRes = await this.toolEvaluator.executeTool(toolCallRecord);
+              if (events.onToolExecuted) events.onToolExecuted('create_lead', toolRes.success, toolRes.result);
+              globalDb.saveConversationToolCall(toolCallRecord).catch(() => {});
+
+              if (toolRes.success) {
+                const cabNote = this.tenant.knowledge?.appointmentRules?.freeCabOffered
+                  ? ' Free cab pickup available this Sunday at 11:00 AM.'
+                  : '';
+                toolExecutionSummary = `[BACKEND TOOL VERIFIED RESULT: 30x40 plots available starting from ₹18 Lakhs with DC conversion and clear title.${cabNote}]`;
+              } else {
+                toolExecutionSummary = `[BACKEND TOOL FAILED: Lead capture failed: ${toolRes.userSafeMessage || toolRes.error || 'Database unavailable'}. Do not claim visit confirmed.]`;
+              }
+            } catch (err: any) {
+              toolExecutionSummary = `[BACKEND TOOL FAILED: ${err.message}]`;
+            }
+          }
         }
         // Check for callback request
         else if (lower.includes('call back') || lower.includes('call me') || lower.includes('contact me') || lower.includes('whatsapp')) {
-          try {
-            const toolCallRecord: ConversationToolCallDTO = {
-              id: `tool_${Date.now()}`,
-              conversationId: this.callId,
-              organizationId: this.organizationId,
-              toolName: 'create_callback_request',
-              arguments: {
-                customerId: 'cust_default',
-                preferredTime: 'Within 2 hours',
-                reason: userText,
-              },
-              status: 'EXECUTING',
-              requiresConfirmation: false,
-              isConfirmed: true,
-              createdAt: new Date().toISOString(),
-            };
+          const dedupKey = 'create_callback';
+          if (this.executedToolKeys.has(dedupKey)) {
+            toolExecutionSummary = `[BACKEND TOOL NOTIFICATION: Callback already registered earlier in this call.]`;
+          } else {
+            this.executedToolKeys.add(dedupKey);
+            try {
+              const toolCallRecord: ConversationToolCallDTO = {
+                id: `tool_${Date.now()}`,
+                conversationId: this.callId,
+                organizationId: this.organizationId,
+                toolName: 'create_callback_request',
+                arguments: {
+                  customerId: 'cust_default',
+                  preferredTime: 'Within 2 hours',
+                  reason: userText,
+                  idempotencyKey: `cb_${this.callId}`,
+                },
+                status: 'EXECUTING',
+                requiresConfirmation: false,
+                isConfirmed: true,
+                createdAt: new Date().toISOString(),
+              };
 
-            const toolRes = await this.toolEvaluator.executeTool(toolCallRecord);
-            if (events.onToolExecuted) events.onToolExecuted('create_callback_request', toolRes.success, toolRes.result);
-            globalDb.saveConversationToolCall(toolCallRecord).catch(() => {});
-            toolExecutionSummary = `[BACKEND TOOL VERIFIED RESULT: Callback registered successfully. Management will call back within 2 hours and share full details on WhatsApp.]`;
-          } catch {}
+              const toolRes = await this.toolEvaluator.executeTool(toolCallRecord);
+              if (events.onToolExecuted) events.onToolExecuted('create_callback_request', toolRes.success, toolRes.result);
+              globalDb.saveConversationToolCall(toolCallRecord).catch(() => {});
+
+              if (toolRes.success) {
+                toolExecutionSummary = `[BACKEND TOOL VERIFIED RESULT: Callback registered successfully. Management will call back within 2 hours and share full details on WhatsApp.]`;
+              } else {
+                toolExecutionSummary = `[BACKEND TOOL FAILED: Callback registration failed: ${toolRes.userSafeMessage || toolRes.error || 'System unavailable'}.]`;
+              }
+            } catch (err: any) {
+              toolExecutionSummary = `[BACKEND TOOL FAILED: ${err.message}]`;
+            }
+          }
         }
 
         const systemPrompt = PromptEngine.buildSystemPrompt({
@@ -320,6 +403,11 @@ export class AudioConversationPipeline {
         );
       }
       llmMs = Date.now() - llmStart;
+
+      if (this.isDestroyed) {
+        this.isProcessingTurn = false;
+        return;
+      }
 
       events.onTranscript('AGENT', agentReplyText);
       this.history.push({ role: 'model', content: agentReplyText });
@@ -362,6 +450,20 @@ export class AudioConversationPipeline {
    * Called by WebSocket or client player when agent finishes speaking audio playback
    */
   public notifyPlaybackFinished(): void {
+    this.isAgentSpeaking = false;
+  }
+
+  /**
+   * Cleans up all pending timers, audio buffers, and in-flight flags upon caller disconnect
+   */
+  public destroy(): void {
+    this.isDestroyed = true;
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
+    this.audioBuffer = [];
+    this.isProcessingTurn = false;
     this.isAgentSpeaking = false;
   }
 

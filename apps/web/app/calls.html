@@ -182,10 +182,92 @@
   </div>
 
   <script>
-    function openDrawer(caller, agent, duration, outcome) {
-      document.getElementById('drawerCaller').textContent = caller;
-      document.getElementById('drawerAgent').textContent = agent;
-      document.getElementById('drawerOutcome').textContent = outcome;
+    let activeCallsList = [];
+
+    async function loadCallLogs() {
+      const tbody = document.querySelector('#callsTable tbody');
+      try {
+        const res = await fetch('/api/calls', {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          const calls = await res.json();
+          activeCallsList = Array.isArray(calls) ? calls : [];
+          renderCallsTable(activeCallsList);
+        } else {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">Authentication required or no calls found.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--danger); padding: 2rem;">Failed to load live call records.</td></tr>';
+      }
+    }
+
+    function renderCallsTable(calls) {
+      const tbody = document.querySelector('#callsTable tbody');
+      if (!calls || calls.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No call records found for this workspace.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = calls.map((call, idx) => {
+        const dur = (call.durationSec || call.durationSeconds || 0) + 's';
+        const status = call.callStatus || call.status || 'COMPLETED';
+        const isEnded = ['COMPLETED', 'ENDED', 'FAILED', 'CANCELLED'].includes(status);
+        const outcome = call.outcome || 'Call Completed';
+        const callerPhone = call.phone || call.caller || 'Verified Caller';
+        const direction = call.direction || 'INBOUND';
+        const timeStr = call.time || (call.createdAt ? new Date(call.createdAt).toLocaleTimeString('en-IN') : 'Recent');
+
+        return `<tr onclick="openDrawerFromIndex(${idx})">
+          <td style="font-weight: 600;">${escapeHtml(callerPhone)}</td>
+          <td><span style="color: ${direction === 'OUTBOUND' ? '#34d399' : '#60a5fa'};">${escapeHtml(direction)}</span></td>
+          <td>${escapeHtml(call.agentId || 'VANNI Assistant')}</td>
+          <td><span class="status-badge ${isEnded ? 'ended' : ''}">${escapeHtml(status)}</span></td>
+          <td><span class="outcome-pill">${escapeHtml(outcome)}</span></td>
+          <td>${escapeHtml(dur)}</td>
+          <td style="color: var(--text-muted); font-size: 0.85rem;">${escapeHtml(timeStr)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+    }
+
+    function openDrawerFromIndex(idx) {
+      const call = activeCallsList[idx];
+      if (!call) return;
+
+      document.getElementById('drawerCaller').textContent = call.phone || call.caller || 'Caller';
+      document.getElementById('drawerAgent').textContent = call.agentId || 'VANNI Voice Agent';
+      document.getElementById('drawerOutcome').textContent = call.outcome || 'Status: ' + (call.status || 'COMPLETED');
+
+      const timelineContainer = document.querySelector('#callDrawer .timeline');
+      if (Array.isArray(call.transcript) && call.transcript.length > 0) {
+        timelineContainer.innerHTML = call.transcript.map(t => `
+          <div class="timeline-item">
+            <div class="timeline-time">${escapeHtml(t.time || '')}</div>
+            <div><strong>${escapeHtml(t.speaker || 'SPEAKER')}:</strong> ${escapeHtml(t.text || '')}</div>
+          </div>
+        `).join('');
+      } else {
+        timelineContainer.innerHTML = `
+          <div class="timeline-item">
+            <div class="timeline-time">Start</div>
+            <div>Call initiated at ${escapeHtml(call.startedAt || call.time || 'recent')}</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Duration</div>
+            <div>Confirmed billable duration: ${call.durationSec || call.durationSeconds || 0} seconds</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Status</div>
+            <div>Terminal status: ${escapeHtml(call.callStatus || call.status || 'COMPLETED')}</div>
+          </div>
+        `;
+      }
+
       document.getElementById('callDrawer').classList.add('open');
     }
 
@@ -199,6 +281,8 @@
         alert("Simulating inbound PSTN call from " + caller + "... Routing verified, virtual assistant answered.");
       }
     }
+
+    document.addEventListener('DOMContentLoaded', loadCallLogs);
   </script>
 </body>
 </html>

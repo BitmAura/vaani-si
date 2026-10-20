@@ -200,8 +200,17 @@ export async function buildVoiceGateway() {
     const language = url.searchParams.get('language') || 'kn-IN';
     const wantsRealProviders = url.searchParams.get('mock') === 'false';
 
-    // Fail LOUDLY when real providers are requested but credentials are absent.
-    if (wantsRealProviders && !process.env.SARVAM_API_KEY) {
+    // In production mode, mock providers are strictly prohibited; valid credentials are required
+    if (IS_PRODUCTION) {
+      if (!process.env.SARVAM_API_KEY || !process.env.GEMINI_API_KEY) {
+        socket.send(JSON.stringify(createVoiceEvent('ERROR', 'config', {
+          code: 'PROVIDER_NOT_CONFIGURED',
+          message: 'Production voice gateway requires SARVAM_API_KEY and GEMINI_API_KEY. Mocks are prohibited in production.',
+        }, 0)));
+        socket.close(1011, 'Provider credentials required in production');
+        return;
+      }
+    } else if (wantsRealProviders && !process.env.SARVAM_API_KEY) {
       socket.send(JSON.stringify(createVoiceEvent('ERROR', 'config', {
         code: 'PROVIDER_NOT_CONFIGURED',
         message: 'mock=false requested but SARVAM_API_KEY is not configured. refusing to serve a fake voice session.',
@@ -209,7 +218,7 @@ export async function buildVoiceGateway() {
       socket.close(1011, 'Provider not configured');
       return;
     }
-    const isMock = !wantsRealProviders;
+    const isMock = IS_PRODUCTION ? false : !wantsRealProviders;
     if (isMock) {
       fastify.log.info({ voiceSessionIdHint: orgId }, '[Voice Gateway] Mock providers active (pass ?mock=false with SARVAM_API_KEY for real STT/TTS)');
     }
@@ -362,7 +371,30 @@ export async function buildVoiceGateway() {
 
     // 5. Wire Incoming Socket Messages
     let sequenceNumber = 0;
+    let frameCount = 0;
+    let windowReset = Date.now() + 1000;
+
     socket.on('message', async (data: Buffer | string) => {
+      // Security: Frame size validation (256KB max frame)
+      const len = Buffer.isBuffer(data) ? data.length : (typeof data === 'string' ? Buffer.byteLength(data) : 0);
+      if (len > 256 * 1024) {
+        fastify.log.warn({ len }, '[Voice Gateway] WebSocket frame too large');
+        socket.close(1009, 'Message too large');
+        return;
+      }
+
+      // Security: Frame rate limiting (200 msgs/sec)
+      const now = Date.now();
+      if (now > windowReset) {
+        frameCount = 0;
+        windowReset = now + 1000;
+      }
+      frameCount++;
+      if (frameCount > 200) {
+        fastify.log.warn('[Voice Gateway] WebSocket message rate limit exceeded');
+        socket.close(1008, 'Message rate limit exceeded');
+        return;
+      }
       sequenceNumber++;
 
       if (Buffer.isBuffer(data)) {

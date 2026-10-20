@@ -180,7 +180,12 @@ export class SarvamVoiceAdapter {
       }
     }
 
-    // 3. In dev/test when neither key is configured, return deterministic silent audio frame (400ms PCM16)
+    // 3. In production mode, missing credentials must fail closed
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[SarvamVoiceAdapter] Missing SARVAM_API_KEY or AZURE_SPEECH_KEY in production mode. Refusing unconfigured TTS fallback.');
+    }
+
+    // In dev/test when neither key is configured, return deterministic silent audio frame (400ms PCM16)
     const sampleRate = options?.sampleRate || 16000;
     const numSamples = Math.round(sampleRate * 0.4); // 400ms
     const dummyBuffer = ensureWavHeader(Buffer.alloc(numSamples * 2), sampleRate, 1, 16);
@@ -268,11 +273,16 @@ export class SarvamVoiceAdapter {
       }
     }
 
-    // 3. Fallback when keys not configured
+    // 3. In production mode, missing credentials must fail closed
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[SarvamVoiceAdapter] Missing SARVAM_API_KEY or AZURE_SPEECH_KEY in production mode. Refusing unconfigured STT fallback.');
+    }
+
+    // In dev/test when keys not configured, return empty transcript for truthful recovery
     return {
-      transcript: 'Namaskara details heli sir',
+      transcript: '',
       language_code: languageCode,
-      confidence: 0.8,
+      confidence: 0,
     };
   }
 }

@@ -10,3 +10,4 @@ export * from './quality/language-quality-validator';
 export * from './voice/voice-text-preparation';
 export * from './dialects/dialect-manager';
 export * from './evaluation/kannada-evaluation-suite';
+export * from './evaluation/kannada-dialogue-scenarios';
