@@ -584,7 +584,8 @@ export async function buildServer() {
   fastify.get('/assets/vanni.css', async (req, reply) => {
     const cssPath = path.resolve(process.cwd(), 'packages/ui/dist/vanni.css');
     const altPath = path.resolve(__dirname, '../../../packages/ui/dist/vanni.css');
-    const target = fs.existsSync(cssPath) ? cssPath : altPath;
+    const webCssPath = path.resolve(process.cwd(), 'apps/web/assets/vanni.css');
+    const target = fs.existsSync(cssPath) ? cssPath : (fs.existsSync(altPath) ? altPath : webCssPath);
     if (fs.existsSync(target)) {
       reply.type('text/css').send(fs.readFileSync(target, 'utf-8'));
     } else {
@@ -3801,6 +3802,17 @@ async function main() {
   }
 }
 
-if (process.env.NODE_ENV !== 'test') {
+// Start Server if not imported by tests or running in serverless environment
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   main();
+}
+
+// Vercel Serverless Function Handler
+let serverlessInstance: any = null;
+export default async function handler(req: any, res: any) {
+  if (!serverlessInstance) {
+    serverlessInstance = await buildServer();
+    await serverlessInstance.ready();
+  }
+  serverlessInstance.server.emit('request', req, res);
 }

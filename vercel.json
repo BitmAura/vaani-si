@@ -1,23 +1,16 @@
 {
   "version": 2,
   "name": "vanni-si",
-  "builds": [
-    {
-      "src": "apps/server/src/server.ts",
-      "use": "@vercel/node",
-      "config": {
-        "maxLambdaSize": "50mb",
-        "nodeVersion": "20.x"
-      }
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "apps/web/**,packages/ui/dist/**,data/**",
+      "maxDuration": 30
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "apps/server/src/server.ts"
+      "source": "/(.*)",
+      "destination": "/api/index"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

@@ -76,6 +76,9 @@ export class IdentityService {
       const customPath = options?.storePath || process.env.AUTH_STORE_PATH;
       if (customPath) {
         this.persistPath = customPath;
+      } else if (process.env.VERCEL) {
+        // Vercel serverless lambdas have a read-only filesystem except /tmp
+        this.persistPath = '/tmp/auth_store.json';
       } else {
         const cwdData = path.resolve(process.cwd(), 'data');
         const rootData = path.resolve(process.cwd(), '../../data');
@@ -86,8 +89,9 @@ export class IdentityService {
         this.persistPath = path.join(dataDir, 'auth_store.json');
       }
       this.loadSnapshot();
-      if (this.users.size === 0 && process.env.NODE_ENV !== 'production' && !isTest && process.env.SEED_DEV_ACCOUNTS !== 'false') {
-        this.seedDevAccountsIfEmpty();
+      const allowDemo = process.env.ALLOW_DEMO_ACCOUNTS === 'true' || process.env.SEED_DEV_ACCOUNTS === 'true';
+      if (this.users.size === 0 && !isTest && (process.env.NODE_ENV !== 'production' || allowDemo) && process.env.SEED_DEV_ACCOUNTS !== 'false') {
+        this.seedDevAccountsIfEmpty(allowDemo);
       }
     }
   }
@@ -646,11 +650,12 @@ export class IdentityService {
    * Passwords are cryptographically hashed using scrypt.
    */
   public seedDevAccountsIfEmpty(force?: boolean): boolean {
-    if (process.env.NODE_ENV === 'production') {
-      // STRICT HARD INVARIANT: Demo accounts are NEVER seeded in production
+    const allowDemo = process.env.ALLOW_DEMO_ACCOUNTS === 'true' || process.env.SEED_DEV_ACCOUNTS === 'true';
+    if (process.env.NODE_ENV === 'production' && !allowDemo && !force) {
+      // STRICT HARD INVARIANT: Demo accounts are NEVER seeded in production unless explicitly enabled via ALLOW_DEMO_ACCOUNTS=true
       return false;
     }
-    if (!force && process.env.NODE_ENV === 'test') {
+    if (!force && !allowDemo && process.env.NODE_ENV === 'test') {
       return false;
     }
     const now = new Date().toISOString();
