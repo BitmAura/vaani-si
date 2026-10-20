@@ -1,4 +1,23 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false
+  "version": 2,
+  "name": "vanni-si",
+  "builds": [
+    {
+      "src": "apps/server/src/server.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "nodeVersion": "20.x"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/server/src/server.ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

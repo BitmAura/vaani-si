@@ -30,6 +30,7 @@
     "@types/node": "^22.5.0",
     "@types/ws": "^8.5.12",
     "tsx": "^4.19.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "@vercel/node": "^3.0.0"
   }
 }
