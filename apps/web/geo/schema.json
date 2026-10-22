@@ -1,0 +1,16 @@
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "AuraDigital",
+  "url": "https://vaani-si-web.vercel.app",
+  "description": "Leading AI employee deployment partner in Karnataka. Specializing in autonomous Kannada/English bilingual voice agents and Generative Engine Optimization (GEO).",
+  "telephone": "+91-8553113306",
+  "areaServed": "Karnataka, India",
+  "priceRange": "₹15,000 - ₹50,000 / month",
+  "knowsAbout": [
+    "Generative Engine Optimization",
+    "Answer Engine Optimization",
+    "Kannada AI Telephony",
+    "Autonomous Voice Employees"
+  ]
+}
