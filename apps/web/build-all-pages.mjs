@@ -1916,6 +1916,16 @@ console.log('All 14 marketing pages generated successfully!');
 function syncStaticRoutes() {
   const routeMap = {
     'app/dashboard': 'app-dashboard.html',
+    'app/campaigns': 'app-dashboard.html',
+    'app/analytics': 'app-dashboard.html',
+    'app/integrations': 'app-dashboard.html',
+    'app/billing': 'app-dashboard.html',
+    'app/appointments': 'app-dashboard.html',
+    'app/leads': 'app-dashboard.html',
+    'app/calls': 'app-dashboard.html',
+    'app/geo': 'app-dashboard.html',
+    'app/organization/create': 'app-organization-create.html',
+    'app/organization/select': 'app-organization-select.html',
     'app/agents': 'app-agents.html',
     'app/knowledge': 'app-knowledge.html',
     'app/onboarding': 'app-onboarding.html',
