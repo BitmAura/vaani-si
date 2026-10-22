@@ -103,6 +103,7 @@ import { registerAnalyticsRoutes } from './routes/analytics';
 import { registerWebhookRoutes } from './routes/webhooks';
 import { registerWorkspaceRoutes } from './routes/workspaces';
 import { registerPilotRoutes } from './routes/pilot';
+import { registerGeoRoutes } from './routes/geo';
 
 // Default Institutional Tenants
 const DEMO_TENANTS: Record<string, Tenant> = {
@@ -267,6 +268,7 @@ export async function buildServer() {
   await fastify.register(registerWebhookRoutes);
   await fastify.register(registerWorkspaceRoutes);
   await fastify.register(registerPilotRoutes);
+  await fastify.register(registerGeoRoutes);
 
   // Health check routes for Docker, Azure, and orchestration probes
   fastify.get('/health/live', async (_req: FastifyRequest, reply: FastifyReply) => {
