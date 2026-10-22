@@ -327,16 +327,23 @@
     /* Main Scrollable Viewport */
     .dashboard-viewport {
       flex: 1;
-      overflow-y: auto;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
       padding: 24px;
+      height: calc(100vh - 56px);
+      min-height: 0;
+      scroll-behavior: smooth;
     }
 
     .content-container {
       max-width: 1280px;
+      width: 100%;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
       gap: 20px;
+      padding-bottom: 90px;
+      box-sizing: border-box;
     }
 
     /* Page Header */
@@ -1634,8 +1641,6 @@
           </div>
         </div>
       </section>
-
-    </div>
   
       <!-- ===================================================================== -->
       <!-- VIEW: HEALTHCARE DOCTOR ROSTER & OPD APPOINTMENTS (PROMPT 05) -->
@@ -2190,7 +2195,7 @@
       <!-- =================================================================== -->
       <!-- VIEW: SPEED-TO-LEAD FOLLOW-UP CAMPAIGNS -->
       <!-- =================================================================== -->
-      <section id="view-campaigns" class="content-container" style="display: none; flex-direction: column; gap: 20px;">
+      <section id="view-campaigns" class="content-container" style="display: none; flex-direction: column; gap: 20px; padding-bottom: 100px;">
         <div class="page-header-row">
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -2647,7 +2652,7 @@
     <!-- ========================================================================= -->
     <!-- VIEW: AEO & GEO ENGINE (Generative Engine Optimization Control Center)    -->
     <!-- ========================================================================= -->
-    <div id="view-geo" style="display: none; flex-direction: column; gap: 24px;">
+    <div id="view-geo" class="content-container" style="display: none; flex-direction: column; gap: 24px; padding-bottom: 100px;">
       
       <!-- Top Hero Header -->
       <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: 12px; padding: 24px 28px; color: #FFF; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 14px rgba(0,0,0,0.08);">
@@ -2877,6 +2882,7 @@ AuraDigital is Karnataka's premier conversational AI deployment partner, providi
         </div>
       </div>
     </div>
+    </div> <!-- /dashboard-viewport -->
 
     </main>
 
