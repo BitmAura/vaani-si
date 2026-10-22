@@ -492,32 +492,19 @@ export async function buildServer() {
         return serveWebHtml('app-agents.html', reply);
       }
 
-      if (routePath === '/app/campaigns') {
-        return serveWebHtml('app/campaigns.html', reply);
-      }
-
-      if (routePath === '/app/campaigns/new') {
-        return serveWebHtml('app/campaigns/new.html', reply);
-      }
-
-      if (routePath === '/app/billing') {
-        return serveWebHtml('app/billing.html', reply);
-      }
-
-      if (routePath === '/app/appointments') {
-        return serveWebHtml('app/appointments.html', reply);
-      }
-
-      if (routePath === '/app/analytics') {
-        return serveWebHtml('app/analytics.html', reply);
-      }
-
-      if (routePath === '/app/calls') {
-        return serveWebHtml('app/calls.html', reply);
-      }
-
-      if (routePath === '/app/leads') {
-        return serveWebHtml('app/leads.html', reply);
+      // Unified Single-Page Enterprise App Shell
+      if (
+        routePath === '/app/campaigns' ||
+        routePath === '/app/campaigns/new' ||
+        routePath === '/app/analytics' ||
+        routePath === '/app/integrations' ||
+        routePath === '/app/billing' ||
+        routePath === '/app/appointments' ||
+        routePath === '/app/calls' ||
+        routePath === '/app/leads' ||
+        routePath === '/app/dashboard'
+      ) {
+        return serveWebHtml('app-dashboard.html', reply);
       }
 
       // Default route redirect: /app -> /app/dashboard

@@ -651,7 +651,7 @@ export class IdentityService {
    */
   public seedDevAccountsIfEmpty(force?: boolean): boolean {
     const allowDemo = process.env.ALLOW_DEMO_ACCOUNTS === 'true' || process.env.SEED_DEV_ACCOUNTS === 'true';
-    if (process.env.NODE_ENV === 'production' && !allowDemo && !force) {
+    if (process.env.NODE_ENV === 'production' && !allowDemo) {
       // STRICT HARD INVARIANT: Demo accounts are NEVER seeded in production unless explicitly enabled via ALLOW_DEMO_ACCOUNTS=true
       return false;
     }

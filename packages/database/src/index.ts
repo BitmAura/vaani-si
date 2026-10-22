@@ -3707,9 +3707,11 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
       id: org.id,
       name: org.name,
       slug: org.slug,
-      industry_type: org.industry,
-      is_active: org.status === 'ACTIVE',
-      billing_tier: org.billingTier,
+      industry: org.industry,
+      status: org.status || 'ACTIVE',
+      onboarding_status: org.onboardingStatus || 'created',
+      billing_tier: org.billingTier || 'STARTER',
+      created_at: org.createdAt || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
     if (error) throw new DatabaseOperationError(`Failed to save organization: ${error.message}`, error);
@@ -4352,10 +4354,7 @@ export class SupabaseDatabaseService extends InMemoryDatabaseService {
       user_id: member.userId,
       role: member.role,
       status: member.status || 'ACTIVE',
-      user_email: member.userEmail,
-      user_full_name: member.userFullName,
       created_at: member.createdAt || new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     });
     if (error) throw new DatabaseOperationError(`Failed to save organization member: ${error.message}`, error);
     await super.saveMember(member);
