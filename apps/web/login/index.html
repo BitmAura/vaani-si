@@ -157,9 +157,6 @@
               ]
             }
           };
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || errData.message || 'Invalid email or password. Please verify your credentials.');
         }
 
         if (data && data.session) {
