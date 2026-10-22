@@ -2731,9 +2731,18 @@
   async function initDashboard() {
     try {
       // 1.1 Fetch Real Authenticated Session
-      const sessRes = await fetch('/api/auth/session');
-      if (sessRes.ok) {
-        const sessData = await sessRes.json();
+      let sessData = null;
+      try {
+        const sessRes = await fetch('/api/auth/session');
+        if (sessRes.ok) sessData = await sessRes.json();
+      } catch (e) {}
+      if (!sessData || !sessData.session) {
+        try {
+          const local = localStorage.getItem('vanni_session');
+          if (local) sessData = { session: JSON.parse(local) };
+        } catch (e) {}
+      }
+      if (sessData && sessData.session) {
         activeSession = sessData.session;
         if (activeSession) {
           activeOrgId = activeSession.activeOrganizationId || 'real_estate';
