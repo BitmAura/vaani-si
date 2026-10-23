@@ -3128,6 +3128,7 @@
 
       // 1.2 Fetch Active Organization Details
       renderDynamicAeoContent();
+      updateKillSwitchVisuals();
       await loadOrganizationDetails();
 
       // 1.3 Check Active Workspace Context & Agency Hub
@@ -6299,18 +6300,25 @@
     }, 12400);
   }
 
-  function toggleGeoKillSwitch() {
-    const isCurrentlyRevoked = localStorage.getItem('vanni_geo_revoked_auradigital') === 'true';
-    const nextState = !isCurrentlyRevoked;
-    localStorage.setItem('vanni_geo_revoked_auradigital', nextState ? 'true' : 'false');
+  function getActiveEntityKey() {
+    const savedStep4 = localStorage.getItem('vanni_onboarding_step_4');
+    let clientData = null;
+    try { if (savedStep4) clientData = JSON.parse(savedStep4); } catch(e) {}
+    const clientName = (clientData && clientData.clientName) || localStorage.getItem('vanni_org_name') || 'Punarvaas Rehabilitation Hospital';
+    const isHealthcare = clientName.toLowerCase().includes('punarvaas') || clientName.toLowerCase().includes('hospital') || clientName.toLowerCase().includes('clinic') || (clientData && clientData.industryCategory === 'HEALTHCARE');
+    return isHealthcare ? 'punarvaas' : clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
 
+  function updateKillSwitchVisuals() {
+    const entityKey = getActiveEntityKey();
+    const isCurrentlyRevoked = localStorage.getItem('vanni_geo_revoked_' + entityKey) === 'true';
     const btn = document.getElementById('geo-killswitch-btn');
     const pill = document.getElementById('geo-status-pill');
 
-    if (nextState) {
+    if (isCurrentlyRevoked) {
       if (btn) {
         btn.style.background = '#059669';
-        btn.innerHTML = '<span>✓ Reactivate AEO & GEO Engine</span>';
+        btn.innerHTML = '<span>✓ Reactivate AEO &amp; GEO Engine</span>';
       }
       if (pill) {
         pill.style.background = 'rgba(239, 68, 68, 0.2)';
@@ -6318,7 +6326,6 @@
         pill.style.borderColor = 'rgba(248, 113, 113, 0.3)';
         pill.textContent = '● Service Revoked / Inactive';
       }
-      alert('AEO & GEO Engine Revoked! The hosted loader script on Vercel is now disabled for client websites.');
     } else {
       if (btn) {
         btn.style.background = '#DC2626';
@@ -6330,11 +6337,39 @@
         pill.style.borderColor = 'rgba(52, 211, 153, 0.3)';
         pill.textContent = '● Service Active';
       }
-      alert('AEO & GEO Engine Reactivated! Schemas are live on Vercel Edge.');
     }
   }
 
-  
+  async function toggleGeoKillSwitch() {
+    const entityKey = getActiveEntityKey();
+    const isCurrentlyRevoked = localStorage.getItem('vanni_geo_revoked_' + entityKey) === 'true';
+    const nextState = !isCurrentlyRevoked;
+    localStorage.setItem('vanni_geo_revoked_' + entityKey, nextState ? 'true' : 'false');
+    updateKillSwitchVisuals();
+
+    // Also persist status to backend / Supabase organizations table
+    try {
+      const SUPABASE_URL = 'https://qwmxgqpmcbuvkhrsbibz.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_DRuRSnMq009Fw96ND4sNAQ_6OpM0fkm';
+      await fetch(SUPABASE_URL + '/rest/v1/organizations?slug=eq.' + entityKey + '-hospital', {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ status: nextState ? 'REVOKED' : 'ACTIVE' })
+      });
+    } catch(e) {}
+
+    if (nextState) {
+      alert('AEO & GEO Engine REVOKED for ' + entityKey + '! If the client has unpaid invoices, the script on their website is now immediately shut off.');
+    } else {
+      alert('AEO & GEO Engine REACTIVATED for ' + entityKey + '! Schemas are live again on Vercel CDN.');
+    }
+  }
+
   function renderDynamicAeoContent() {
     // Detect active client entity and industry
     const savedStep4 = localStorage.getItem('vanni_onboarding_step_4');

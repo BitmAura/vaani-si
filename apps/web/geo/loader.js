@@ -9,11 +9,14 @@
   try {
     var params = new URLSearchParams(document.currentScript ? document.currentScript.src.split('?')[1] || '' : '');
     var entity = (params.get('entity') || 'auradigital').toLowerCase();
-    var isRevoked = params.get('revoked') === 'true' || localStorage.getItem('vanni_geo_revoked_' + entity) === 'true';
+    var isRevoked = params.get('revoked') === 'true' || 
+                    (typeof localStorage !== 'undefined' && localStorage.getItem('vanni_geo_revoked_' + entity) === 'true');
 
     // KILL SWITCH: If revoked by tenant or unpaid, de-activate immediately
     if (isRevoked) {
       console.warn('[VAANI GEO/AEO] Access for entity \'' + entity + '\' is currently REVOKED or PAUSED. No schema injected.');
+      var existingSchema = document.getElementById('vanni-geo-schema');
+      if (existingSchema) existingSchema.remove();
       return;
     }
 
