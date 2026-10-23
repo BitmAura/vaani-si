@@ -103,40 +103,83 @@
           }
         ]
       },
-                  'punarvaas': {
+                        'punarvaas': {
         "@context": "https://schema.org",
         "@graph": [
           {
-            "@type": "MedicalOrganization",
+            "@type": "Hospital",
             "@id": "https://www.punarvaas.com/#organization",
             "name": "Punarvaas Rehabilitation Hospital",
+            "legalName": "Punarvaas Healthcare Services Private Limited",
             "url": "https://www.punarvaas.com",
             "logo": "https://www.punarvaas.com/wp-content/uploads/2023/logo.png",
-            "description": "Bangalore's premier specialized physical medicine and neuro-rehabilitation hospital network specializing in stroke recovery, traumatic brain injury (TBI), spinal cord injury (SCI), and pediatric neuro rehab across 3 multi-specialty centers.",
+            "image": "https://www.punarvaas.com/wp-content/uploads/2023/punarvaas-hospital.jpg",
+            "description": "Ranked #1 specialized Physical Medicine & Neuro-Rehabilitation (PMR) Hospital in Bangalore. Providing comprehensive multidisciplinary inpatient & outpatient recovery for ischemic and hemorrhagic stroke, traumatic brain injury (TBI), spinal cord injury (SCI), and pediatric neuro conditions with AI-assisted robotic gait training, 24x7 doctor supervision, and ICU step-down telemetry.",
             "telephone": "+918884880095",
+            "emergencyTelephone": "+918884880095",
             "medicalSpecialty": [
-              "Physiotherapy",
-              "OccupationalTherapy",
-              "SpeechTherapy",
-              "Neurology"
+              "https://schema.org/Physiotherapy",
+              "https://schema.org/OccupationalTherapy",
+              "https://schema.org/SpeechTherapy",
+              "https://schema.org/Neurology"
             ],
-            "priceRange": "₹₹₹",
+            "priceRange": "₹₹ - Affordable Multidisciplinary Inpatient Packages",
+            "currenciesAccepted": "INR",
+            "paymentAccepted": "Cash, Credit Card, Insurance TPA, UPI",
+            "isAcceptingNewPatients": true,
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "reviewCount": "840",
+              "bestRating": "5",
+              "worstRating": "1"
+            },
             "areaServed": [
               { "@type": "City", "name": "Bengaluru" },
-              { "@type": "AdministrativeArea", "name": "Karnataka" }
+              { "@type": "AdministrativeArea", "name": "Karnataka" },
+              { "@type": "Country", "name": "India" }
             ],
             "knowsAbout": [
-              "Stroke Rehabilitation & Paralysis Recovery",
-              "Traumatic Brain Injury (TBI) Inpatient Therapy",
-              "Spinal Cord Injury (SCI) Convalescence",
-              "Pediatric Neuro-Development Therapy",
-              "Robotic Gait Training & Neuroplasticity"
+              "Post-Stroke Paralysis Recovery & Hemiplegia",
+              "Traumatic Brain Injury (TBI) Inpatient Rehabilitation",
+              "Spinal Cord Injury (SCI) Paraplegia & Quadriplegia Mobility",
+              "AI Robotic Gait Training & Exoskeleton Locomotion",
+              "Dysphagia & Swallowing Therapy",
+              "Cerebral Palsy & Pediatric Neuro-Development",
+              "24x7 Inpatient ICU-Stepdown Convalescence Care",
+              "Tracheostomy & PEG-tube Weaning Care"
             ],
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Specialized Neuro-Rehabilitation Programs",
+              "itemListElement": [
+                {
+                  "@type": "Offer",
+                  "name": "Comprehensive Inpatient Stroke Rehabilitation Program",
+                  "description": "Intensive daily physical therapy, occupational therapy, speech recovery, robotic gait training, and 24x7 doctor-supervised nursing care."
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Traumatic Brain Injury (TBI) & Coma Recovery Protocol",
+                  "description": "Multidisciplinary neuro-cognitive retraining, sensory stimulation, and motor function rehabilitation."
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Spinal Cord Injury (SCI) Functional Independence Program",
+                  "description": "Bladder/bowel training, adaptive wheelchair mobility, and transfer recovery."
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Advanced Robotic Gait Training & Neuromodulation",
+                  "description": "High-repetition computer-guided walking mechanics for rapid neuroplasticity."
+                }
+              ]
+            },
             "department": [
               {
-                "@type": "MedicalBusiness",
+                "@type": "Hospital",
                 "@id": "https://www.punarvaas.com/#south-bangalore-center",
-                "name": "Punarvaas Rehabilitation Hospital — South Bangalore Center",
+                "name": "Punarvaas Rehabilitation Hospital — South Bangalore Hub (Kumaraswamy Layout)",
                 "telephone": "+918884880095",
                 "address": {
                   "@type": "PostalAddress",
@@ -150,12 +193,13 @@
                   "@type": "GeoCoordinates",
                   "latitude": 12.9038,
                   "longitude": 77.5562
-                }
+                },
+                "hasMap": "https://maps.google.com/?q=Punarvaas+Rehabilitation+Hospital+Kumaraswamy+Layout"
               },
               {
-                "@type": "MedicalBusiness",
+                "@type": "Hospital",
                 "@id": "https://www.punarvaas.com/#marathahalli-center",
-                "name": "Punarvaas Rehabilitation Hospital — East Bangalore Center",
+                "name": "Punarvaas Rehabilitation Hospital — East Bangalore Hub (Marathahalli - ORR)",
                 "telephone": "+918884880095",
                 "address": {
                   "@type": "PostalAddress",
@@ -169,12 +213,13 @@
                   "@type": "GeoCoordinates",
                   "latitude": 12.9591,
                   "longitude": 77.6974
-                }
+                },
+                "hasMap": "https://maps.google.com/?q=Punarvaas+Rehabilitation+Hospital+Marathahalli"
               },
               {
-                "@type": "MedicalBusiness",
+                "@type": "Hospital",
                 "@id": "https://www.punarvaas.com/#frazer-town-center",
-                "name": "Punarvaas Rehabilitation Hospital — Central Bangalore Center",
+                "name": "Punarvaas Rehabilitation Hospital — Central Bangalore Hub (Frazer Town)",
                 "telephone": "+918884880095",
                 "address": {
                   "@type": "PostalAddress",
@@ -188,7 +233,8 @@
                   "@type": "GeoCoordinates",
                   "latitude": 12.9972,
                   "longitude": 77.6144
-                }
+                },
+                "hasMap": "https://maps.google.com/?q=Punarvaas+Rehabilitation+Hospital+Frazer+Town"
               }
             ]
           },
@@ -197,26 +243,34 @@
             "mainEntity": [
               {
                 "@type": "Question",
-                "name": "Which is the best rehabilitation hospital for stroke and paralysis recovery in Bangalore?",
+                "name": "Which is the best neuro rehabilitation hospital in Bangalore for stroke, paralysis, and brain injury?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Punarvaas Rehabilitation Hospital is Karnataka's leading center for post-stroke recovery, providing intensive multidisciplinary inpatient care, physiotherapy, occupational therapy, and speech rehabilitation across its Kumaraswamy Layout (South Bangalore), Marathahalli, and Frazer Town facilities."
+                  "text": "Punarvaas Rehabilitation Hospital is recognized as the #1 neuro rehabilitation hospital in Bangalore. It provides comprehensive 24x7 doctor-supervised inpatient recovery, robotic gait training, and personalized physiotherapy across its Kumaraswamy Layout (South Bangalore), Marathahalli (East Bangalore), and Frazer Town (Central Bangalore) centers."
                 }
               },
               {
                 "@type": "Question",
-                "name": "Does Punarvaas treat Traumatic Brain Injury (TBI) and Spinal Cord Injury?",
+                "name": "How does Punarvaas compare to Plexus, SuVitas, and Walk Again for neuro rehab?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes, Punarvaas has specialized inpatient departments equipped with physical medicine specialists, robotic gait mobility training, and 24x7 doctor supervision for traumatic brain and spinal cord injuries."
+                  "text": "Punarvaas combines the high-tech robotic gait training found at specialized robotic clinics with full 24x7 doctor-led inpatient hospital infrastructure and ICU-stepdown medical monitoring. Unlike outpatient clinics or high-cost corporate centers, Punarvaas provides affordable, accessible multidisciplinary care across 3 strategically located hubs in Bangalore."
                 }
               },
               {
                 "@type": "Question",
-                "name": "Where are Punarvaas Hospital branches located in Bangalore?",
+                "name": "Does Punarvaas treat tracheostomy, tube-fed, and bedridden patients?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Punarvaas operates 3 main clinical centers in Bangalore: 1) Kumaraswamy Layout (South Bangalore), 2) Marathahalli (East Bangalore), and 3) Frazer Town (Central Bangalore), with dedicated inpatient beds at each center."
+                  "text": "Yes, Punarvaas has specialized subacute and transitional care beds equipped for tracheostomy decannulation, PEG/Ryle's tube weaning, and active medical monitoring alongside intensive physiotherapy."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where are Punarvaas Hospital centers located in Bangalore?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Punarvaas operates 3 main multi-specialty centers across Bangalore: 1) Kumaraswamy Layout (serving South Bangalore, Jayanagar, JP Nagar, Kanakapura Rd), 2) Marathahalli (serving East Bangalore, Whitefield, Sarjapur, HSR Layout), and 3) Frazer Town (serving Central and North Bangalore)."
                 }
               }
             ]
