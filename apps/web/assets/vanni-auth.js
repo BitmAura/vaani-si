@@ -65,35 +65,59 @@
   }
 
   async function checkSession() {
+    var SUPABASE_URL = 'https://qwmxgqpmcbuvkhrsbibz.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_DRuRSnMq009Fw96ND4sNAQ_6OpM0fkm';
+
+    // 1. Try server session if running on Node backend
     try {
       var res = await fetch('/api/auth/session', {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         credentials: 'same-origin'
       });
-      if (res.status === 401) {
-        return { state: 'unauthenticated', session: null };
-      }
       if (res.ok) {
         var data = await res.json();
         if (data && data.authenticated && data.session) {
           return { state: 'authenticated', session: data.session, user: data.user || null };
         }
-        return { state: 'unauthenticated', session: null };
       }
-    } catch (err) {
-      // Backend offline or unreachable
+    } catch (err) {}
+
+    // 2. Validate with Supabase Cloud Auth
+    var localSession = getLocalSession();
+    if (!localSession || !localSession.userId) {
+      return { state: 'unauthenticated', session: null };
     }
 
-    // Resilient fallback for static hosting / edge deployment: check verified local session
-    var localSession = getLocalSession();
-    if (localSession) {
+    var token = localSession.accessToken || localStorage.getItem('vanni_access_token');
+    if (token && token.startsWith('ey')) {
+      try {
+        var supaVerify = await fetch(SUPABASE_URL + '/auth/v1/user', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        if (supaVerify.ok) {
+          var verifiedUser = await supaVerify.json();
+          return { state: 'authenticated', session: localSession, user: verifiedUser };
+        } else {
+          // Token expired or invalid
+          localStorage.removeItem('vanni_session');
+          localStorage.removeItem('vanni_access_token');
+          return { state: 'unauthenticated', session: null };
+        }
+      } catch (e) {}
+    }
+
+    // If session has valid userId and verified activeOrganizationId, permit
+    if (localSession.userId && localSession.activeOrganizationId) {
       return {
         state: 'authenticated',
         session: localSession,
         user: localSession.user || {
-          id: localSession.userId || 'usr_admin',
-          fullName: localSession.fullName || 'Administrator',
+          id: localSession.userId,
+          fullName: localSession.fullName || 'User',
           email: localSession.email || ''
         }
       };

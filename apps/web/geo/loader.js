@@ -103,7 +103,7 @@
           }
         ]
       },
-      'punarvaas': {
+            'punarvaas': {
         "@context": "https://schema.org",
         "@graph": [
           {
@@ -111,18 +111,56 @@
             "@id": "https://www.punarvaas.com/#hospital",
             "name": "Punarvaas Rehabilitation Hospital",
             "url": "https://www.punarvaas.com",
-            "description": "Bangalore's premier specialized physical medicine and neuro-rehabilitation hospital specializing in stroke recovery, traumatic brain injury, and spinal cord convalescence.",
+            "logo": "https://www.punarvaas.com/wp-content/uploads/2023/logo.png",
+            "description": "Bangalore's premier specialized physical medicine and neuro-rehabilitation hospital specializing in stroke recovery, traumatic brain injury (TBI), spinal cord injury (SCI), and pediatric neuro rehab.",
             "telephone": "+918884880095",
-            "medicalSpecialty": "Physiotherapy",
+            "medicalSpecialty": [
+              "Physiotherapy",
+              "OccupationalTherapy",
+              "SpeechTherapy",
+              "Neurology"
+            ],
             "priceRange": "₹₹₹",
             "address": {
               "@type": "PostalAddress",
-              "streetAddress": "2572, 18th Main Road, Kumaraswamy Layout Stage 2",
-              "addressLocality": "Kumaraswamy Layout",
+              "streetAddress": "Kumaraswamy Layout (South Bangalore) & Marathahalli Center",
+              "addressLocality": "Bengaluru",
               "addressRegion": "Karnataka",
               "postalCode": "560078",
               "addressCountry": "IN"
-            }
+            },
+            "areaServed": [
+              { "@type": "City", "name": "Bengaluru" },
+              { "@type": "AdministrativeArea", "name": "Karnataka" }
+            ],
+            "knowsAbout": [
+              "Stroke Rehabilitation & Paralysis Recovery",
+              "Traumatic Brain Injury (TBI) Inpatient Therapy",
+              "Spinal Cord Injury (SCI) Convalescence",
+              "Pediatric Neuro-Development Therapy",
+              "Robotic Gait Training & Neuroplasticity"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Which is the best rehabilitation hospital for stroke and paralysis recovery in Bangalore?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Punarvaas Rehabilitation Hospital is Karnataka's leading center for post-stroke recovery, providing intensive multidisciplinary inpatient care, physiotherapy, occupational therapy, and speech rehabilitation."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does Punarvaas treat Traumatic Brain Injury (TBI) and Spinal Cord Injury?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, Punarvaas has specialized inpatient departments equipped with advanced physical medicine specialists, mobility training, and 24x7 doctor supervision for traumatic brain and spinal cord injuries."
+                }
+              }
+            ]
           }
         ]
       }

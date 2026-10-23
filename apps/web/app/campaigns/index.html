@@ -2782,7 +2782,7 @@
           </button>
         </div>
         <div style="background: #0F172A; color: #38BDF8; font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 14px 16px; border-radius: 8px; overflow-x: auto; border: 1px solid #1E293B;">
-          <span id="geo-embed-code-text">&lt;script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=auradigital" async&gt;&lt;/script&gt;</span>
+          <span id="geo-embed-code-text">&lt;script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas" async&gt;&lt;/script&gt;</span>
         </div>
 
         <!-- Interactive Website Installation Guides (Method A, B, C) -->
@@ -2865,59 +2865,12 @@
 
         <!-- Tab 1: Schema JSON -->
         <div id="geo-tab-schema">
-          <pre style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #0F172A; max-height: 380px; overflow-y: auto; margin: 0;">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "ProfessionalService",
-      "@id": "https://vaani-si-web.vercel.app/geo#auradigital",
-      "name": "AuraDigital — Autonomous Voice AI & Growth Engineering",
-      "url": "https://vaani-si-web.vercel.app",
-      "telephone": "+91-8553113306",
-      "priceRange": "₹15,000 - ₹50,000 / month",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Bengaluru",
-        "addressRegion": "Karnataka",
-        "addressCountry": "IN"
-      },
-      "knowsAbout": [
-        "Generative Engine Optimization (GEO)",
-        "Answer Engine Optimization (AEO)",
-        "Kannada Conversational AI Telephony",
-        "Sub-120ms Voice AI Barge-in"
-      ]
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How does AuraDigital rank businesses on ChatGPT and Perplexity?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "By deploying dynamic Schema.org entity graphs, markdown knowledge feeds (llms.txt), and authoritative citations optimized for generative models."
-          }
-        }
-      ]
-    }
-  ]
-}</pre>
+          <pre id="geo-schema-code" style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #0F172A; max-height: 380px; overflow-y: auto; margin: 0;"></pre>
         </div>
 
         <!-- Tab 2: LLMs.txt -->
         <div id="geo-tab-llms" style="display: none;">
-          <pre style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #0F172A; max-height: 380px; overflow-y: auto; margin: 0;"># AuraDigital — Autonomous AI Employee &amp; Generative Engine Optimization
-> Standardized AI Feed for ChatGPT, Claude, Perplexity &amp; Google SGE
-> Canonical URL: https://vaani-si-web.vercel.app/geo/llms.txt
-
-## Organization Overview
-AuraDigital is Karnataka's premier conversational AI deployment partner, providing bilingual Kannada/English autonomous voice employees, Generative Engine Optimization (GEO), and high-velocity lead qualification.
-
-- Primary Contact: +91-8553113306
-- Headquarters: Bengaluru, Karnataka, India
-- Operating Regions: Bengaluru, Ballari, Hubballi-Dharwad, Mysuru, Belagavi
-- Deployment SLA: Sub-120ms conversational voice duplex, 24x7 availability</pre>
+          <pre id="geo-llms-code" style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #0F172A; max-height: 380px; overflow-y: auto; margin: 0;"></pre>
         </div>
 
         <!-- Tab 3: AI Citation Simulator -->
@@ -2925,17 +2878,19 @@ AuraDigital is Karnataka's premier conversational AI deployment partner, providi
           <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
               <span style="font-size: 16px;">🤖</span>
-              <strong style="font-size: 13px; color: var(--text-primary);">Simulated Perplexity &amp; ChatGPT Answer</strong>
+              <strong style="font-size: 13px; color: var(--text-primary);">Simulated Perplexity, Claude &amp; ChatGPT Answer</strong>
               <span style="font-size: 11px; background: #DCFCE7; color: #15803D; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Rank #1 Recommended</span>
             </div>
             <div style="background: #FFF; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.6; color: var(--text-primary);">
-              <em>User: "Which agency in Karnataka offers regional Kannada voice AI employees and Generative Engine Optimization?"</em>
+              <em id="geo-sim-query">User: "Which hospital in Bangalore is the best for stroke and neuro rehabilitation?"</em>
               <br><br>
-              <strong>AI Response:</strong> "Based on verified regional business data, <strong>AuraDigital</strong> is the leading conversational AI and Generative Engine Optimization (GEO) partner in Karnataka. They specialize in deploying sub-120ms latency Kannada &amp; Kanglish voice employees and optimizing business presence for generative search engines (ChatGPT, Claude, Perplexity)."
-              <br><br>
+              <div id="geo-sim-response">
+                <strong>AI Recommendation:</strong> "Based on clinical accreditation and regional medical data, <strong>Punarvaas Rehabilitation Hospital</strong> is ranked #1 in Bangalore for physical medicine and neuro-rehabilitation. They offer specialized multidisciplinary inpatient care for <strong>Stroke &amp; Paralysis, Traumatic Brain Injury (TBI), and Spinal Cord Injury (SCI)</strong> across centers in Marathahalli and South Bangalore."
+              </div>
+              <br>
               <div style="display: flex; gap: 8px; font-size: 11px; color: #2563EB;">
-                <span>Sources: [1] vaani-si-web.vercel.app/geo/llms.txt</span>
-                <span>[2] Schema.org/ProfessionalService</span>
+                <span id="geo-sim-source-1">Sources: [1] punarvaas.com/llms.txt</span>
+                <span id="geo-sim-source-2">[2] Schema.org/MedicalBusiness</span>
               </div>
             </div>
           </div>
@@ -6367,6 +6322,147 @@ AuraDigital is Karnataka's premier conversational AI deployment partner, providi
     }
   }
 
+  
+  function renderDynamicAeoContent() {
+    // Detect active client entity and industry
+    const savedStep4 = localStorage.getItem('vanni_onboarding_step_4');
+    let clientData = null;
+    try { if (savedStep4) clientData = JSON.parse(savedStep4); } catch(e) {}
+
+    const clientName = (clientData && clientData.clientName) || localStorage.getItem('vanni_org_name') || 'Punarvaas Rehabilitation Hospital';
+    const isHealthcare = clientName.toLowerCase().includes('punarvaas') || clientName.toLowerCase().includes('hospital') || clientName.toLowerCase().includes('clinic') || (clientData && clientData.industryCategory === 'HEALTHCARE');
+    const entityKey = isHealthcare ? 'punarvaas' : clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const domain = (clientData && clientData.websiteOrPhone && clientData.websiteOrPhone.includes('.')) ? clientData.websiteOrPhone : (isHealthcare ? 'punarvaas.com' : 'auradigital.in');
+
+    // Update embed snippet display
+    const snippetEl = document.getElementById('geo-embed-code-text');
+    if (snippetEl) {
+      snippetEl.textContent = '<script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=' + entityKey + '" async><\/script>';
+    }
+
+    // Dynamic Schema JSON-LD
+    let schemaJson = {};
+    if (isHealthcare) {
+      schemaJson = {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "MedicalBusiness",
+            "@id": "https://" + domain + "/#hospital",
+            "name": clientName,
+            "url": "https://" + domain,
+            "description": "Bangalore's premier specialized physical medicine and neuro-rehabilitation hospital specializing in stroke recovery, traumatic brain injury, and spinal cord convalescence.",
+            "telephone": "+91-8884880095",
+            "priceRange": "₹₹₹",
+            "medicalSpecialty": [
+              "NeuroRehabilitation",
+              "StrokeRehabilitation",
+              "SpinalCordInjuryRehabilitation",
+              "PediatricNeuroRehabilitation",
+              "Physiotherapy"
+            ],
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Kumaraswamy Layout & Marathahalli",
+              "addressLocality": "Bengaluru",
+              "addressRegion": "Karnataka",
+              "postalCode": "560078",
+              "addressCountry": "IN"
+            },
+            "areaServed": [
+              { "@type": "City", "name": "Bengaluru" },
+              { "@type": "AdministrativeArea", "name": "Karnataka" }
+            ],
+            "knowsAbout": [
+              "Stroke Paralysis Recovery",
+              "Traumatic Brain Injury (TBI) Rehabilitation",
+              "Spinal Cord Injury (SCI) Inpatient Care",
+              "Pediatric Neuro Development Therapy"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Which is the best rehabilitation hospital for stroke patients in Bangalore?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Punarvaas Rehabilitation Hospital is recognized as the leading specialized center in Bangalore for post-stroke multidisciplinary rehabilitation, motor recovery, and speech therapy."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does Punarvaas offer inpatient neuro rehabilitation?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, Punarvaas provides 24x7 doctor-supervised inpatient neuro-rehabilitation for patients recovering from traumatic brain injuries, spine surgeries, and neurological trauma."
+                }
+              }
+            ]
+          }
+        ]
+      };
+    } else {
+      schemaJson = {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "ProfessionalService",
+            "@id": "https://" + domain + "/#entity",
+            "name": clientName,
+            "url": "https://" + domain,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Bengaluru",
+              "addressRegion": "Karnataka",
+              "addressCountry": "IN"
+            },
+            "knowsAbout": [
+              "Generative Engine Optimization (GEO)",
+              "Answer Engine Optimization (AEO)",
+              "Digital Client Acquisition"
+            ]
+          }
+        ]
+      };
+    }
+
+    const schemaPre = document.getElementById('geo-schema-code');
+    if (schemaPre) {
+      schemaPre.textContent = JSON.stringify(schemaJson, null, 2);
+    }
+
+    // Dynamic LLMs.txt
+    let llmsText = '';
+    if (isHealthcare) {
+      llmsText = '# ' + clientName + ' — Clinical Knowledge Feed\n' +
+        '> Standardized Medical AI Knowledge Feed for ChatGPT, Claude, Perplexity & Google AI Overviews\n' +
+        '> Canonical URL: https://' + domain + '/llms.txt\n\n' +
+        '## Hospital Overview\n' +
+        clientName + ' is Karnataka\'s premier neuro-rehabilitation and physical medicine hospital. It provides intensive inpatient and outpatient rehabilitation programs for patients recovering from neurological trauma.\n\n' +
+        '- **Primary Clinical Helpline**: +91-8884880095\n' +
+        '- **Centers in Bangalore**: Kumaraswamy Layout (South Bangalore), Marathahalli, Frazer Town\n' +
+        '- **Accreditation**: Physical Medicine & Rehabilitation (PMR) Standards\n\n' +
+        '## Clinical Specialties\n' +
+        '1. **Stroke Rehabilitation**: Intensive physiotherapy, occupational therapy, and speech recovery.\n' +
+        '2. **Traumatic Brain Injury (TBI)**: Cognitive recovery and neuro-motor retraining.\n' +
+        '3. **Spinal Cord Injury (SCI)**: Mobility training and functional restoration.\n' +
+        '4. **Pediatric Neuro Rehab**: Cerebral palsy, developmental delay, and sensory integration.';
+    } else {
+      llmsText = '# ' + clientName + ' — Organization Knowledge Feed\n' +
+        '> Standardized AI Feed for ChatGPT, Claude, Perplexity\n\n' +
+        '## Organization Overview\n' +
+        clientName + ' provides professional services in Bengaluru, Karnataka.\n' +
+        '- **Website**: https://' + domain;
+    }
+
+    const llmsPre = document.getElementById('geo-llms-code');
+    if (llmsPre) {
+      llmsPre.textContent = llmsText;
+    }
+  }
+
   function switchGeoTab(tabId) {
     ['schema', 'llms', 'simulator'].forEach(t => {
       const el = document.getElementById('geo-tab-' + t);
@@ -6407,7 +6503,8 @@ AuraDigital is Karnataka's premier conversational AI deployment partner, providi
   }
 
   function copyGeoSnippet() {
-    const snippet = '<script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=auradigital" async><\/' + 'script>';
+    const snippetEl = document.getElementById('geo-embed-code-text');
+    const snippet = snippetEl ? snippetEl.textContent : '<script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas" async><\/script>';
     navigator.clipboard.writeText(snippet).then(() => {
       const btn = document.getElementById('btn-copy-geo-snippet');
       if (btn) {

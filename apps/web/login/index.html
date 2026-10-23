@@ -118,66 +118,107 @@
       if (errEl) errEl.style.display = 'none';
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span>Verifying credentials...</span>';
+        btn.innerHTML = '<span>Verifying credentials with Supabase Auth...</span>';
       }
 
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
 
+      const SUPABASE_URL = 'https://qwmxgqpmcbuvkhrsbibz.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_DRuRSnMq009Fw96ND4sNAQ_6OpM0fkm';
+
       try {
-        let data;
-        const res = await fetch('/api/auth/login', {
+        let authUser = null;
+        let accessToken = null;
+
+        // Step 1: Real Supabase Auth verification
+        const supaRes = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({ email, password })
         });
 
-        if (res.ok) {
-          data = await res.json();
+        const supaData = await supaRes.json();
+
+        if (supaRes.ok && supaData && supaData.access_token) {
+          authUser = supaData.user;
+          accessToken = supaData.access_token;
         } else {
-          // Direct authenticated session for 2022auradigital@gmail.com & client accounts
-          const isAura = email.toLowerCase().includes('auradigital');
-          const fullName = isAura ? 'D Pradeep Kumar' : (email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1));
-          const orgName = isAura ? 'AuraDigital' : 'Workspace';
-          const orgId = 'org_' + Math.random().toString(36).substring(2, 10);
-          data = {
-            success: true,
-            session: {
-              userId: 'usr_' + Math.random().toString(36).substring(2, 10),
-              fullName: fullName,
-              email: email,
-              activeOrganizationId: orgId,
-              activeRole: 'OWNER',
-              organization: { id: orgId, name: orgName, industry: 'AGENCY' },
-              memberships: [
-                { organizationId: orgId, organizationName: orgName, role: 'OWNER', industry: 'AGENCY' },
-                { organizationId: 'org_ballari', organizationName: 'Ballari Layouts & Estates', role: 'ADMIN', industry: 'REAL_ESTATE' },
-                { organizationId: 'org_kaveri', organizationName: 'Kaveri Hospital & Fertility', role: 'ADMIN', industry: 'HEALTHCARE_HOSPITAL' }
-              ]
-            }
-          };
-        }
-
-        if (data && data.session) {
+          // If Supabase rejects or user is not found, attempt server /api/auth/login
+          let serverSuccess = false;
           try {
-            localStorage.setItem('vanni_session', JSON.stringify(data.session));
-            localStorage.setItem('vanni_org_name', data.session.organization?.name || 'AuraDigital');
-            localStorage.setItem('vanni_user_name', data.session.fullName || 'D Pradeep Kumar');
-            localStorage.setItem('vanni_industry', data.session.organization?.industry || 'AGENCY');
-            document.cookie = 'vanni_session=' + encodeURIComponent(JSON.stringify(data.session)) + '; path=/; max-age=2592000; SameSite=Lax';
+            const apiRes = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin',
+              body: JSON.stringify({ email, password })
+            });
+            if (apiRes.ok) {
+              const apiData = await apiRes.json();
+              if (apiData && apiData.session) {
+                authUser = {
+                  id: apiData.session.userId,
+                  email: apiData.session.email,
+                  user_metadata: {
+                    fullName: apiData.session.fullName,
+                    company: apiData.session.organization?.name || 'AuraDigital',
+                    industry: apiData.session.organization?.industry || 'AGENCY'
+                  }
+                };
+                accessToken = 'jwt_' + Math.random().toString(36).substring(2, 12);
+                serverSuccess = true;
+              }
+            }
           } catch (e) {}
+
+          if (!serverSuccess) {
+            // STRICT AUTH ENFORCEMENT: Reject fake/invalid credentials!
+            const errorMsg = (supaData && supaData.error_description) || (supaData && supaData.msg) || 'Invalid email or password. Please verify your credentials or create a new account.';
+            throw new Error(errorMsg);
+          }
         }
 
-        if (btn) btn.innerHTML = '<span>Authentication successful! Redirecting...</span>';
-        
+        // Construct verified session
+        const meta = (authUser && authUser.user_metadata) || {};
+        const fullName = meta.fullName || meta.name || email.split('@')[0];
+        const orgName = meta.company || meta.organizationName || 'AuraDigital';
+        const industry = meta.industry || 'AGENCY';
+        const orgId = 'org_' + (authUser.id ? authUser.id.substring(0, 8) : 'aura');
+
+        const session = {
+          userId: authUser.id,
+          accessToken: accessToken,
+          fullName: fullName,
+          email: email,
+          activeOrganizationId: orgId,
+          activeRole: 'OWNER',
+          organization: { id: orgId, name: orgName, industry: industry },
+          memberships: [
+            { organizationId: orgId, organizationName: orgName, role: 'OWNER', industry: industry },
+            { organizationId: 'org_punarvaas', organizationName: 'Punarvaas Rehabilitation Hospital', role: 'ADMIN', industry: 'HEALTHCARE' }
+          ]
+        };
+
+        localStorage.setItem('vanni_session', JSON.stringify(session));
+        localStorage.setItem('vanni_org_name', orgName);
+        localStorage.setItem('vanni_user_name', fullName);
+        localStorage.setItem('vanni_industry', industry);
+        localStorage.setItem('vanni_access_token', accessToken);
+        document.cookie = 'vanni_session=' + encodeURIComponent(JSON.stringify(session)) + '; path=/; max-age=2592000; SameSite=Lax';
+
+        if (btn) btn.innerHTML = '<span>Authenticated! Entering workspace...</span>';
+
         const safeRedirect = (window.VanniAuth && window.VanniAuth.getSafeRedirectUrl('/app/dashboard')) || '/app/dashboard';
         setTimeout(() => {
           window.location.href = safeRedirect;
         }, 400);
+
       } catch (err) {
         if (errEl) {
-          errEl.innerText = err.message || 'An error occurred during login.';
+          errEl.innerText = err.message || 'Authentication failed. Please check credentials.';
           errEl.style.display = 'block';
         }
         if (btn) {
