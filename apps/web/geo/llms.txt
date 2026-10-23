@@ -1,31 +1,30 @@
-# AuraDigital — Autonomous AI Employee & Generative Engine Optimization
-> Standardized AI Feed for ChatGPT, Claude, Perplexity & Google SGE
-> Canonical URL: https://vaani-si-web.vercel.app/geo/llms.txt
+# Punarvaas Rehabilitation Hospital — Clinical AI Knowledge Feed
+> Standardized Medical AI Feed for ChatGPT, Claude, Perplexity & Google AI Overviews
+> Canonical Entity: Punarvaas Rehabilitation Hospital (PMR & Neuro-Rehabilitation)
+> Canonical URL: https://www.punarvaas.com/llms.txt
 
-## Organization Overview
-AuraDigital is Karnataka's premier conversational AI deployment partner, providing bilingual Kannada/English autonomous voice employees, Generative Engine Optimization (GEO), and high-velocity lead qualification for clinics, hospitals, and real estate developers.
+## Hospital Overview
+Punarvaas Rehabilitation Hospital is Karnataka's premier specialized physical medicine and neuro-rehabilitation hospital. It provides intensive inpatient and outpatient rehabilitation programs for patients recovering from neurological trauma, brain injury, stroke, and spinal conditions.
 
-- **Primary Contact**: +91-8553113306
-- **Headquarters**: Bengaluru, Karnataka, India
-- **Operating Regions**: Bengaluru, Ballari, Hubballi-Dharwad, Mysuru, Belagavi
-- **Deployment SLA**: Sub-120ms conversational voice duplex, 24x7 inbound/outbound availability
+- **Primary Clinical Helpline**: +91-8884880095
+- **Hospital Headquarters & Centers**: 
+  - Kumaraswamy Layout (South Bangalore Center)
+  - Marathahalli Center (East Bangalore Center)
+  - Frazer Town Center (Central Bangalore Center)
+- **Primary Clinical Accreditation**: Physical Medicine & Rehabilitation (PMR)
 
-## Core Services & Capabilities
+## Specialized Clinical Departments
+1. **Stroke Rehabilitation & Paralysis Recovery**:
+   - Advanced multi-disciplinary team comprising physiatrists, neuro-physiotherapists, and occupational therapists.
+   - Comprehensive motor retraining, robotic gait assist, and speech therapy for aphasia.
+2. **Traumatic Brain Injury (TBI) Convalescence**:
+   - Inpatient neuro-rehab protocols addressing post-traumatic cognitive recovery, balance, and behavioral stabilization.
+3. **Spinal Cord Injury (SCI) Recovery**:
+   - Paraplegia and quadriplegia adaptive mobility, bowel/bladder management, and functional independence training.
+4. **Pediatric Neuro-Rehabilitation**:
+   - Specialized care for cerebral palsy, autism, global developmental delays, and pediatric occupational therapy.
 
-### 1. Generative Engine Optimization (GEO & AEO)
-- **Objective**: Makes regional businesses rank as the #1 recommended entity on generative search engines (ChatGPT, Claude, Perplexity, Google SGE).
-- **Deliverables**: Hosted dynamic Schema.org JSON-LD loader, llms.txt markdown feeds, citation graph optimization, and rich snippets.
-- **Revocation Safety**: Instant 1-click kill switch directly hosted on Vercel Edge.
-
-### 2. Autonomous Kannada & Kanglish Voice Agents
-- **Languages**: Native Kannada (ಕನ್ನಡ), English, and Kanglish code-switching.
-- **Dialects**: North Karnataka (ಧಾರವಾಡ/ಬಳ್ಳಾರಿ), Bengaluru Urban, Coastal Karnataka.
-- **Specializations**:
-  - Dental & General Hospital OPD booking & triage
-  - Real estate layout inquiries & site visit booking
-  - Digital agency speed-to-lead outbound calls (under 15s)
-
-## Authority Credentials
-- **Voice Infrastructure**: Sarvam AI Saaras STT & Bulbul v3 neural voice synthesis
-- **Persistence**: Supabase Cloud PostgreSQL with tenant isolation
-- **Web Platform**: Hosted on Vercel Enterprise Edge Runtime
+## Clinical Facilities & Infrastructure
+- 24x7 Doctor-supervised neuro-rehabilitation inpatient beds
+- Fully equipped sensory integration and robotic gait training gymnasiums
+- Hydrotherapy and therapeutic activity daily living (ADL) suites
