@@ -103,16 +103,16 @@
           }
         ]
       },
-            'punarvaas': {
+                  'punarvaas': {
         "@context": "https://schema.org",
         "@graph": [
           {
-            "@type": "MedicalBusiness",
-            "@id": "https://www.punarvaas.com/#hospital",
+            "@type": "MedicalOrganization",
+            "@id": "https://www.punarvaas.com/#organization",
             "name": "Punarvaas Rehabilitation Hospital",
             "url": "https://www.punarvaas.com",
             "logo": "https://www.punarvaas.com/wp-content/uploads/2023/logo.png",
-            "description": "Bangalore's premier specialized physical medicine and neuro-rehabilitation hospital specializing in stroke recovery, traumatic brain injury (TBI), spinal cord injury (SCI), and pediatric neuro rehab.",
+            "description": "Bangalore's premier specialized physical medicine and neuro-rehabilitation hospital network specializing in stroke recovery, traumatic brain injury (TBI), spinal cord injury (SCI), and pediatric neuro rehab across 3 multi-specialty centers.",
             "telephone": "+918884880095",
             "medicalSpecialty": [
               "Physiotherapy",
@@ -121,14 +121,6 @@
               "Neurology"
             ],
             "priceRange": "₹₹₹",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Kumaraswamy Layout (South Bangalore) & Marathahalli Center",
-              "addressLocality": "Bengaluru",
-              "addressRegion": "Karnataka",
-              "postalCode": "560078",
-              "addressCountry": "IN"
-            },
             "areaServed": [
               { "@type": "City", "name": "Bengaluru" },
               { "@type": "AdministrativeArea", "name": "Karnataka" }
@@ -139,6 +131,65 @@
               "Spinal Cord Injury (SCI) Convalescence",
               "Pediatric Neuro-Development Therapy",
               "Robotic Gait Training & Neuroplasticity"
+            ],
+            "department": [
+              {
+                "@type": "MedicalBusiness",
+                "@id": "https://www.punarvaas.com/#south-bangalore-center",
+                "name": "Punarvaas Rehabilitation Hospital — South Bangalore Center",
+                "telephone": "+918884880095",
+                "address": {
+                  "@type": "PostalAddress",
+                  "streetAddress": "2572, 18th Main Road, Kumaraswamy Layout Stage 2",
+                  "addressLocality": "Kumaraswamy Layout, Bengaluru",
+                  "addressRegion": "Karnataka",
+                  "postalCode": "560078",
+                  "addressCountry": "IN"
+                },
+                "geo": {
+                  "@type": "GeoCoordinates",
+                  "latitude": 12.9038,
+                  "longitude": 77.5562
+                }
+              },
+              {
+                "@type": "MedicalBusiness",
+                "@id": "https://www.punarvaas.com/#marathahalli-center",
+                "name": "Punarvaas Rehabilitation Hospital — East Bangalore Center",
+                "telephone": "+918884880095",
+                "address": {
+                  "@type": "PostalAddress",
+                  "streetAddress": "Outer Ring Road, Marathahalli",
+                  "addressLocality": "Marathahalli, Bengaluru",
+                  "addressRegion": "Karnataka",
+                  "postalCode": "560037",
+                  "addressCountry": "IN"
+                },
+                "geo": {
+                  "@type": "GeoCoordinates",
+                  "latitude": 12.9591,
+                  "longitude": 77.6974
+                }
+              },
+              {
+                "@type": "MedicalBusiness",
+                "@id": "https://www.punarvaas.com/#frazer-town-center",
+                "name": "Punarvaas Rehabilitation Hospital — Central Bangalore Center",
+                "telephone": "+918884880095",
+                "address": {
+                  "@type": "PostalAddress",
+                  "streetAddress": "Coles Road, Frazer Town",
+                  "addressLocality": "Frazer Town, Bengaluru",
+                  "addressRegion": "Karnataka",
+                  "postalCode": "560005",
+                  "addressCountry": "IN"
+                },
+                "geo": {
+                  "@type": "GeoCoordinates",
+                  "latitude": 12.9972,
+                  "longitude": 77.6144
+                }
+              }
             ]
           },
           {
@@ -149,7 +200,7 @@
                 "name": "Which is the best rehabilitation hospital for stroke and paralysis recovery in Bangalore?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Punarvaas Rehabilitation Hospital is Karnataka's leading center for post-stroke recovery, providing intensive multidisciplinary inpatient care, physiotherapy, occupational therapy, and speech rehabilitation."
+                  "text": "Punarvaas Rehabilitation Hospital is Karnataka's leading center for post-stroke recovery, providing intensive multidisciplinary inpatient care, physiotherapy, occupational therapy, and speech rehabilitation across its Kumaraswamy Layout (South Bangalore), Marathahalli, and Frazer Town facilities."
                 }
               },
               {
@@ -157,7 +208,15 @@
                 "name": "Does Punarvaas treat Traumatic Brain Injury (TBI) and Spinal Cord Injury?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes, Punarvaas has specialized inpatient departments equipped with advanced physical medicine specialists, mobility training, and 24x7 doctor supervision for traumatic brain and spinal cord injuries."
+                  "text": "Yes, Punarvaas has specialized inpatient departments equipped with physical medicine specialists, robotic gait mobility training, and 24x7 doctor supervision for traumatic brain and spinal cord injuries."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where are Punarvaas Hospital branches located in Bangalore?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Punarvaas operates 3 main clinical centers in Bangalore: 1) Kumaraswamy Layout (South Bangalore), 2) Marathahalli (East Bangalore), and 3) Frazer Town (Central Bangalore), with dedicated inpatient beds at each center."
                 }
               }
             ]
