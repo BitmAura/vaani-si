@@ -2006,6 +2006,18 @@ const signupHtml = `<!DOCTYPE html>
   
 
     <script>
+    
+    function toggleMobileNav() {
+      const nav = document.getElementById('vanni-mobile-nav');
+      if (nav) {
+        nav.style.display = (nav.style.display === 'flex' ? 'none' : 'flex');
+      }
+    }
+
+    function openDemoModal() {
+      window.location.href = '/demo';
+    }
+
     async function handleSignup(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('signup-submit-btn');
