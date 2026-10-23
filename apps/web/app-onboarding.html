@@ -350,36 +350,68 @@
 
     <div class="card-box">
       
-      <!-- STEP 1: WELCOME -->
+      <!-- STEP 1: WELCOME & PRODUCT FOCUS -->
       <section id="step-panel-1">
         <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #EFF6FF; border-radius: 20px; color: #2563EB; font-size: 11px; font-weight: 700; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-          KANNADA-FIRST VOICE AI PLATFORM
+          DUAL-ENGINE AI GROWTH PLATFORM
         </div>
-        <h1 class="card-title">Welcome to Vaani-Si</h1>
+        <h1 class="card-title">Welcome to VAANI &amp; AEO Growth Engine</h1>
         <p class="card-desc">
-          Vaani-Si powers regional conversational voice intelligence for Karnataka businesses. Manage incoming voice calls, qualify leads within 15 seconds, coordinate clinic appointments, and automate follow-ups with native Kannada and Kanglish voice agents.
+          Select the AI product track you want to activate for your business or agency client today.
         </p>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 24px 0;">
-          <div style="padding: 16px; border-radius: 8px; border: 1px solid var(--border); background: #FAFBFD;">
-            <div style="font-size: 20px; margin-bottom: 6px;">⚡</div>
-            <div style="font-weight: 700; font-size: 13px; margin-bottom: 4px;">Sub-120ms Voice Duplex</div>
-            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Zero robotic lag with conversational barge-in interruption.</div>
+        <!-- Product Selector Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin: 24px 0;">
+          
+          <!-- AEO & GEO CARD -->
+          <div class="select-tile selected" id="tile-prod-geo" onclick="selectProductTrack('AEO_GEO')" style="border-width: 2px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="tile-badge" style="background: #ECFDF5; color: #047857;">RECOMMENDED FOR PUNARVAAS</span>
+              <span style="font-size: 20px;">🌐</span>
+            </div>
+            <div class="tile-title" style="font-size: 15px; margin-top: 4px;">AEO &amp; GEO AI Search Engine</div>
+            <div class="tile-sub" style="font-size: 12.5px;">
+              Make your hospital or brand #1 recommended across <strong>ChatGPT, Claude, Perplexity &amp; Google AI Overviews</strong> for Bangalore rehab searches.
+            </div>
+            <div style="margin-top: 8px; font-size: 11px; font-weight: 600; color: #059669;">
+              ✓ Auto-generates /llms.txt · Clinical JSON-LD · Zero Microserver Needed
+            </div>
           </div>
-          <div style="padding: 16px; border-radius: 8px; border: 1px solid var(--border); background: #FAFBFD;">
-            <div style="font-size: 20px; margin-bottom: 6px;">🗣️</div>
-            <div style="font-weight: 700; font-size: 13px; margin-bottom: 4px;">Regional Dialects</div>
-            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Fluent Kannada, Kanglish, and North Karnataka commercial styles.</div>
+
+          <!-- VOICE TELEPHONY CARD -->
+          <div class="select-tile" id="tile-prod-voice" onclick="selectProductTrack('VOICE')" style="border-width: 2px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="tile-badge" style="background: #EFF6FF; color: #1E40AF;">REGIONAL TELEPHONY</span>
+              <span style="font-size: 20px;">📞</span>
+            </div>
+            <div class="tile-title" style="font-size: 15px; margin-top: 4px;">Autonomous Voice AI (Vaani-Si)</div>
+            <div class="tile-sub" style="font-size: 12.5px;">
+              Regional Kannada, Kanglish &amp; English sub-120ms voice AI employees for inbound appointments, instant lead qualification, and clinic calls.
+            </div>
+            <div style="margin-top: 8px; font-size: 11px; font-weight: 600; color: #2563EB;">
+              ✓ Sub-120ms duplex · Native Kannada accents · Twilio / Exotel ready
+            </div>
           </div>
-          <div style="padding: 16px; border-radius: 8px; border: 1px solid var(--border); background: #FAFBFD;">
-            <div style="font-size: 20px; margin-bottom: 6px;">🛡️</div>
-            <div style="font-weight: 700; font-size: 13px; margin-bottom: 4px;">Strict Tenant Isolation</div>
-            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Independent workspaces for agencies managing multiple client businesses.</div>
+
+          <!-- BUNDLE CARD -->
+          <div class="select-tile" id="tile-prod-bundle" onclick="selectProductTrack('BUNDLE')" style="border-width: 2px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="tile-badge" style="background: #FDF4FF; color: #86198F;">ALL-IN-ONE</span>
+              <span style="font-size: 20px;">⚡</span>
+            </div>
+            <div class="tile-title" style="font-size: 15px; margin-top: 4px;">Complete Growth OS</div>
+            <div class="tile-sub" style="font-size: 12.5px;">
+              Unified Voice Telephony AI + AEO/GEO Visibility Engine for full-funnel patient acquisition and phone reception.
+            </div>
+            <div style="margin-top: 8px; font-size: 11px; font-weight: 600; color: #9333EA;">
+              ✓ Complete suite · Multi-client agency management
+            </div>
           </div>
+
         </div>
 
         <div class="action-bar" style="justify-content: flex-end;">
-          <button type="button" class="btn btn-dark" onclick="nextStep(2)">Get Started &rarr;</button>
+          <button type="button" class="btn btn-dark" onclick="nextStep(2)">Continue to Business Model &rarr;</button>
         </div>
       </section>
 
@@ -499,72 +531,159 @@
         </div>
       </section>
 
-      <!-- STEP 5: LANGUAGE PREFERENCES -->
+      <!-- STEP 5: LANGUAGE / AEO ENGINE CONFIGURATION -->
       <section id="step-panel-5" style="display: none;">
-        <h2 class="card-title">Language &amp; Voice Dialect Preferences</h2>
-        <p class="card-desc">Choose the regional conversational language and cadence for your autonomous AI employee.</p>
+        
+        <!-- AEO SPECIFIC STEP 5 -->
+        <div id="aeo-config-step5" style="display: none;">
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #ECFDF5; border-radius: 20px; color: #047857; font-size: 11px; font-weight: 700; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            AEO &amp; GEO AI SEARCH ENGINE ENGINE CONFIGURATION
+          </div>
+          <h2 class="card-title">Configure Clinical Knowledge Graph</h2>
+          <p class="card-desc">Select the clinical specialties to index in ChatGPT, Claude, Perplexity, and Google AI Overviews.</p>
 
-        <div class="form-group">
-          <label class="form-label">Primary Conversational Language</label>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-            <div class="select-tile selected" id="lang-tile-kn" onclick="selectLanguage('kn-IN')">
-              <div class="tile-title">ಕನ್ನಡ (Pure Kannada)</div>
-              <div class="tile-sub">Formal, polite regional Kannada for patients and local property inquiries.</div>
+          <div class="form-group">
+            <label class="form-label">Core Clinical Specialties to Dominate in AI Search</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <input type="checkbox" checked id="spec-stroke" style="accent-color: #2563EB;"> 🧠 Stroke Rehabilitation &amp; Paralysis
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <input type="checkbox" checked id="spec-tbi" style="accent-color: #2563EB;"> ⚡ Traumatic Brain Injury (TBI)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <input type="checkbox" checked id="spec-spine" style="accent-color: #2563EB;"> 🦴 Spinal Cord Injury (SCI)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <input type="checkbox" checked id="spec-pediatric" style="accent-color: #2563EB;"> 🧸 Pediatric Neuro Rehabilitation
+              </label>
             </div>
-            <div class="select-tile" id="lang-tile-knen" onclick="selectLanguage('kn-en')">
-              <div class="tile-title">ಕಂಗ್ಲಿಷ್ (Kanglish)</div>
-              <div class="tile-sub">Natural Bangalore/Commercial blend of Kannada with common English terms.</div>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <label class="form-label">Bangalore Clinical Facilities &amp; Geocodes</label>
+            <input type="text" id="aeo-locations-input" class="form-input" value="Marathahalli Center, South Bangalore Center, Frazer Town">
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px; margin-top: 20px;">
+            <div style="font-size: 12px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">⚡ Your Generated Edge Loader Script Tag</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #0F172A; color: #38BDF8; padding: 12px; border-radius: 6px; word-break: break-all;">
+              &lt;script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas" async&gt;&lt;/script&gt;
             </div>
-            <div class="select-tile" id="lang-tile-en" onclick="selectLanguage('en-IN')">
-              <div class="tile-title">English (Indian Accent)</div>
-              <div class="tile-sub">Professional Indian English for corporate clients and institutional callers.</div>
+            <div style="font-size: 11.5px; color: #64748B; margin-top: 8px;">
+              Paste this in WordPress WPCode plugin or Elementor Custom Code. It injects structured schema and registers with AI crawlers instantly.
             </div>
           </div>
         </div>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label" for="dialect-select">Regional Dialect Profile</label>
-            <select id="dialect-select" class="form-select" onchange="updateDialectPreview()">
-              <option value="KANGLISH_BUSINESS" selected>Bangalore Kanglish Commercial (Natural Business)</option>
-              <option value="KANNADA_STANDARD_POLITE">Karnataka Standard Polite (Old Mysore / State standard)</option>
-              <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka (Hubballi-Dharwad / Ballari)</option>
-              <option value="MYSORE_MANDYA_REGIONAL">Mysore &amp; Mandya Regional</option>
-              <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Corporate)</option>
-            </select>
-          </div>
+        <!-- VOICE SPECIFIC STEP 5 -->
+        <div id="voice-config-step5">
+          <h2 class="card-title">Language &amp; Voice Dialect Preferences</h2>
+          <p class="card-desc">Choose the regional conversational language and cadence for your autonomous AI employee.</p>
 
           <div class="form-group">
-            <label class="form-label" for="style-select">Conversational Tone</label>
-            <select id="style-select" class="form-select">
-              <option value="POLITE_BUSINESS" selected>Warm &amp; Polite Business</option>
-              <option value="CONVERSATIONAL">Friendly &amp; Conversational</option>
-              <option value="FORMAL">Formal &amp; Clinical</option>
-            </select>
+            <label class="form-label">Primary Conversational Language</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+              <div class="select-tile selected" id="lang-tile-kn" onclick="selectLanguage('kn-IN')">
+                <div class="tile-title">ಕನ್ನಡ (Pure Kannada)</div>
+                <div class="tile-sub">Formal, polite regional Kannada for patients and local property inquiries.</div>
+              </div>
+              <div class="select-tile" id="lang-tile-knen" onclick="selectLanguage('kn-en')">
+                <div class="tile-title">ಕಂಗ್ಲಿಷ್ (Kanglish)</div>
+                <div class="tile-sub">Natural Bangalore/Commercial blend of Kannada with common English terms.</div>
+              </div>
+              <div class="select-tile" id="lang-tile-en" onclick="selectLanguage('en-IN')">
+                <div class="tile-title">English (Indian Accent)</div>
+                <div class="tile-sub">Professional Indian English for corporate clients and institutional callers.</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="lang-sample-box">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase;">Acoustic Greeting Preview</div>
-          <div id="greeting-sample-text" style="font-size: 13.5px; font-weight: 600; color: #1E293B;">
-            "ನಮಸ್ಕಾರ! Ballari Residential Layouts ಗೆ ಸ್ವಾಗತ. ನಾನು ಸಹಾನ ಮಾತಾಡ್ತಾ ಇರೋದು. ನಿಮಗೆ 30x40 ಸೈಟ್ ಡೀಟೇಲ್ಸ್ ಬೇಕಿತ್ತಾ ಸರ್?"
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="dialect-select">Regional Dialect Profile</label>
+              <select id="dialect-select" class="form-select" onchange="updateDialectPreview()">
+                <option value="KANGLISH_BUSINESS" selected>Bangalore Kanglish Commercial (Natural Business)</option>
+                <option value="KANNADA_STANDARD_POLITE">Karnataka Standard Polite (Old Mysore / State standard)</option>
+                <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka (Hubballi-Dharwad / Ballari)</option>
+                <option value="MYSORE_MANDYA_REGIONAL">Mysore &amp; Mandya Regional</option>
+                <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Corporate)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="style-select">Conversational Tone</label>
+              <select id="style-select" class="form-select">
+                <option value="POLITE_BUSINESS" selected>Warm &amp; Polite Business</option>
+                <option value="CONVERSATIONAL">Friendly &amp; Conversational</option>
+                <option value="FORMAL">Formal &amp; Clinical</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="lang-sample-box">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase;">Acoustic Greeting Preview</div>
+            <div id="greeting-sample-text" style="font-size: 13.5px; font-weight: 600; color: #1E293B;">
+              "ನಮಸ್ಕಾರ! Punarvaas Rehabilitation Hospital ಗೆ ಸ್ವಾಗತ. ನಾನು ಕಾವ್ಯಾ ಮಾತಾಡ್ತಾ ಇರೋದು. ನಿಮಗೆ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಡೀಟೇಲ್ಸ್ ಬೇಕಿತ್ತಾ ಸರ್?"
+            </div>
           </div>
         </div>
 
         <div class="action-bar">
           <button type="button" class="btn btn-outline" onclick="jumpToStep(4)">&larr; Back</button>
-          <button type="button" class="btn btn-dark" onclick="submitStep5()">Choose Starter Template &rarr;</button>
+          <button type="button" class="btn btn-dark" onclick="submitStep5()">Next: Integration &amp; Template &rarr;</button>
         </div>
       </section>
 
-      <!-- STEP 6: STARTER TEMPLATE -->
+      <!-- STEP 6: STARTER TEMPLATE & EMBED GUIDE -->
       <section id="step-panel-6" style="display: none;">
-        <h2 class="card-title">Choose an AI Starter Template</h2>
-        <p class="card-desc">Select an operational blueprint pre-configured with industry guardrails, schemas, and turn-taking rules.</p>
+        
+        <!-- AEO INTEGRATION TABS -->
+        <div id="aeo-config-step6" style="display: none;">
+          <h2 class="card-title">Website Embed &amp; CMS Integration Guide</h2>
+          <p class="card-desc">Choose how you wish to install the Punarvaas AEO &amp; GEO script on your website.</p>
 
-        <div id="template-cards-container" class="tile-grid">
-          <!-- Dynamically populated from /api/onboarding/templates -->
-          <div style="padding: 24px; text-align: center; color: var(--text-muted);">Loading starter templates...</div>
+          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button type="button" class="btn btn-dark" id="btn-tab-method-a" onclick="switchMethodTab('A')">Method A: WordPress WPCode</button>
+            <button type="button" class="btn btn-outline" id="btn-tab-method-b" onclick="switchMethodTab('B')">Method B: Elementor Header</button>
+            <button type="button" class="btn btn-outline" id="btn-tab-method-c" onclick="switchMethodTab('C')">Method C: Custom HTML / React</button>
+          </div>
+
+          <div id="tab-content-method-a" style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
+            <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #0F172A;">WPCode Plugin (2-Minute WordPress Install)</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #475569;">
+              <li>Log in to WordPress admin at <code>punarvaas.com/wp-admin</code>.</li>
+              <li>Go to <strong>Code Snippets &rarr; Header &amp; Footer</strong>.</li>
+              <li>Paste the script tag into the <strong>Header</strong> box:
+                <pre style="background: #0F172A; color: #38BDF8; padding: 10px; border-radius: 6px; font-size: 12px; margin: 8px 0; overflow-x: auto;">&lt;script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas" async&gt;&lt;/script&gt;</pre>
+              </li>
+              <li>Click <strong>Save Changes</strong>. Your AI knowledge graph &amp; JSON-LD schemas go live immediately!</li>
+            </ol>
+          </div>
+
+          <div id="tab-content-method-b" style="display: none; background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
+            <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #0F172A;">Elementor Pro Custom Code</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #475569;">
+              <li>Go to <strong>Elementor &rarr; Custom Code &rarr; Add New</strong>.</li>
+              <li>Set Location to <strong>&lt;head&gt;</strong> and Priority to <strong>1</strong>.</li>
+              <li>Paste the snippet and click <strong>Publish &rarr; Entire Site</strong>.</li>
+            </ol>
+          </div>
+
+          <div id="tab-content-method-c" style="display: none; background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
+            <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #0F172A;">Custom HTML / Next.js / PHP Theme</div>
+            <p style="font-size: 13px; color: #475569; margin: 0 0 10px 0;">Place the script tag inside the <code>&lt;head&gt;</code> section of <code>index.html</code> or <code>header.php</code>.</p>
+          </div>
+        </div>
+
+        <!-- VOICE STARTER BLUEPRINTS -->
+        <div id="voice-config-step6">
+          <h2 class="card-title">Choose an AI Starter Template</h2>
+          <p class="card-desc">Select an operational blueprint pre-configured with industry guardrails, schemas, and turn-taking rules.</p>
+
+          <div id="template-cards-container" class="tile-grid">
+            <div style="padding: 24px; text-align: center; color: var(--text-muted);">Loading starter templates...</div>
+          </div>
         </div>
 
         <div class="action-bar">
@@ -621,6 +740,7 @@
   <script>
     // State machine for multi-tenant onboarding
     let currentStep = 1;
+    let selectedProductTrack = 'AEO_GEO'; // Default to AEO_GEO for Punarvaas
     let selectedModel = 'AGENCY';
     let selectedIndustry = 'DIGITAL_AGENCY';
     let selectedSubcategory = 'MARKETING_AGENCY';
@@ -691,6 +811,47 @@
       }
     }
 
+    
+    function selectProductTrack(track) {
+      selectedProductTrack = track;
+      document.querySelectorAll('#step-panel-1 .select-tile').forEach(t => t.classList.remove('selected'));
+      if (track === 'AEO_GEO') document.getElementById('tile-prod-geo')?.classList.add('selected');
+      if (track === 'VOICE') document.getElementById('tile-prod-voice')?.classList.add('selected');
+      if (track === 'BUNDLE') document.getElementById('tile-prod-bundle')?.classList.add('selected');
+      updateStepViewsForProduct();
+    }
+
+    function updateStepViewsForProduct() {
+      const isAeo = (selectedProductTrack === 'AEO_GEO' || selectedProductTrack === 'BUNDLE');
+      const aeo5 = document.getElementById('aeo-config-step5');
+      const voice5 = document.getElementById('voice-config-step5');
+      const aeo6 = document.getElementById('aeo-config-step6');
+      const voice6 = document.getElementById('voice-config-step6');
+
+      if (aeo5 && voice5) {
+        aeo5.style.display = isAeo ? 'block' : 'none';
+        voice5.style.display = selectedProductTrack === 'VOICE' ? 'block' : 'none';
+      }
+      if (aeo6 && voice6) {
+        aeo6.style.display = isAeo ? 'block' : 'none';
+        voice6.style.display = selectedProductTrack === 'VOICE' ? 'block' : 'none';
+      }
+    }
+
+    function switchMethodTab(tab) {
+      ['A', 'B', 'C'].forEach(t => {
+        const btn = document.getElementById('btn-tab-method-' + t.toLowerCase());
+        const content = document.getElementById('tab-content-method-' + t.toLowerCase());
+        if (t === tab) {
+          if (btn) { btn.classList.remove('btn-outline'); btn.classList.add('btn-dark'); }
+          if (content) content.style.display = 'block';
+        } else {
+          if (btn) { btn.classList.remove('btn-dark'); btn.classList.add('btn-outline'); }
+          if (content) content.style.display = 'none';
+        }
+      });
+    }
+
     function jumpToStep(targetStep) {
       if (targetStep < 1 || targetStep > 7) return;
 
@@ -717,6 +878,7 @@
       const targetPill = document.getElementById('pill-step-' + targetStep);
       if (targetPill) targetPill.classList.add('active');
 
+      updateStepViewsForProduct();
       if (targetStep === 6) {
         loadTemplates();
       } else if (targetStep === 7) {
@@ -967,7 +1129,13 @@
         if (res && res.success) {
           showSuccess('Workspace and AI Employee configured successfully! Redirecting...');
           setTimeout(() => {
+            
+          if (selectedProductTrack === 'AEO_GEO') {
+            window.location.href = '/app/geo?onboarding=complete';
+          } else {
             window.location.href = '/app/dashboard?onboarding=complete';
+          }
+
           }, 800);
         } else {
           showError('Failed to finalize onboarding. Please retry.');
