@@ -1,11 +1,15 @@
 import { ITTSProvider, AudioPayload, TTSOptions } from '@vanni/provider-sdk';
 
+/** Sarvam single-response TTS. Override with SARVAM_TTS_MODEL. */
+const DEFAULT_TTS_MODEL = 'bulbul:v4-flash';
+
 /**
- * Sarvam Bulbul v3 Kannada & Kanglish Text-to-Speech Adapter
+ * Sarvam Bulbul Kannada & Kanglish Text-to-Speech Adapter
  * Real Live Telephony Synthesis (No Mocks)
+ * Same JSON POST as Bulbul v3; default model is bulbul:v4-flash.
  */
 export class SarvamBulbulTTSProvider implements ITTSProvider {
-  public readonly providerName = 'sarvam_bulbul_v3';
+  public readonly providerName = 'sarvam_bulbul';
   private apiKey: string;
   private baseUrl = 'https://api.sarvam.ai';
 
@@ -13,9 +17,16 @@ export class SarvamBulbulTTSProvider implements ITTSProvider {
     this.apiKey = apiKey !== undefined ? apiKey : (process.env.SARVAM_API_KEY || '');
   }
 
+  private activeModel(): string {
+    const override = process.env.SARVAM_TTS_MODEL?.trim();
+    return override ? override : DEFAULT_TTS_MODEL;
+  }
+
   public async synthesize(text: string, options?: TTSOptions): Promise<AudioPayload> {
+    const model = this.activeModel();
+
     if (!this.apiKey) {
-      throw new Error('[SarvamBulbulTTS] Missing SARVAM_API_KEY in environment');
+      throw new Error(`[SarvamBulbul ${model}] Missing SARVAM_API_KEY in environment`);
     }
 
     const controller = new AbortController();
@@ -35,20 +46,20 @@ export class SarvamBulbulTTSProvider implements ITTSProvider {
           speaker: options?.speaker || 'kavya',
           speech_sample_rate: options?.sampleRate || 16000,
           enable_preprocessing: true,
-          model: 'bulbul:v3',
+          model,
         }),
         signal: controller.signal,
       });
 
       if (!response.ok) {
         const err = await response.text();
-        throw new Error(`[SarvamBulbul v3] HTTP ${response.status}: ${err}`);
+        throw new Error(`[SarvamBulbul ${model}] HTTP ${response.status}: ${err}`);
       }
 
       const data = await response.json() as any;
       const base64Audio = data.audios?.[0] || '';
       if (!base64Audio) {
-        throw new Error('[SarvamBulbul v3] Empty audio payload returned');
+        throw new Error(`[SarvamBulbul ${model}] Empty audio payload returned`);
       }
 
       const audioBuffer = Buffer.from(base64Audio, 'base64');
@@ -62,7 +73,7 @@ export class SarvamBulbulTTSProvider implements ITTSProvider {
       };
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        throw new Error(`[SarvamBulbul v3] Request timed out after ${timeoutMs}ms`);
+        throw new Error(`[SarvamBulbul ${model}] Request timed out after ${timeoutMs}ms`);
       }
       throw err;
     } finally {

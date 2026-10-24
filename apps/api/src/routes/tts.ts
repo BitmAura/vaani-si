@@ -21,7 +21,7 @@ export async function registerTtsRoutes(fastify: FastifyInstance) {
     const hasSarvamKey = Boolean(process.env.SARVAM_API_KEY && !process.env.SARVAM_API_KEY.includes('placeholder'));
     return reply.send({
       success: true,
-      provider: 'sarvam_bulbul_v3',
+      provider: 'sarvam_bulbul',
       hasSarvamKey,
       availableSpeakers: [
         { id: 'kavya', name: 'Kavya (Kannada Native Female, Empathetic & Natural)', gender: 'Female' },
@@ -31,7 +31,7 @@ export async function registerTtsRoutes(fastify: FastifyInstance) {
         { id: 'ratan', name: 'Ratan (Friendly Commercial Male)', gender: 'Male' }
       ],
       supportedLanguages: ['kn-IN', 'en-IN'],
-      model: 'bulbul:v3'
+      model: process.env.SARVAM_TTS_MODEL?.trim() || 'bulbul:v4-flash'
     });
   });
 
@@ -70,7 +70,7 @@ export async function registerTtsRoutes(fastify: FastifyInstance) {
           loudness: 1.0,
           speech_sample_rate: 16000,
           enable_preprocessing: true,
-          model: 'bulbul:v3'
+          model: process.env.SARVAM_TTS_MODEL?.trim() || 'bulbul:v4-flash'
         })
       });
 

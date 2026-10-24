@@ -2812,7 +2812,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
           speaker,
           pace,
           pitch,
-          model: 'bulbul:v3',
+          model: process.env.SARVAM_TTS_MODEL?.trim() || 'bulbul:v4-flash',
         }),
       });
 
@@ -3483,7 +3483,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
           speaker,
           pace,
           pitch,
-          model: 'bulbul:v3',
+          model: process.env.SARVAM_TTS_MODEL?.trim() || 'bulbul:v4-flash',
         }),
       });
 

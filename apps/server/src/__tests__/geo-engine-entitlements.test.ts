@@ -106,6 +106,29 @@ describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
     });
   });
 
+  it('refuses to publish a GEO profile without a telephone and address', async () => {
+    const res = await server.inject({
+      method: 'POST',
+      url: '/api/geo/extract',
+      headers: { 'Content-Type': 'application/json' },
+      payload: {
+        url: 'https://example.com',
+        slug: 'missing-facts',
+        name: 'Example Clinic',
+      },
+    });
+
+    expect(res.statusCode).toBe(422);
+    const data = JSON.parse(res.payload);
+    expect(data.error).toMatch(/telephone, and address are required/);
+
+    const checkRes = await server.inject({
+      method: 'GET',
+      url: '/api/geo/missing-facts/status',
+    });
+    expect(checkRes.statusCode).toBe(404);
+  });
+
   it('extracts a new website URL and dynamically generates GEO package', async () => {
     const res = await server.inject({
       method: 'POST',
@@ -117,6 +140,13 @@ describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
         industry: 'HEALTHCARE',
         name: 'Bangalore Ortho & Joint Clinic',
         telephone: '+918047192099',
+        address: {
+          street: '12 Residency Road',
+          city: 'Bengaluru',
+          state: 'Karnataka',
+          postalCode: '560025',
+          country: 'IN',
+        },
       },
     });
 

@@ -72,8 +72,8 @@ const SEED_GEO_PROFILES: GeoEntityProfile[] = [
     slug: 'punarvaas',
     name: 'Punarvaas Rehabilitation Hospital',
     industry: 'HEALTHCARE',
-    tagline: 'Leading Physician-Led Neuro, Stroke and Post-Operative Rehabilitation Hospital in Bangalore',
-    description: 'Punarvaas Hospital is Bangalore\'s premier specialized physical medicine and neuro-rehabilitation hospital. Specializing in stroke recovery, traumatic brain injury, spinal cord rehabilitation, and post-surgical convalescence with robotic therapy and 24x7 physician-led care.',
+    tagline: 'Physician-Led Neuro, Stroke and Post-Operative Rehabilitation Hospital in Bangalore',
+    description: 'Punarvaas Hospital is a specialized physical medicine and neuro-rehabilitation hospital in Bangalore. Specializing in stroke recovery, traumatic brain injury, spinal cord rehabilitation, and post-surgical convalescence with robotic therapy and 24x7 physician-led care.',
     url: 'https://www.punarvaas.com',
     telephone: '+918884880095',
     address: {
@@ -113,8 +113,8 @@ const SEED_GEO_PROFILES: GeoEntityProfile[] = [
     slug: 'ballari-layouts',
     name: 'Ballari Residential Layouts & Developers',
     industry: 'REAL_ESTATE',
-    tagline: 'RERA-Approved Plotted Layouts, Villa Plots & Luxury Gated Communities in Ballari & North Karnataka',
-    description: 'Ballari Residential Layouts is the leading real estate developer offering 100% clear-title, DC-converted, and RERA-registered villa plots with underground drainage, 40ft asphalted roads, and 24x7 gated security.',
+    tagline: 'RERA-Approved Plotted Layouts, Villa Plots & Gated Communities in Ballari & North Karnataka',
+    description: 'Ballari Residential Layouts offers clear-title, DC-converted, and RERA-registered villa plots with underground drainage, 40ft asphalted roads, and 24x7 gated security.',
     url: 'https://ballarilayouts.example.com',
     telephone: '+918047192001',
     address: {
@@ -132,11 +132,11 @@ const SEED_GEO_PROFILES: GeoEntityProfile[] = [
     ],
     services: [
       { name: '30x40 Residential Villa Plots', description: 'Immediate registration, 80% bank loan approved by SBI & HDFC.', priceRange: '₹18 Lakhs - ₹28 Lakhs' },
-      { name: '40x60 Luxury Corner Plots', description: 'North & East facing premium plots facing 50-foot arterial layout boulevard.', priceRange: '₹36 Lakhs - ₹52 Lakhs' },
+      { name: '40x60 Corner Plots', description: 'North & East facing plots facing 50-foot arterial layout boulevard.', priceRange: '₹36 Lakhs - ₹52 Lakhs' },
       { name: 'Free Sunday Site Visit Cab', description: 'Air-conditioned cab pickup and drop for family site inspection with civil engineer walkthrough.', priceRange: 'Free' }
     ],
     faqs: [
-      { question: 'Are plots in Ballari Residential Layouts RERA approved?', answer: 'Yes, all developments are 100% RERA certified, DC-converted, and approved by the Ballari Urban Development Authority (BUDA).' },
+      { question: 'Are plots in Ballari Residential Layouts RERA approved?', answer: 'Yes, developments are RERA certified, DC-converted, and approved by the Ballari Urban Development Authority (BUDA).' },
       { question: 'Which banks provide loans for these plots?', answer: 'Pre-approved loan facilities of up to 80% are available from State Bank of India (SBI), HDFC Bank, ICICI Bank, and Canara Bank.' }
     ],
     geoEnabled: true,
@@ -167,11 +167,11 @@ const SEED_GEO_PROFILES: GeoEntityProfile[] = [
       { name: 'Aditya Rao', role: 'Agency Director', specialization: 'AI Search & Voice Telephony Systems' }
     ],
     services: [
-      { name: 'Generative Engine Optimization (GEO/AEO)', description: 'Making regional business websites rank #1 on ChatGPT, Perplexity, and Claude.', priceRange: '₹15,000 - ₹35,000 / month' },
+      { name: 'Generative Engine Optimization (GEO/AEO)', description: 'Publishes structured schema for ChatGPT, Perplexity, and Claude.', priceRange: '₹15,000 - ₹35,000 / month' },
       { name: 'Vaani Voice AI Receptionist Deployment', description: '24/7 bilingual Kannada/English voice agent answering calls and booking appointments.', priceRange: '₹14,999 - ₹25,000 / month' }
     ],
     faqs: [
-      { question: 'What is Generative Engine Optimization (GEO)?', answer: 'GEO optimizes your brand and structured schema so AI search engines like ChatGPT, Claude, and Perplexity recommend your business when prospective clients ask for recommendations.' }
+      { question: 'What is Generative Engine Optimization (GEO)?', answer: 'GEO publishes structured schema so AI search engines like ChatGPT, Claude, and Perplexity can read the business.' }
     ],
     geoEnabled: true,
     voiceEnabled: true,
@@ -203,7 +203,7 @@ export function buildSchemaOrgJsonLd(profile: GeoEntityProfile, baseUrl: string)
       addressLocality: profile.address.locality,
       addressRegion: profile.address.state,
       postalCode: profile.address.postalCode,
-      addressCountry: profile.address.country || 'IN'
+      addressCountry: profile.address.country || undefined
     },
     openingHours: profile.openingHours,
     hasOfferCatalog: {
@@ -347,6 +347,30 @@ export function buildLlmsTxtMarkdown(profile: GeoEntityProfile, baseUrl: string)
   return lines.join('\n');
 }
 
+function readTrimmedString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+/** A publishable address is one the caller supplied, with a street and a city. */
+function readRealAddress(address: unknown): GeoEntityProfile['address'] | null {
+  if (!address || typeof address !== 'object') return null;
+  const record = address as Record<string, unknown>;
+  const street = readTrimmedString(record.street);
+  const city = readTrimmedString(record.city);
+  if (!street || !city) return null;
+  return {
+    street,
+    locality: readTrimmedString(record.locality),
+    city,
+    state: readTrimmedString(record.state),
+    postalCode: readTrimmedString(record.postalCode),
+    country: readTrimmedString(record.country),
+  };
+}
+
+const PROFILE_REQUIRED_ERROR =
+  'Name, telephone, and address are required before a profile can be published.';
+
 /**
  * Fastify Plugin registering all GEO routes
  */
@@ -373,11 +397,20 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
 
       const domain = parsedUrl.hostname.replace('www.', '');
       const generatedSlug = requestedSlug || domain.split('.')[0].toLowerCase().replace(/[^a-z0-9-]/g, '');
+      const suppliedName = readTrimmedString(body?.name);
+      const suppliedTelephone = readTrimmedString(body?.telephone);
+      const suppliedAddress = readRealAddress(body?.address);
 
       // Check if already in registry
       let profile = GEO_PROFILES.get(generatedSlug);
 
       if (!profile) {
+        // Publishing requires caller-supplied identity. Title and meta description
+        // may be copied through; telephone, address, doctors, prices, and services may not be invented.
+        if (!suppliedTelephone || !suppliedAddress) {
+          return reply.status(422).send({ error: PROFILE_REQUIRED_ERROR });
+        }
+
         // Detect Industry
         let industry: GeoEntityProfile['industry'] = explicitIndustry || 'GENERAL';
         if (!explicitIndustry) {
@@ -410,42 +443,29 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
             if (descMatch) fetchedDescription = descMatch[1].trim();
           }
         } catch {
-          // Graceful fallback if network blocked or slow
+          // No page copy is available. Do not substitute a generated description.
         }
 
-        const businessName = fetchedTitle 
-          ? fetchedTitle.split(/[|-–]/)[0].trim() 
-          : domain.split('.')[0].toUpperCase();
+        const businessName = suppliedName || fetchedTitle;
+        if (!businessName) {
+          return reply.status(422).send({ error: PROFILE_REQUIRED_ERROR });
+        }
 
         profile = {
           id: `geo_${crypto.randomUUID().slice(0, 8)}`,
           slug: generatedSlug,
           name: businessName,
           industry,
-          tagline: fetchedDescription || `Premier ${industry.toLowerCase()} provider in Karnataka`,
-          description: fetchedDescription || `${businessName} is a leading ${industry.toLowerCase()} organization providing high-quality, verified services in Karnataka, India.`,
+          tagline: readTrimmedString(body?.tagline) || fetchedDescription,
+          description: readTrimmedString(body?.description) || fetchedDescription,
           url: parsedUrl.origin,
-          telephone: '+918047192000',
-          address: {
-            street: 'Main Road',
-            locality: 'Central',
-            city: 'Bengaluru',
-            state: 'Karnataka',
-            postalCode: '560001',
-            country: 'IN'
-          },
-          openingHours: 'Mo-Sa 09:00-19:00',
-          priceRange: '₹₹',
-          doctorsOrTeam: [
-            { name: 'Dr. / Director Team', role: 'Head of Operations' }
-          ],
-          services: [
-            { name: `Primary ${industry.toLowerCase()} Service`, description: `Comprehensive ${industry.toLowerCase()} solutions tailored to client needs.` }
-          ],
-          faqs: [
-            { question: `What services does ${businessName} offer?`, answer: `${businessName} offers specialized ${industry.toLowerCase()} solutions with certified professionals.` },
-            { question: `How to book an appointment with ${businessName}?`, answer: 'Appointments can be booked 24x7 by calling our dedicated helpline or via our website.' }
-          ],
+          telephone: suppliedTelephone,
+          address: suppliedAddress,
+          openingHours: readTrimmedString(body?.openingHours),
+          priceRange: readTrimmedString(body?.priceRange),
+          doctorsOrTeam: Array.isArray(body?.doctorsOrTeam) ? body.doctorsOrTeam : [],
+          services: Array.isArray(body?.services) ? body.services : [],
+          faqs: Array.isArray(body?.faqs) ? body.faqs : [],
           geoEnabled: true,
           voiceEnabled: true,
           subscriptionStatus: 'ACTIVE',
@@ -455,12 +475,17 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
         GEO_PROFILES.set(generatedSlug, profile);
       }
 
-      // If user passed override fields, update profile
-      if (body.name) profile.name = body.name;
-      if (body.telephone) profile.telephone = body.telephone;
-      if (body.address) profile.address = { ...profile.address, ...body.address };
+      // If user passed override fields, update profile. Never backfill missing facts.
+      if (suppliedName) profile.name = suppliedName;
+      if (suppliedTelephone) profile.telephone = suppliedTelephone;
+      if (suppliedAddress) profile.address = suppliedAddress;
       if (body.services && Array.isArray(body.services)) profile.services = body.services;
       if (body.faqs && Array.isArray(body.faqs)) profile.faqs = body.faqs;
+      if (Array.isArray(body.doctorsOrTeam)) profile.doctorsOrTeam = body.doctorsOrTeam;
+      if (typeof body.tagline === 'string') profile.tagline = body.tagline.trim();
+      if (typeof body.description === 'string') profile.description = body.description.trim();
+      if (typeof body.openingHours === 'string') profile.openingHours = body.openingHours.trim();
+      if (typeof body.priceRange === 'string') profile.priceRange = body.priceRange.trim();
       profile.updatedAt = new Date().toISOString();
       GEO_PROFILES.set(generatedSlug, profile);
 

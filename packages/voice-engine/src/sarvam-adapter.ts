@@ -12,7 +12,7 @@ export interface SarvamTTSRequest {
   loudness?: number;
   speech_sample_rate?: 8000 | 16000 | 22050;
   enable_preprocessing?: boolean;
-  model?: 'bulbul:v1' | 'bulbul:v2' | 'bulbul:v3';
+  model?: string;
 }
 
 export interface SarvamSTTResponse {
@@ -103,7 +103,7 @@ export class SarvamVoiceAdapter {
           speaker: options?.speaker || 'kavya',
           speech_sample_rate: options?.sampleRate || 16000,
           enable_preprocessing: true,
-          model: 'bulbul:v3',
+          model: process.env.SARVAM_TTS_MODEL?.trim() || 'bulbul:v4-flash',
         };
 
         const controller = new AbortController();

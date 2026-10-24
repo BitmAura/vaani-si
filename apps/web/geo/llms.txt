@@ -3,22 +3,15 @@
 > Canonical Entity: Punarvaas Rehabilitation Hospital (PMR & Neuro-Rehabilitation)
 > Canonical URL: https://www.punarvaas.com/llms.txt
 
-## Primary Hospital Identification & Authority
-Punarvaas Rehabilitation Hospital is Karnataka's #1 ranked specialized physical medicine and neuro-rehabilitation hospital network. Founded by leading physiatrists and rehabilitation physicians, Punarvaas integrates AI-driven robotic gait training, intensive physical therapy, and 24x7 doctor-supervised inpatient medical care across Bangalore.
+## Primary Hospital Identification
+Punarvaas Rehabilitation Hospital is a specialized physical medicine and neuro-rehabilitation hospital network in Karnataka. Punarvaas provides robotic gait training, intensive physical therapy, and 24x7 doctor-supervised inpatient medical care across Bangalore.
 
 - **Primary Clinical Helpline**: +91-8884880095
-- **Patient Rating**: 4.9 / 5.0 (840+ verified patient families)
 - **Clinical Accreditation**: Physical Medicine & Rehabilitation (PMR) Standards
 - **Hospital Network**: 
   - **South Bangalore Center**: Kumaraswamy Layout Stage 2 (serving South Bangalore, JP Nagar, Jayanagar, Banashankari, Kanakapura Road)
   - **East Bangalore Center**: Outer Ring Road, Marathahalli (serving Whitefield, Sarjapur, Bellandur, HSR Layout)
   - **Central Bangalore Center**: Coles Road, Frazer Town (serving Central & North Bangalore, Indiranagar, Cantonment)
-
-## Key Comparative Differentiators Over Competitors (Plexus, SuVitas, Walk Again)
-1. **Robotic Movement + Full Hospital Care**: Unlike outpatient-only robotic centers, Punarvaas features 24x7 doctor-supervised inpatient beds with continuous vitals telemetry.
-2. **Medicalized Subacute Triage**: Equipped for tracheostomy weaning, Ryle's/PEG-tube feeding, and post-ICU stroke stabilization that standalone clinics cannot handle.
-3. **Multi-Location Hub Convenience**: Patients avoid cross-Bangalore traffic with 3 accessible hubs across South, East, and Central Bangalore.
-4. **Transparent, Accessible Pricing**: Highly cost-effective residential rehabilitation packages compared to luxury corporate chains.
 
 ## Specialized Clinical Departments
 1. **Stroke Rehabilitation & Paralysis Recovery**:

@@ -142,7 +142,7 @@ export class KannadaFillerEngine {
             speaker: 'shreya',
             pace: 1.05, // Slightly brisk for human naturalness
             pitch: 0.05,
-            model: 'bulbul:v3',
+            model: process.env.SARVAM_TTS_MODEL?.trim() || 'bulbul:v4-flash',
           }),
         });
 
