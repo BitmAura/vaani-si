@@ -38,7 +38,7 @@ export interface GeoEntityProfile {
   id: string;
   slug: string;
   name: string;
-  industry: 'HEALTHCARE' | 'REAL_ESTATE' | 'DENTAL' | 'HOSPITALITY' | 'LEGAL' | 'AGENCY' | 'GENERAL';
+  industry: 'HEALTHCARE' | 'REAL_ESTATE' | 'DENTAL' | 'HOSPITALITY' | 'AUTOMOTIVE' | 'EDUCATION' | 'WELLNESS' | 'LEGAL' | 'AGENCY' | 'GENERAL';
   tagline: string;
   description: string;
   url: string;
@@ -251,6 +251,75 @@ export function buildSchemaOrgJsonLd(profile: GeoEntityProfile, baseUrl: string)
         description: d.qualification
       }))
     };
+  } else if (profile.industry === 'DENTAL') {
+    specificSchema = {
+      ...common,
+      '@type': ['MedicalBusiness', 'Dentist'],
+      medicalSpecialty: ['Dentistry'],
+      availableService: profile.services.map(s => ({
+        '@type': 'MedicalTherapy',
+        name: s.name,
+        description: s.description
+      })),
+      employee: profile.doctorsOrTeam.map(d => ({
+        '@type': 'Physician',
+        name: d.name,
+        jobTitle: d.role,
+        medicalSpecialty: d.specialization || 'Dentistry',
+        honorificPrefix: 'Dr.',
+        description: d.qualification
+      }))
+    };
+  } else if (profile.industry === 'HOSPITALITY') {
+    specificSchema = {
+      ...common,
+      '@type': ['Hotel', 'LodgingBusiness'],
+      employee: profile.doctorsOrTeam.map(t => ({
+        '@type': 'Person',
+        name: t.name,
+        jobTitle: t.role
+      }))
+    };
+  } else if (profile.industry === 'AUTOMOTIVE') {
+    specificSchema = {
+      ...common,
+      '@type': 'AutoDealer',
+      employee: profile.doctorsOrTeam.map(t => ({
+        '@type': 'Person',
+        name: t.name,
+        jobTitle: t.role
+      }))
+    };
+  } else if (profile.industry === 'EDUCATION') {
+    specificSchema = {
+      ...common,
+      '@type': 'EducationalOrganization',
+      employee: profile.doctorsOrTeam.map(t => ({
+        '@type': 'Person',
+        name: t.name,
+        jobTitle: t.role
+      }))
+    };
+  } else if (profile.industry === 'WELLNESS') {
+    specificSchema = {
+      ...common,
+      '@type': 'HealthAndBeautyBusiness',
+      employee: profile.doctorsOrTeam.map(t => ({
+        '@type': 'Person',
+        name: t.name,
+        jobTitle: t.role
+      }))
+    };
+  } else if (profile.industry === 'LEGAL') {
+    specificSchema = {
+      ...common,
+      '@type': 'LegalService',
+      employee: profile.doctorsOrTeam.map(t => ({
+        '@type': 'Person',
+        name: t.name,
+        jobTitle: t.role
+      }))
+    };
   } else if (profile.industry === 'REAL_ESTATE') {
     specificSchema = {
       ...common,
@@ -415,7 +484,19 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
         let industry: GeoEntityProfile['industry'] = explicitIndustry || 'GENERAL';
         if (!explicitIndustry) {
           const lower = rawUrl.toLowerCase();
-          if (lower.includes('rehab') || lower.includes('hospital') || lower.includes('clinic') || lower.includes('neuro') || lower.includes('punarvaas')) {
+          if (lower.includes('dental') || lower.includes('teeth') || lower.includes('smile')) {
+            industry = 'DENTAL';
+          } else if (lower.includes('hotel') || lower.includes('resort') || lower.includes('dining') || lower.includes('stay') || lower.includes('suites')) {
+            industry = 'HOSPITALITY';
+          } else if (lower.includes('auto') || lower.includes('car') || lower.includes('motor') || lower.includes('dealer')) {
+            industry = 'AUTOMOTIVE';
+          } else if (lower.includes('school') || lower.includes('academy') || lower.includes('coaching') || lower.includes('edu')) {
+            industry = 'EDUCATION';
+          } else if (lower.includes('spa') || lower.includes('salon') || lower.includes('beauty') || lower.includes('wellness') || lower.includes('skin')) {
+            industry = 'WELLNESS';
+          } else if (lower.includes('law') || lower.includes('legal') || lower.includes('advocate') || lower.includes('tax')) {
+            industry = 'LEGAL';
+          } else if (lower.includes('rehab') || lower.includes('hospital') || lower.includes('clinic') || lower.includes('neuro') || lower.includes('punarvaas')) {
             industry = 'HEALTHCARE';
           } else if (lower.includes('layout') || lower.includes('plot') || lower.includes('estate') || lower.includes('realty') || lower.includes('villa')) {
             industry = 'REAL_ESTATE';

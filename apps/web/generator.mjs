@@ -6,8 +6,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const WEB_DIR = process.cwd().endsWith('web') ? process.cwd() : path.resolve(process.cwd(), 'apps/web');
+const WEB_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 // Shared SEO & Header Helper
 function renderHead({ title, description, canonicalUrl, schemaJson }) {

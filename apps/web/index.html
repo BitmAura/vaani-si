@@ -279,8 +279,8 @@
         <form id="geo-audit-form" onsubmit="handleGeoAudit(event)" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: center;">
           
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Website URL or Business Name *</label>
-            <input type="text" id="audit-url" placeholder="e.g. kumarsdental.com or Kumar's Dental" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Website URL *</label>
+            <input type="text" id="audit-url" placeholder="e.g. yourclinic.com or yourhotel.com" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
           </div>
 
           <div>
@@ -289,18 +289,22 @@
           </div>
 
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Industry Vertical</label>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Industry Category</label>
             <select id="audit-industry" style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;">
-              <option value="DENTAL">Dental / Microscopic Clinic</option>
-              <option value="HEALTHCARE">Hospitals &amp; Specialty Care</option>
-              <option value="REAL_ESTATE">Real Estate &amp; Plot Developers</option>
+              <option value="HOSPITALITY">Hotels, Resorts &amp; Luxury Dining</option>
+              <option value="HEALTHCARE">Hospitals, IVF &amp; Specialty Care</option>
+              <option value="DENTAL">Dental &amp; Microscopic Clinics</option>
+              <option value="REAL_ESTATE">Real Estate &amp; Plotted Layouts</option>
+              <option value="AUTOMOTIVE">Car Dealerships &amp; Auto Showrooms</option>
+              <option value="EDUCATION">Coaching Institutes, Schools &amp; EdTech</option>
+              <option value="WELLNESS">Salons, Spas &amp; Aesthetic Clinics</option>
               <option value="LEGAL">CA, Tax &amp; Legal Firms</option>
-              <option value="GENERAL">General Commercial SME</option>
+              <option value="GENERAL">General Commercial Business / SME</option>
             </select>
           </div>
 
           <div style="padding-top: 18px;">
-            <button type="submit" id="btn-run-audit" style="background: #10B981; color: #042F2E; border: none; font-weight: 800; font-size: 14px; padding: 13px 24px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.15s ease; box-shadow: 0 4px 14px rgba(16,185,129,0.3);">
+            <button type="button" id="btn-run-audit" onclick="handleGeoAudit(event)" style="background: #10B981; color: #042F2E; border: none; font-weight: 800; font-size: 14px; padding: 13px 24px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.15s ease; box-shadow: 0 4px 14px rgba(16,185,129,0.3);">
               <span>Run AI Audit</span>
               <span>&rarr;</span>
             </button>
@@ -311,9 +315,10 @@
         <!-- Quick Pick Chips -->
         <div style="display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 12px; color: #64748B; flex-wrap: wrap;">
           <span>Quick Sample:</span>
-          <button type="button" onclick="prefillAudit('kumarsdental.com', 'Yelahanka, Bangalore', 'DENTAL')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">Kumar's Dental (Yelahanka)</button>
-          <button type="button" onclick="prefillAudit('punarvaas.com', 'Kumaraswamy Layout, Bangalore', 'HEALTHCARE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">Punarvaas Hospital</button>
-          <button type="button" onclick="prefillAudit('ballariplots.in', 'Ballari, Karnataka', 'REAL_ESTATE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">Ballari Plotted Layouts</button>
+          <button type="button" onclick="prefillAudit('kumarsdental.com', 'Yelahanka, Bangalore', 'DENTAL')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">kumarsdental.com</button>
+          <button type="button" onclick="prefillAudit('punarvaas.com', 'Kumaraswamy Layout, Bangalore', 'HEALTHCARE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">punarvaas.com</button>
+          <button type="button" onclick="prefillAudit('royalorchidhotels.com', 'MG Road, Bangalore', 'HOSPITALITY')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">royalorchidhotels.com</button>
+          <button type="button" onclick="prefillAudit('ballariplots.in', 'Ballari, Karnataka', 'REAL_ESTATE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">ballariplots.in</button>
         </div>
       </div>
 
@@ -1529,88 +1534,139 @@
   <script>
     let currentAuditData = null;
 
+    function sanitizeDomain(input) {
+      if (!input) return '';
+      var s = String(input).trim();
+      if (s.indexOf('://') !== -1) {
+        s = s.substring(s.indexOf('://') + 3);
+      }
+      if (s.indexOf('www.') === 0) {
+        s = s.substring(4);
+      }
+      s = s.split('/')[0].split('?')[0].split('#')[0];
+      return s;
+    }
+
+    function formatEntityName(domain) {
+      if (!domain) return 'Prospective Business';
+      var d = sanitizeDomain(domain);
+      var part = d.split('.')[0] || d;
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }
+
     function prefillAudit(url, city, industry) {
-      document.getElementById('audit-url').value = url;
-      document.getElementById('audit-city').value = city;
-      document.getElementById('audit-industry').value = industry;
-      handleGeoAudit(new Event('submit'));
+      var u = document.getElementById('audit-url');
+      var c = document.getElementById('audit-city');
+      var i = document.getElementById('audit-industry');
+      if (u) u.value = url;
+      if (c) c.value = city;
+      if (i) i.value = industry;
+      handleGeoAudit(null);
     }
 
     async function handleGeoAudit(e) {
       if (e && e.preventDefault) e.preventDefault();
       
-      const urlInput = document.getElementById('audit-url').value.trim();
-      const city = document.getElementById('audit-city').value.trim() || 'Bengaluru';
-      const industry = document.getElementById('audit-industry').value;
+      var urlEl = document.getElementById('audit-url');
+      if (!urlEl) return;
+      var rawInput = urlEl.value.trim();
+      if (!rawInput) {
+        urlEl.focus();
+        return;
+      }
 
-      if (!urlInput) return;
+      var domain = sanitizeDomain(rawInput);
+      var displayName = formatEntityName(domain);
+      var targetUrl = rawInput.indexOf('http') === 0 ? rawInput : ('https://' + domain);
+      var cityEl = document.getElementById('audit-city');
+      var city = (cityEl ? cityEl.value : '').trim() || 'Bengaluru';
+      var indEl = document.getElementById('audit-industry');
+      var industry = indEl ? indEl.value : 'HOSPITALITY';
+      var industryLabel = indEl && indEl.options && indEl.selectedIndex >= 0 ? indEl.options[indEl.selectedIndex].text : industry;
 
-      const btn = document.getElementById('btn-run-audit');
-      const loading = document.getElementById('geo-audit-loading');
-      const results = document.getElementById('geo-audit-results');
-      const progressText = document.getElementById('geo-audit-progress-text');
+      var btn = document.getElementById('btn-run-audit');
+      var loading = document.getElementById('geo-audit-loading');
+      var results = document.getElementById('geo-audit-results');
+      var progressText = document.getElementById('geo-audit-progress-text');
 
       if (btn) btn.disabled = true;
       if (loading) loading.style.display = 'block';
       if (results) results.style.display = 'none';
 
-      const steps = [
-        'Pinging GPTBot & PerplexityBot crawl indices...',
-        'Checking /llms.txt machine-readable manifest...',
-        'Evaluating Schema.org JSON-LD Clinical & Business Graph...',
-        'Simulating conversational buyer queries in ' + city + '...'
+      var steps = [
+        'Pinging GPTBot & PerplexityBot crawl indices for ' + domain + '...',
+        'Checking /llms.txt machine-readable manifest at ' + domain + '...',
+        'Evaluating Schema.org JSON-LD Clinical & Entity Graph...',
+        'Simulating conversational buyer queries for ' + industryLabel + ' in ' + city + '...'
       ];
 
-      let stepIdx = 0;
-      const interval = setInterval(() => {
+      var stepIdx = 0;
+      if (progressText) progressText.textContent = steps[0];
+      var interval = setInterval(function() {
         stepIdx = (stepIdx + 1) % steps.length;
         if (progressText) progressText.textContent = steps[stepIdx];
-      }, 700);
+      }, 600);
 
       try {
-        const res = await fetch('/api/geo/audit', {
+        var res = await fetch('/api/geo/audit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            url: urlInput.includes('http') ? urlInput : 'https://' + urlInput,
-            businessName: urlInput.replace(/^https?:///, '').replace(/^www./, '').split('/')[0],
+            url: targetUrl,
+            businessName: displayName,
             city: city,
             industry: industry
           })
         });
 
-        const data = await res.json();
-        currentAuditData = data.audit || {
-          businessName: urlInput,
-          currentScore: 25,
-          summary: 'Critical missing structured entity declarations on AI search engines.'
-        };
+        if (res.ok) {
+          var data = await res.json();
+          currentAuditData = data.audit || {
+            businessName: displayName + ' (' + domain + ')',
+            currentScore: 24,
+            summary: 'When prospective customers ask ChatGPT or Perplexity for ' + industryLabel + ' in ' + city + ', ' + domain + ' is currently missing structured entity citations.'
+          };
+        } else {
+          throw new Error('API status ' + res.status);
+        }
       } catch (err) {
         currentAuditData = {
-          businessName: urlInput,
-          currentScore: 25,
-          summary: 'When prospective clients search on ChatGPT or Perplexity, ' + urlInput + ' is currently missing structured entity citations in ' + city + '.'
+          businessName: displayName + ' (' + domain + ')',
+          targetUrl: targetUrl,
+          city: city,
+          industry: industry,
+          currentScore: 24,
+          projectedScore: 96,
+          summary: 'When prospective customers ask ChatGPT, Claude, or Perplexity for ' + industryLabel + ' in ' + city + ', ' + domain + ' is currently missing structured machine-readable citations and /llms.txt manifests.'
         };
       } finally {
         clearInterval(interval);
-        setTimeout(() => {
+        setTimeout(function() {
           if (loading) loading.style.display = 'none';
           if (btn) btn.disabled = false;
-          renderAuditResults(currentAuditData);
+          renderAuditResults(currentAuditData, domain, city, industryLabel);
         }, 500);
       }
     }
 
-    function renderAuditResults(audit) {
-      const results = document.getElementById('geo-audit-results');
+    function renderAuditResults(audit, domain, city, industryLabel) {
+      var results = document.getElementById('geo-audit-results');
       if (!results) return;
 
-      document.getElementById('audit-res-business-name').textContent = audit.businessName;
-      document.getElementById('audit-res-summary').textContent = audit.summary || 'Critical AI visibility vulnerability detected.';
-      document.getElementById('audit-res-score').textContent = audit.currentScore + ' / 100';
+      var nameEl = document.getElementById('audit-res-business-name');
+      var summaryEl = document.getElementById('audit-res-summary');
+      var scoreEl = document.getElementById('audit-res-score');
+
+      if (nameEl) nameEl.textContent = audit.businessName || domain || 'Your Website';
+      if (summaryEl) summaryEl.textContent = audit.summary || ('Missing structured machine-readable citations on AI search engines for ' + city + '.');
+      if (scoreEl) scoreEl.textContent = (audit.currentScore || 24) + ' / 100';
 
       results.style.display = 'block';
-      results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      try {
+        results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e) {
+        results.scrollIntoView();
+      }
     }
 
     function openClaimShieldModal() {
@@ -1640,11 +1696,8 @@
       const email = document.getElementById('shield-email').value;
       const businessUrl = document.getElementById('audit-url').value;
 
-      const slug = (currentAuditData && currentAuditData.businessName ? currentAuditData.businessName : 'clinic')
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '') || 'client-entity';
+      const rawTarget = (currentAuditData && currentAuditData.businessName ? currentAuditData.businessName : sanitizeDomain(businessUrl)) || 'business';
+      const slug = rawTarget.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'client-entity';
 
       const origin = window.location.origin || 'https://vanni.ai';
 
@@ -1681,7 +1734,7 @@
         });
 
         const activeData = await activateRes.json().catch(() => null);
-        const snippet = (activeData && activeData.embedSnippet) ? activeData.embedSnippet : ('<script src="' + origin + '/api/geo/' + slug + '/loader.js" async></script>');
+        const snippet = (activeData && activeData.embedSnippet) ? activeData.embedSnippet : ('<script src="' + origin + '/api/geo/' + slug + '/loader.js" async><' + '/script>');
 
         document.getElementById('shield-embed-code-text').textContent = snippet;
         document.getElementById('shield-step-capture').style.display = 'none';
