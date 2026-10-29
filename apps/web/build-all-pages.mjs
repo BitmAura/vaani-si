@@ -979,67 +979,85 @@ const homepageHtml = `<!DOCTYPE html>
         </p>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch;" class="vanni-steps-grid">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: stretch;" class="vanni-steps-grid">
         
         <!-- Starter Tier -->
         <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>
-            <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">Starter</div>
-            <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 16px;">Ideal for independent clinics & single offices</div>
-            <div style="font-size: 36px; font-weight: 800; font-family: var(--vanni-font-mono); margin-bottom: 16px;">
-              &#8377;4,999<span style="font-size: 14px; font-weight: 400; color: var(--vanni-text-muted);">/month</span>
+            <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">Voice Starter</div>
+            <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">Ideal for independent clinics &amp; single offices</div>
+            <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); margin-bottom: 16px;">
+              &#8377;4,999<span style="font-size: 12px; font-weight: 400; color: var(--vanni-text-muted);">/month</span>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--vanni-text-secondary); margin-bottom: 24px;">
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--vanni-text-secondary); margin-bottom: 20px;">
               <div>✓ 1 Autonomous AI Employee</div>
               <div>✓ 600 Talk Minutes included</div>
               <div>✓ Kannada + Kanglish + English</div>
-              <div>✓ Call Recording & Transcripts</div>
+              <div>✓ Call Recording &amp; Transcripts</div>
               <div>✓ Extra minutes at ₹2.50/min</div>
             </div>
           </div>
           <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-secondary" style="width: 100%;">Get Started</button>
         </div>
 
+        <!-- AEO & GEO Search Shield -->
+        <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between; border: 1.5px solid #10B981;">
+          <div>
+            <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px; color: #065F46;">AEO &amp; GEO Shield</div>
+            <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">Rank #1 on ChatGPT, Claude &amp; Perplexity</div>
+            <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); color: #059669; margin-bottom: 16px;">
+              &#8377;9,999<span style="font-size: 12px; font-weight: 400; color: var(--vanni-text-muted);">/month</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--vanni-text-secondary); margin-bottom: 20px;">
+              <div>✓ #1 AI Recommendation Placement</div>
+              <div>✓ 1-Line Universal Web Script</div>
+              <div>✓ Aggregator Commission Bypass</div>
+              <div>✓ 24/7 Brand &amp; Tariff Defense</div>
+              <div>✓ 100% 30-Day Money-Back Guarantee</div>
+            </div>
+          </div>
+          <a href="#geo-scanner" class="vanni-button vanni-button-primary" style="width: 100%; text-align: center; text-decoration: none; background: #10B981; border-color: #10B981;">Activate AI Shield</a>
+        </div>
+
         <!-- Growth Tier -->
         <div class="vanni-card" style="border: 2px solid var(--vanni-accent); display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-          <div style="position: absolute; top: -12px; right: 20px; background: var(--vanni-accent); color: #FFF; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: var(--vanni-radius-full);">
+          <div style="position: absolute; top: -12px; right: 16px; background: var(--vanni-accent); color: #FFF; font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: var(--vanni-radius-full); text-transform: uppercase;">
             MOST POPULAR
           </div>
           <div>
-            <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">Growth</div>
-            <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 16px;">For hospitals, busy clinics & real estate firms</div>
-            <div style="font-size: 36px; font-weight: 800; font-family: var(--vanni-font-mono); margin-bottom: 16px;">
-              &#8377;14,999<span style="font-size: 14px; font-weight: 400; color: var(--vanni-text-muted);">/month</span>
+            <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">Voice AI Growth</div>
+            <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">For hospitals, busy clinics &amp; builders</div>
+            <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); margin-bottom: 16px;">
+              &#8377;14,999<span style="font-size: 12px; font-weight: 400; color: var(--vanni-text-muted);">/month</span>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--vanni-text-secondary); margin-bottom: 24px;">
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--vanni-text-secondary); margin-bottom: 20px;">
               <div>✓ Up to 3 AI Employees</div>
               <div>✓ 2,500 Talk Minutes included</div>
-              <div>✓ Calendar Slot Booking & WhatsApp Sync</div>
-              <div>✓ Real-time Human Call Transfer</div>
-              <div>✓ CRM Webhook Integrations</div>
+              <div>✓ Sub-15s Meta Ads Autodialer</div>
+              <div>✓ Calendar Slot Booking &amp; WhatsApp</div>
               <div>✓ Extra minutes at ₹2.20/min</div>
             </div>
           </div>
-          <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary" style="width: 100%;">Deploy Growth</button>
+          <button type="button" onclick="openDemoModal('real_estate')" class="vanni-button vanni-button-primary" style="width: 100%;">Deploy Growth</button>
         </div>
 
-        <!-- Business Tier -->
-        <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <!-- Complete Bundle -->
+        <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%); border: 1.5px solid #475569;">
           <div>
-            <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">Business / Enterprise</div>
-            <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 16px;">For multi-branch hospital chains & developers</div>
-            <div style="font-size: 36px; font-weight: 800; font-family: var(--vanni-font-mono); margin-bottom: 16px;">
-              Custom
+            <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">Complete Bundle</div>
+            <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">Voice Growth + AEO Engine (Save ₹5,000/mo)</div>
+            <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); color: #0F172A; margin-bottom: 16px;">
+              &#8377;19,999<span style="font-size: 12px; font-weight: 400; color: var(--vanni-text-muted);">/month</span>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--vanni-text-secondary); margin-bottom: 24px;">
-              <div>✓ Unlimited AI Employee Roles</div>
-              <div>✓ Custom High-Volume Minutes Pool</div>
-              <div>✓ Dedicated SIP Trunking & Virtual Numbers</div>
-              <div>✓ Custom Dialect Prosody Fine-Tuning</div>
-              <div>✓ Dedicated Account Manager & SLA</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--vanni-text-secondary); margin-bottom: 20px;">
+              <div>✓ Full Voice Growth (2,500 Mins)</div>
+              <div>✓ Full AEO/GEO Search Engine</div>
+              <div>✓ Rank #1 on ChatGPT + Instant Call</div>
+              <div>✓ Dialect Tuning (BLR, Ballari, Hubli)</div>
+              <div>✓ Dedicated Account Manager &amp; SLA</div>
             </div>
           </div>
-          <a href="/contact" class="vanni-button vanni-button-secondary" style="width: 100%; text-align: center; text-decoration: none;">Contact Sales</a>
+          <a href="/pricing" class="vanni-button vanni-button-secondary" style="width: 100%; text-align: center; text-decoration: none;">View Full Bundle &rarr;</a>
         </div>
 
       </div>
@@ -1633,59 +1651,59 @@ buildStandardPage({
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
       
-      <!-- Card 1: Edge Loader -->
+      <!-- Card 1: Top AI Placement -->
       <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div style="font-size: 24px;">🏷️</div>
-            <span style="font-size: 10px; font-weight: 700; background: #DBEAFE; color: #1E40AF; padding: 2px 8px; border-radius: 4px;">VERCEL EDGE HOSTED</span>
+            <div style="font-size: 24px;">🏆</div>
+            <span style="font-size: 10px; font-weight: 700; background: #DBEAFE; color: #1E40AF; padding: 2px 8px; border-radius: 4px;">#1 AI RECOMMENDATION</span>
           </div>
-          <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Dynamic Schema.org Entity Injection</div>
+          <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Guaranteed ChatGPT &amp; Perplexity Top Placement</div>
           <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6;">
-            Injects verified doctors, real estate dimensions, RERA numbers, and pricing into the client website asynchronously in &lt;50ms via /geo/loader.js.
+            When patients, guests, and buyers ask conversational AI for the top clinics, hospitals, resorts, or builders in your city, our engine positions your brand as the #1 verified recommendation.
           </p>
         </div>
         <div style="margin-top: 16px;">
-          <a href="/geo/loader.js" target="_blank" class="vanni-button vanni-button-primary" style="width: 100%; justify-content: center; text-decoration: none;">
-            <span>🏷️ Inspect Hosted /geo/loader.js</span>
+          <a href="/#geo-scanner" class="vanni-button vanni-button-primary" style="width: 100%; justify-content: center; text-decoration: none;">
+            <span>🏆 Run Free AI Visibility Audit &rarr;</span>
           </a>
         </div>
       </div>
 
-      <!-- Card 2: LLMs.txt Feed -->
+      <!-- Card 2: Direct Customer Inquiries -->
       <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div style="font-size: 24px;">📑</div>
-            <span style="font-size: 10px; font-weight: 700; background: #FEF3C7; color: #B45309; padding: 2px 8px; border-radius: 4px;">AI CRAWLER READY</span>
+            <div style="font-size: 24px;">🛡️</div>
+            <span style="font-size: 10px; font-weight: 700; background: #DCFCE7; color: #15803D; padding: 2px 8px; border-radius: 4px;">DIRECT ACQUISITION</span>
           </div>
-          <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Canonical Markdown Knowledge (/llms.txt)</div>
+          <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Bypass Third-Party Aggregators &amp; Lead Tolls</div>
           <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6;">
-            Clean markdown feed specifically formatted for GPTBot, ClaudeBot, and PerplexityBot crawlers to ingest verified regional company data.
+            Stop losing revenue to aggregators and directories that charge high commissions and auction your leads to competitors. Own direct, high-trust buyer relationships from AI searches.
           </p>
         </div>
         <div style="margin-top: 16px;">
-          <a href="/geo/llms.txt" target="_blank" class="vanni-button vanni-button-secondary" style="width: 100%; justify-content: center; text-decoration: none;">
-            <span>📑 View Public /llms.txt Feed</span>
+          <a href="/#geo-scanner" class="vanni-button vanni-button-secondary" style="width: 100%; justify-content: center; text-decoration: none;">
+            <span>🛡️ Check Your Direct AI Reach &rarr;</span>
           </a>
         </div>
       </div>
 
-      <!-- Card 3: Agency Kill-Switch -->
+      <!-- Card 3: Brand Defense & Citation Shield -->
       <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div style="font-size: 24px;">🛑</div>
-            <span style="font-size: 10px; font-weight: 700; background: #FEE2E2; color: #DC2626; padding: 2px 8px; border-radius: 4px;">AGENCY SHIELD</span>
+            <div style="font-size: 24px;">🔒</div>
+            <span style="font-size: 10px; font-weight: 700; background: #FEF3C7; color: #B45309; padding: 2px 8px; border-radius: 4px;">BRAND PROTECTION</span>
           </div>
-          <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">1-Click Retainer Revocation (Kill-Switch)</div>
+          <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">24/7 Hallucination Defense &amp; Citation Shield</div>
           <p style="font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.6;">
-            The agency maintains 100% control on Vercel. If a client delays retainer payments, 1 click instantly deactivates their AEO/GEO advantage.
+            Safeguards your enterprise reputation by ensuring AI models never quote outdated consultation fees, fake physician credentials, or incorrect property specifications to prospective buyers.
           </p>
         </div>
         <div style="margin-top: 16px;">
-          <a href="/app/geo" class="vanni-button vanni-button-secondary" style="width: 100%; justify-content: center; text-decoration: none;">
-            <span>🛑 Open AEO/GEO Control Center</span>
+          <a href="/pricing" class="vanni-button vanni-button-secondary" style="width: 100%; justify-content: center; text-decoration: none;">
+            <span>🔒 View AI Search Shield Pricing &rarr;</span>
           </a>
         </div>
       </div>
@@ -2029,115 +2047,143 @@ buildStandardPage({
 });
 
 // =========================================================================
-// 10. PRICING PAGE (pricing.html) - Two Flagship Products & Growth Bundle
+// 10. PRICING PAGE (pricing.html) - Synchronized Commercial Architecture
 // =========================================================================
 buildStandardPage({
   filename: 'pricing.html',
   title: 'Commercial Pricing & Plans — Voice AI Telephony & AEO/GEO Engine',
-  description: 'Predictable monthly retainers for high-velocity regional voice AI employees, generative search optimization (AEO & GEO), and the complete acquisition bundle.',
+  description: 'Predictable monthly tiers for autonomous Kannada voice employees, generative search optimization (AEO & GEO), and the complete customer acquisition bundle.',
   activeNav: '/pricing',
-  headline: 'Commercial Pricing for Serious Businesses',
-  subtitle: 'Deploy autonomous Kannada voice employees, rank #1 on ChatGPT & Perplexity, or unlock the complete growth bundle.',
+  headline: 'Simple Monthly Tiers. Zero Carrier Markups.',
+  subtitle: 'Deploy autonomous voice AI employees, rank #1 on ChatGPT & Perplexity, or dominate both with the complete growth bundle.',
   contentHtml: `
-  <!-- 3 Flagship Commercial Tiers -->
-  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px;" class="vanni-steps-grid">
+  <!-- 4 Synchronized Commercial Tiers -->
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 48px;" class="vanni-steps-grid">
     
-    <!-- Tier 1: Voice Telephony OS -->
+    <!-- Tier 1: Voice AI Starter -->
     <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between;">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-size: 24px;">📞</span>
-          <span style="font-size: 10px; font-weight: 700; background: #DBEAFE; color: #1E40AF; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">PRODUCT 1</span>
+          <span style="font-size: 24px;">🎙️</span>
+          <span style="font-size: 10px; font-weight: 700; background: #DBEAFE; color: #1E40AF; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">VOICE STARTER</span>
         </div>
-        <div style="font-weight: 800; font-size: 20px; color: var(--vanni-text-primary); margin-bottom: 4px;">Voice Telephony OS</div>
-        <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 16px; min-height: 36px;">Autonomous sub-120ms Kannada AI tele-employees &amp; Meta Ads speed-to-lead autodialer.</div>
+        <div style="font-weight: 800; font-size: 18px; color: var(--vanni-text-primary); margin-bottom: 4px;">Voice Starter</div>
+        <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">For independent clinics, single offices &amp; local businesses.</div>
         
-        <div style="font-size: 38px; font-weight: 800; font-family: var(--vanni-font-mono); color: var(--vanni-text-primary); margin-bottom: 18px;">
-          &#8377;14,999<span style="font-size: 13px; font-weight: 500; color: var(--vanni-text-muted);">/month</span>
+        <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); color: var(--vanni-text-primary); margin-bottom: 16px;">
+          &#8377;4,999<span style="font-size: 12px; font-weight: 500; color: var(--vanni-text-muted);">/month</span>
         </div>
 
-        <div style="font-size: 12.5px; color: var(--vanni-text-secondary); line-height: 2; margin-bottom: 24px;">
-          <div>✓ <strong>1,500 High-Velocity Minutes</strong> included</div>
-          <div>✓ <strong>Sub-15s Meta Lead Ads</strong> (FB/IG) Autodialer</div>
-          <div>✓ <strong>Kannada, Kanglish &amp; English</strong> Voice AI</div>
-          <div>✓ <strong>Sahana &amp; Vikram</strong> AI Tele-Employees</div>
-          <div>✓ <strong>Calls Ledger:</strong> Audio Playback &amp; Transcripts</div>
-          <div>✓ <strong>WhatsApp Cloud API:</strong> Auto Token Slips</div>
-          <div>✓ Extra minutes: ₹2.20/min · No carrier markups</div>
+        <div style="font-size: 12px; color: var(--vanni-text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          <div>✓ <strong>1 Autonomous AI Employee</strong></div>
+          <div>✓ <strong>600 Talk Minutes</strong> included</div>
+          <div>✓ <strong>Kannada, Kanglish &amp; English</strong></div>
+          <div>✓ <strong>Call Recordings &amp; Transcripts</strong></div>
+          <div>✓ <strong>WhatsApp Token &amp; Lead Dossier</strong></div>
+          <div>✓ Extra minutes at ₹2.50/min</div>
         </div>
       </div>
 
       <div>
-        <a href="/signup?product=voice" class="vanni-button vanni-button-secondary" style="width: 100%; text-align: center; justify-content: center; text-decoration: none;">
-          Deploy Voice Telephony OS
-        </a>
+        <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-secondary" style="width: 100%; justify-content: center;">
+          Get Started &rarr;
+        </button>
       </div>
     </div>
 
-    <!-- Tier 2: AEO & GEO Engine -->
-    <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <!-- Tier 2: AEO & GEO Search Shield -->
+    <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between; border: 1.5px solid #10B981;">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
           <span style="font-size: 24px;">🌐</span>
-          <span style="font-size: 10px; font-weight: 700; background: #ECFDF5; color: #065F46; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">PRODUCT 2</span>
+          <span style="font-size: 10px; font-weight: 800; background: #D1FAE5; color: #065F46; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">AI SEARCH SHIELD</span>
         </div>
-        <div style="font-weight: 800; font-size: 20px; color: var(--vanni-text-primary); margin-bottom: 4px;">AEO &amp; GEO Engine</div>
-        <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 16px; min-height: 36px;">Rank #1 when regional customers ask ChatGPT, Claude, and Perplexity for recommendations.</div>
+        <div style="font-weight: 800; font-size: 18px; color: var(--vanni-text-primary); margin-bottom: 4px;">AEO &amp; GEO Engine</div>
+        <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">Rank #1 when customers ask ChatGPT, Claude &amp; Perplexity.</div>
         
-        <div style="font-size: 38px; font-weight: 800; font-family: var(--vanni-font-mono); color: var(--vanni-text-primary); margin-bottom: 18px;">
-          &#8377;11,999<span style="font-size: 13px; font-weight: 500; color: var(--vanni-text-muted);">/month</span>
+        <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); color: #059669; margin-bottom: 16px;">
+          &#8377;9,999<span style="font-size: 12px; font-weight: 500; color: var(--vanni-text-muted);">/month</span>
         </div>
 
-        <div style="font-size: 12.5px; color: var(--vanni-text-secondary); line-height: 2; margin-bottom: 24px;">
-          <div>✓ <strong>Vercel Edge-Hosted</strong> /geo/loader.js Script</div>
-          <div>✓ <strong>Dynamic Schema.org</strong> JSON-LD Graph (@graph)</div>
-          <div>✓ <strong>Public /geo/llms.txt</strong> AI Crawler Knowledge Feed</div>
-          <div>✓ <strong>Sub-50ms Mumbai Edge</strong> CDN Delivery</div>
-          <div>✓ <strong>AI Rank Simulator:</strong> ChatGPT &amp; Perplexity Track</div>
-          <div>✓ <strong>Agency Shield:</strong> 1-Click Retainer Kill-Switch</div>
-          <div>✓ Zero Layout Shift · Compatible with Any Website</div>
+        <div style="font-size: 12px; color: var(--vanni-text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          <div>✓ <strong>#1 AI Placement</strong> (ChatGPT, Perplexity)</div>
+          <div>✓ <strong>1-Line Universal Web Script</strong></div>
+          <div>✓ <strong>Aggregator Bypass</strong> (Zero commissions)</div>
+          <div>✓ <strong>24/7 Brand &amp; Tariff Defense</strong></div>
+          <div>✓ <strong>Monthly AI Ranking Audit Report</strong></div>
+          <div>✓ <strong>100% 30-Day Money-Back Guarantee</strong></div>
         </div>
       </div>
 
       <div>
-        <a href="/signup?product=geo" class="vanni-button vanni-button-secondary" style="width: 100%; text-align: center; justify-content: center; text-decoration: none;">
-          Deploy AEO &amp; GEO Engine
+        <a href="/#geo-scanner" class="vanni-button vanni-button-primary" style="width: 100%; justify-content: center; text-decoration: none; background: #10B981; border-color: #10B981;">
+          Activate AI Shield &rarr;
         </a>
       </div>
     </div>
 
-    <!-- Tier 3: Complete AI Growth OS Bundle (Most Popular) -->
+    <!-- Tier 3: Voice AI Growth (Most Popular) -->
     <div class="vanni-card" style="border: 2px solid #2563EB; background: #FAFBFD; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-      <div style="position: absolute; top: -12px; right: 20px; background: #2563EB; color: #FFF; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
-        ⭐ BEST VALUE · SAVE &#8377;5,000/MO
+      <div style="position: absolute; top: -12px; right: 16px; background: #2563EB; color: #FFF; font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.04em;">
+        MOST POPULAR
       </div>
 
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
           <span style="font-size: 24px;">⚡</span>
-          <span style="font-size: 10px; font-weight: 700; background: #DBEAFE; color: #1D4ED8; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">COMPLETE BUNDLE</span>
+          <span style="font-size: 10px; font-weight: 700; background: #DBEAFE; color: #1D4ED8; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">GROWTH VOICE</span>
         </div>
-        <div style="font-weight: 800; font-size: 20px; color: #1E3A8A; margin-bottom: 4px;">Complete AI Growth OS</div>
-        <div style="font-size: 12px; color: var(--vanni-text-muted); margin-bottom: 16px; min-height: 36px;">Total acquisition &amp; conversion: AI search domination + autonomous sub-15s voice closing.</div>
+        <div style="font-weight: 800; font-size: 18px; color: #1E3A8A; margin-bottom: 4px;">Voice AI Growth</div>
+        <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">For busy hospitals, real estate builders &amp; dealerships.</div>
         
-        <div style="font-size: 38px; font-weight: 800; font-family: var(--vanni-font-mono); color: #1D4ED8; margin-bottom: 18px;">
-          &#8377;21,999<span style="font-size: 13px; font-weight: 500; color: var(--vanni-text-muted);">/month</span>
+        <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); color: #1D4ED8; margin-bottom: 16px;">
+          &#8377;14,999<span style="font-size: 12px; font-weight: 500; color: var(--vanni-text-muted);">/month</span>
         </div>
 
-        <div style="font-size: 12.5px; color: var(--vanni-text-secondary); line-height: 2; margin-bottom: 24px;">
-          <div>✓ <strong>Everything in Voice Telephony OS</strong> (Upgraded 2,500 Mins)</div>
-          <div>✓ <strong>Everything in AEO &amp; GEO Engine</strong> (Vercel Edge Host)</div>
-          <div>✓ <strong>Cross-Product Multiplier:</strong> Web AI Lead &rarr; Instant 12s Call</div>
-          <div>✓ <strong>Dedicated Dialect Tuning:</strong> North Karnataka &amp; Bengaluru</div>
-          <div>✓ <strong>Meta Lead Ads + WhatsApp Cloud:</strong> Unlimited Webhooks</div>
-          <div>✓ <strong>Multi-Client Agency Hub</strong> &amp; Reseller Isolation</div>
-          <div>✓ <strong>Priority Support SLA:</strong> 99.9% Uptime Guarantee</div>
+        <div style="font-size: 12px; color: var(--vanni-text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          <div>✓ <strong>Up to 3 AI Tele-Employees</strong></div>
+          <div>✓ <strong>2,500 High-Velocity Minutes</strong> included</div>
+          <div>✓ <strong>Sub-15s Meta Lead Ads Autodialer</strong></div>
+          <div>✓ <strong>Calendar Slot Booking &amp; WhatsApp</strong></div>
+          <div>✓ <strong>Live Human Call Bridge</strong></div>
+          <div>✓ Extra minutes at ₹2.20/min</div>
         </div>
       </div>
 
       <div>
-        <a href="/signup?product=bundle" class="vanni-button vanni-button-primary" style="width: 100%; text-align: center; justify-content: center; text-decoration: none; background: #2563EB; border-color: #2563EB;">
-          Deploy Complete Bundle (&#8377;21,999/mo)
+        <button type="button" onclick="openDemoModal('real_estate')" class="vanni-button vanni-button-primary" style="width: 100%; justify-content: center; background: #2563EB; border-color: #2563EB;">
+          Deploy Growth &rarr;
+        </button>
+      </div>
+    </div>
+
+    <!-- Tier 4: Complete AI Growth Bundle -->
+    <div class="vanni-card" style="display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%); border: 1.5px solid #475569;">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-size: 24px;">👑</span>
+          <span style="font-size: 10px; font-weight: 800; background: #FEF3C7; color: #92400E; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">FULL ACQUISITION</span>
+        </div>
+        <div style="font-weight: 800; font-size: 18px; color: var(--vanni-text-primary); margin-bottom: 4px;">Complete Bundle</div>
+        <div style="font-size: 11.5px; color: var(--vanni-text-muted); margin-bottom: 14px; min-height: 32px;">Voice AI Growth + AEO/GEO Engine. Save ₹5,000/mo.</div>
+        
+        <div style="font-size: 34px; font-weight: 800; font-family: var(--vanni-font-mono); color: #0F172A; margin-bottom: 16px;">
+          &#8377;19,999<span style="font-size: 12px; font-weight: 500; color: var(--vanni-text-muted);">/month</span>
+        </div>
+
+        <div style="font-size: 12px; color: var(--vanni-text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          <div>✓ <strong>Full Voice AI Growth</strong> (2,500 Mins)</div>
+          <div>✓ <strong>Full AEO &amp; GEO AI Shield</strong></div>
+          <div>✓ <strong>Rank #1 on ChatGPT + Instant 15s Call</strong></div>
+          <div>✓ <strong>Dialect Tuning</strong> (Bengaluru, Ballari, Hubli)</div>
+          <div>✓ <strong>Priority Telephony Trunk &amp; 99.9% SLA</strong></div>
+          <div>✓ <strong>Dedicated Technical Account Manager</strong></div>
+        </div>
+      </div>
+
+      <div>
+        <a href="/signup?product=bundle" class="vanni-button vanni-button-secondary" style="width: 100%; justify-content: center; text-decoration: none;">
+          Deploy Complete Bundle &rarr;
         </a>
       </div>
     </div>
@@ -2147,8 +2193,8 @@ buildStandardPage({
   <!-- Enterprise & Custom Inquiries Banner -->
   <div style="background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: 10px; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
     <div>
-      <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: var(--vanni-text-primary);">Need multi-branch hospital SIP trunks or high-volume builder autodialing?</h4>
-      <p style="margin: 0; font-size: 13px; color: var(--vanni-text-secondary);">We provide custom SIP carrier interconnects (Tata, Airtel, Exotel) and on-premise CRM data bridges.</p>
+      <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: var(--vanni-text-primary);">Need multi-branch hospital chains or high-volume enterprise SIP trunks?</h4>
+      <p style="margin: 0; font-size: 13px; color: var(--vanni-text-secondary);">We provide dedicated carrier interconnects (Tata, Airtel, Exotel) with custom dialect prosody fine-tuning.</p>
     </div>
     <a href="/contact" class="vanni-button vanni-button-secondary" style="text-decoration: none;">
       Contact Enterprise Team &rarr;
