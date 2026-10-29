@@ -166,4 +166,40 @@ describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
     const statusData = JSON.parse(checkRes.payload);
     expect(statusData.readinessScore).toBeGreaterThanOrEqual(70);
   });
+
+  it('generates an institutional AI audit report for registered entity Punarvaas', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/api/geo/punarvaas/audit',
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload);
+    expect(body.entity.name).toContain('Punarvaas');
+    expect(body.readinessScore).toBeGreaterThanOrEqual(80);
+    expect(body.findings.length).toBeGreaterThanOrEqual(4);
+    expect(body.embedCode).toContain('/api/geo/punarvaas/loader.js');
+  });
+
+  it('generates a prospective client audit report for unonboarded prospect', async () => {
+    const res = await server.inject({
+      method: 'POST',
+      url: '/api/geo/audit',
+      headers: { 'Content-Type': 'application/json' },
+      payload: {
+        businessName: "Kumar's Microscopic Dental Care",
+        city: 'Yelahanka, Bangalore',
+        industry: 'DENTAL',
+        url: 'https://kumarsdental.com',
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload);
+    expect(body.success).toBe(true);
+    expect(body.audit.businessName).toBe("Kumar's Microscopic Dental Care");
+    expect(body.audit.currentScore).toBe(25);
+    expect(body.audit.projectedScore).toBe(95);
+    expect(body.audit.findings.length).toBeGreaterThanOrEqual(4);
+  });
 });

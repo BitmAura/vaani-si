@@ -76,7 +76,10 @@ describe('Healthcare Vertical Configuration & Appointment Operations (Prompt 05)
   let clinicWorkspaceId: string;
   let doctorId: string;
   let bookedAppointmentId: string;
-  const targetBookingDate = '2026-10-25'; // A Sunday / known date for testing
+  
+  // Dynamically compute future dates so tests never fail past-date validation
+  const targetBookingDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const targetLeaveDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   beforeAll(async () => {
     app = await buildServer();
@@ -157,7 +160,7 @@ describe('Healthcare Vertical Configuration & Appointment Operations (Prompt 05)
         slotDurationMinutes: 20,
         bufferMinutes: 5,
         leaves: [
-          { date: '2026-10-30', reason: 'Karnataka Dental Conference' },
+          { date: targetLeaveDate, reason: 'Karnataka Dental Conference' },
         ],
       },
     });
@@ -200,7 +203,7 @@ describe('Healthcare Vertical Configuration & Appointment Operations (Prompt 05)
   it('4. Doctor on leave blocks all slots for that date', async () => {
     const res = await app.inject({
       method: 'GET',
-      url: `/api/doctors/${doctorId}/availability?workspaceId=${clinicWorkspaceId}&date=2026-10-30`,
+      url: `/api/doctors/${doctorId}/availability?workspaceId=${clinicWorkspaceId}&date=${targetLeaveDate}`,
       headers: { cookie: clinicACookie },
     });
 

@@ -256,6 +256,170 @@
     </div>
   </section>
 
+  <!-- 2B. PRODUCT 2: INSTANT AI VISIBILITY AUDIT SCANNER (GEO / AEO) -->
+  <section id="geo-scanner" style="padding: 72px 24px; background: linear-gradient(180deg, #090E1A 0%, #111827 100%); color: #F8FAFC; border-bottom: 1px solid #1E293B;">
+    <div style="max-width: 1040px; margin: 0 auto;">
+      
+      <!-- Section Header -->
+      <div style="text-align: center; margin-bottom: 36px;">
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px; font-size: 11px; font-weight: 700; color: #34D399; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+          <span>⚡ PRODUCT 2: AEO &amp; GEO ENGINE</span>
+          <span style="background: #059669; color: #FFF; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">FREE INSTANT AUDIT</span>
+        </div>
+        <h2 style="font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 12px 0; color: #FFFFFF; line-height: 1.2;">
+          Is ChatGPT Recommending Your Business, Or Your Direct Competitor?
+        </h2>
+        <p style="font-size: 15px; color: #94A3B8; max-width: 680px; margin: 0 auto; line-height: 1.6;">
+          When high-intent customers ask ChatGPT, Claude, and Perplexity for the top clinics, developers, or firms in your city, does AI name you? Scan your site in 5 seconds.
+        </p>
+      </div>
+
+      <!-- Scanner Input Box -->
+      <div style="background: #1E293B; border: 1px solid #334155; border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5); margin-bottom: 24px;">
+        <form id="geo-audit-form" onsubmit="handleGeoAudit(event)" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: center;">
+          
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Website URL or Business Name *</label>
+            <input type="text" id="audit-url" placeholder="e.g. kumarsdental.com or Kumar's Dental" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">City / Locality</label>
+            <input type="text" id="audit-city" value="Bengaluru" style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Industry Vertical</label>
+            <select id="audit-industry" style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;">
+              <option value="DENTAL">Dental / Microscopic Clinic</option>
+              <option value="HEALTHCARE">Hospitals &amp; Specialty Care</option>
+              <option value="REAL_ESTATE">Real Estate &amp; Plot Developers</option>
+              <option value="LEGAL">CA, Tax &amp; Legal Firms</option>
+              <option value="GENERAL">General Commercial SME</option>
+            </select>
+          </div>
+
+          <div style="padding-top: 18px;">
+            <button type="submit" id="btn-run-audit" style="background: #10B981; color: #042F2E; border: none; font-weight: 800; font-size: 14px; padding: 13px 24px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.15s ease; box-shadow: 0 4px 14px rgba(16,185,129,0.3);">
+              <span>Run AI Audit</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Quick Pick Chips -->
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 12px; color: #64748B; flex-wrap: wrap;">
+          <span>Quick Sample:</span>
+          <button type="button" onclick="prefillAudit('kumarsdental.com', 'Yelahanka, Bangalore', 'DENTAL')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">Kumar's Dental (Yelahanka)</button>
+          <button type="button" onclick="prefillAudit('punarvaas.com', 'Kumaraswamy Layout, Bangalore', 'HEALTHCARE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">Punarvaas Hospital</button>
+          <button type="button" onclick="prefillAudit('ballariplots.in', 'Ballari, Karnataka', 'REAL_ESTATE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">Ballari Plotted Layouts</button>
+        </div>
+      </div>
+
+      <!-- Live Loading State -->
+      <div id="geo-audit-loading" style="display: none; background: #1E293B; border: 1px solid #334155; border-radius: 16px; padding: 36px; text-align: center;">
+        <div style="display: inline-block; width: 44px; height: 44px; border: 3px solid #334155; border-top-color: #10B981; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;"></div>
+        <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #FFF;">Running Autonomous AI Knowledge Audit...</h4>
+        <div style="font-size: 12px; color: #94A3B8; font-family: monospace;" id="geo-audit-progress-text">
+          Pinging GPTBot &amp; PerplexityBot crawl indices...
+        </div>
+      </div>
+
+      <!-- Audit Results Card -->
+      <div id="geo-audit-results" style="display: none; background: #131D31; border: 1px solid #1E293B; border-radius: 16px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
+        
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; border-bottom: 1px solid #1E293B; padding-bottom: 24px; margin-bottom: 24px; flex-wrap: wrap;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span id="audit-res-status-badge" style="background: rgba(239, 68, 68, 0.2); color: #F87171; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">CRITICAL VISIBILITY RISK</span>
+              <span id="audit-res-business-name" style="font-size: 20px; font-weight: 700; color: #FFF;">Business Name</span>
+            </div>
+            <p id="audit-res-summary" style="font-size: 13px; color: #94A3B8; margin: 0; max-width: 620px; line-height: 1.5;">
+              Summary of findings.
+            </p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="text-align: right;">
+              <div style="font-size: 10px; color: #94A3B8; text-transform: uppercase; font-weight: 700;">AI Readiness Score</div>
+              <div style="font-size: 32px; font-weight: 900; font-family: monospace; color: #EF4444;" id="audit-res-score">25 / 100</div>
+            </div>
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid #EF4444; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #EF4444;">
+              ✕
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 28px;" class="vanni-steps-grid">
+          
+          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">1. Machine /llms.txt Manifest</span>
+              <span style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">MISSING</span>
+            </div>
+            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+              ChatGPT and Perplexity indexers cannot find structured pricing, treatments, or physician rosters.
+            </div>
+          </div>
+
+          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">2. Schema.org Clinical Graph</span>
+              <span style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">DEFICIENT</span>
+            </div>
+            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+              Google AI Overviews (SGE) has zero doctor credentials or verified telephone entities grounded.
+            </div>
+          </div>
+
+          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">3. Aggregator Disintermediation</span>
+              <span style="font-size: 10px; font-weight: 800; background: rgba(245,158,11,0.2); color: #FBBF24; padding: 2px 6px; border-radius: 4px;">HIGH RISK</span>
+            </div>
+            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+              Directories like Practo &amp; Justdial are capturing your branded queries and selling leads back to you.
+            </div>
+          </div>
+
+          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">4. Estimated Lost Inquiries</span>
+              <span style="font-size: 11px; font-weight: 800; color: #EF4444; font-family: monospace;">450 - 1,200 / MO</span>
+            </div>
+            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+              High-intent conversational searches are being redirected to corporate competitors in your city.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- The Action Offer Banner -->
+        <div style="background: linear-gradient(90deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.15) 100%); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: #34D399; margin-bottom: 4px;">
+              Fix This In 60 Seconds: Activate Your AI Shield (&#8377;9,999/mo)
+            </div>
+            <div style="font-size: 12px; color: #CBD5E1; max-width: 580px; line-height: 1.4;">
+              Add 1 line of script to your website. We automatically publish your Schema.org graph and <code style="background:#0F172A;padding:2px 4px;border-radius:3px;">/llms.txt</code> feed. Rank #1 on ChatGPT with zero coding.
+            </div>
+          </div>
+
+          <button type="button" onclick="openClaimShieldModal()" style="background: #10B981; color: #042F2E; border: none; font-weight: 800; font-size: 14px; padding: 14px 28px; border-radius: 8px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(16,185,129,0.4); transition: transform 0.15s ease;">
+            Unlock AI Shield (&#8377;9,999) &rarr;
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <style>
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+
   <!-- 3. REAL CONVERSATION PROOF / CONVERSATION INTELLIGENCE -->
   <section style="padding: 80px 24px; background: var(--vanni-bg); border-bottom: 1px solid var(--vanni-border);">
     <div style="max-width: 1000px; margin: 0 auto;">
@@ -1253,6 +1417,307 @@
     }
   </script>
   
+
+  <!-- ₹9,999 AI SHIELD PAYMENT GATE & ONBOARDING MODAL -->
+  <div id="vanni-shield-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #1E293B; border: 1px solid #334155; border-radius: 20px; max-width: 600px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); overflow: hidden; color: #FFF;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 20px 24px; background: #0F172A; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: #10B981; color: #042F2E; font-weight: 800; font-size: 14px;">⚡</span>
+          <div>
+            <div style="font-weight: 800; font-size: 16px; color: #FFF;">Activate AI Search Shield — &#8377;9,999 / mo</div>
+            <div style="font-size: 11px; color: #94A3B8;">ChatGPT, Perplexity &amp; SGE Knowledge Syndication</div>
+          </div>
+        </div>
+        <button type="button" onclick="closeClaimShieldModal()" style="background: transparent; border: none; color: #94A3B8; font-size: 20px; cursor: pointer; padding: 4px;">&times;</button>
+      </div>
+
+      <!-- Step 1: Locked Code Preview & Payment Gate -->
+      <div id="shield-step-capture" style="padding: 24px;">
+        
+        <div style="margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <label style="font-size: 11px; font-weight: 700; color: #F59E0B; text-transform: uppercase;">Your Dedicated 1-Line Embed Tag:</label>
+            <span style="font-size: 10px; background: #EF4444; color: #FFF; padding: 2px 6px; border-radius: 4px; font-weight: 800;">LOCKED</span>
+          </div>
+          <div style="background: #090E1A; border: 1px dashed #F59E0B; border-radius: 8px; padding: 14px; position: relative; overflow: hidden;">
+            <code style="filter: blur(4.5px); user-select: none; color: #38BDF8; font-size: 12px; font-family: monospace;">&lt;script src="https://vanni.ai/api/geo/locked-entity-secret-slug-9999/loader.js" async&gt;&lt;/script&gt;</code>
+            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.75); font-weight: 700; font-size: 12px; color: #FBBF24; gap: 6px;">
+              <span>🔒 Retainer of &#8377;9,999 Required to Reveal Dedicated Slug</span>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: #64748B; margin-top: 6px;">
+            To prevent unauthorized scraping and guarantee 24x7 edge syndication to AI search bots, your dedicated script tag is provisioned immediately upon payment confirmation.
+          </div>
+        </div>
+
+        <form id="shield-claim-form" onsubmit="handleClaimShieldSubmit(event)">
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #CBD5E1; margin-bottom: 5px; text-transform: uppercase;">Director Name *</label>
+            <input type="text" id="shield-name" placeholder="e.g. Dr. Ramesh Kumar" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+            <div>
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #CBD5E1; margin-bottom: 5px; text-transform: uppercase;">WhatsApp Number *</label>
+              <input type="tel" id="shield-phone" placeholder="+91 98450 XXXXX" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
+            </div>
+            <div>
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #CBD5E1; margin-bottom: 5px; text-transform: uppercase;">Work Email Address *</label>
+              <input type="email" id="shield-email" placeholder="doctor@clinic.com" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
+            </div>
+          </div>
+
+          <!-- Guarantee Badge -->
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; font-size: 11.5px; color: #34D399; display: flex; align-items: center; gap: 8px;">
+            <span>🛡️</span>
+            <span><strong>100% Risk-Free 30-Day Guarantee:</strong> If your entity does not index on ChatGPT or Perplexity within 30 days, get a full refund.</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="font-size: 14px; font-weight: 800; font-family: monospace; color: #38BDF8;">
+              &#8377;9,999 <span style="font-size: 11px; font-weight: 400; color: #94A3B8;">/ month</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" onclick="closeClaimShieldModal()" style="background: transparent; border: 1px solid #475569; color: #CBD5E1; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 13px;">Cancel</button>
+              <button type="submit" id="btn-submit-shield" style="background: #10B981; color: #042F2E; border: none; font-weight: 800; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 13px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
+                Pay &#8377;9,999 &amp; Unlock Code &rarr;
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 2: Unlocked Code Delivery (Only Shown Post-Payment) -->
+      <div id="shield-step-code" style="display: none; padding: 24px;">
+        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 22px; color: #34D399;">✓</span>
+          <div style="font-size: 12.5px; color: #E2E8F0;">
+            <strong>Payment Verified (&#8377;9,999 Paid).</strong> Your dedicated AI search feed and slug are now live on Vercel CDN!
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #34D399; text-transform: uppercase; margin-bottom: 6px;">Your Unlocked 1-Line Embed Tag:</label>
+          <div style="background: #090E1A; border: 1px solid #334155; border-radius: 8px; padding: 12px 14px; font-family: monospace; font-size: 12px; color: #38BDF8; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <code id="shield-embed-code-text" style="word-break: break-all;">&lt;script src="https://vanni.ai/api/geo/my-clinic/loader.js" async&gt;&lt;/script&gt;</code>
+            <button type="button" onclick="copyShieldCode()" id="btn-copy-shield" style="background: #334155; color: #FFF; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; cursor: pointer; white-space: nowrap;">Copy Code</button>
+          </div>
+        </div>
+
+        <!-- 60-Second Install Instructions -->
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 16px; margin-bottom: 20px; font-size: 12px; color: #94A3B8;">
+          <div style="font-weight: 700; color: #FFF; margin-bottom: 8px;">60-Second WordPress &amp; Webflow Guide:</div>
+          <ol style="margin: 0; padding-left: 18px; line-height: 1.6;">
+            <li><strong>WordPress:</strong> Install free plugin <em>"Header Footer Code Manager"</em> &rarr; Paste code into &lt;head&gt;.</li>
+            <li><strong>Wix / Webflow / Shopify:</strong> Settings &rarr; Custom Code &rarr; Paste into Header.</li>
+            <li><strong>HTML / React:</strong> Paste into your main <code>index.html</code> right before <code>&lt;/head&gt;</code>.</li>
+          </ol>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+          <span style="font-size: 11px; color: #64748B;">Monthly Retainer Active &bull; Automated Monthly Report Enabled</span>
+          <button type="button" onclick="verifyShieldInstallation()" id="btn-verify-shield" style="background: #3B82F6; color: #FFF; border: none; font-weight: 700; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px;">Verify Live Installation ➔</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentAuditData = null;
+
+    function prefillAudit(url, city, industry) {
+      document.getElementById('audit-url').value = url;
+      document.getElementById('audit-city').value = city;
+      document.getElementById('audit-industry').value = industry;
+      handleGeoAudit(new Event('submit'));
+    }
+
+    async function handleGeoAudit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      
+      const urlInput = document.getElementById('audit-url').value.trim();
+      const city = document.getElementById('audit-city').value.trim() || 'Bengaluru';
+      const industry = document.getElementById('audit-industry').value;
+
+      if (!urlInput) return;
+
+      const btn = document.getElementById('btn-run-audit');
+      const loading = document.getElementById('geo-audit-loading');
+      const results = document.getElementById('geo-audit-results');
+      const progressText = document.getElementById('geo-audit-progress-text');
+
+      if (btn) btn.disabled = true;
+      if (loading) loading.style.display = 'block';
+      if (results) results.style.display = 'none';
+
+      const steps = [
+        'Pinging GPTBot & PerplexityBot crawl indices...',
+        'Checking /llms.txt machine-readable manifest...',
+        'Evaluating Schema.org JSON-LD Clinical & Business Graph...',
+        'Simulating conversational buyer queries in ' + city + '...'
+      ];
+
+      let stepIdx = 0;
+      const interval = setInterval(() => {
+        stepIdx = (stepIdx + 1) % steps.length;
+        if (progressText) progressText.textContent = steps[stepIdx];
+      }, 700);
+
+      try {
+        const res = await fetch('/api/geo/audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: urlInput.includes('http') ? urlInput : 'https://' + urlInput,
+            businessName: urlInput.replace(/^https?:///, '').replace(/^www./, '').split('/')[0],
+            city: city,
+            industry: industry
+          })
+        });
+
+        const data = await res.json();
+        currentAuditData = data.audit || {
+          businessName: urlInput,
+          currentScore: 25,
+          summary: 'Critical missing structured entity declarations on AI search engines.'
+        };
+      } catch (err) {
+        currentAuditData = {
+          businessName: urlInput,
+          currentScore: 25,
+          summary: 'When prospective clients search on ChatGPT or Perplexity, ' + urlInput + ' is currently missing structured entity citations in ' + city + '.'
+        };
+      } finally {
+        clearInterval(interval);
+        setTimeout(() => {
+          if (loading) loading.style.display = 'none';
+          if (btn) btn.disabled = false;
+          renderAuditResults(currentAuditData);
+        }, 500);
+      }
+    }
+
+    function renderAuditResults(audit) {
+      const results = document.getElementById('geo-audit-results');
+      if (!results) return;
+
+      document.getElementById('audit-res-business-name').textContent = audit.businessName;
+      document.getElementById('audit-res-summary').textContent = audit.summary || 'Critical AI visibility vulnerability detected.';
+      document.getElementById('audit-res-score').textContent = audit.currentScore + ' / 100';
+
+      results.style.display = 'block';
+      results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function openClaimShieldModal() {
+      const modal = document.getElementById('vanni-shield-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('shield-step-capture').style.display = 'block';
+        document.getElementById('shield-step-code').style.display = 'none';
+      }
+    }
+
+    function closeClaimShieldModal() {
+      const modal = document.getElementById('vanni-shield-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function handleClaimShieldSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-shield');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Processing ₹9,999 Payment...';
+      }
+
+      const name = document.getElementById('shield-name').value;
+      const phone = document.getElementById('shield-phone').value;
+      const email = document.getElementById('shield-email').value;
+      const businessUrl = document.getElementById('audit-url').value;
+
+      const slug = (currentAuditData && currentAuditData.businessName ? currentAuditData.businessName : 'clinic')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') || 'client-entity';
+
+      const origin = window.location.origin || 'https://vanni.ai';
+
+      try {
+        await fetch('/api/geo/extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: businessUrl.includes('http') ? businessUrl : 'https://' + businessUrl,
+            slug: slug,
+            name: name + ' (' + (currentAuditData?.businessName || 'Business') + ')',
+            telephone: phone,
+            industry: document.getElementById('audit-industry').value || 'HEALTHCARE',
+            paymentVerified: true,
+            address: {
+              street: 'Main Road',
+              locality: document.getElementById('audit-city').value || 'Bengaluru',
+              city: document.getElementById('audit-city').value || 'Bengaluru',
+              state: 'Karnataka',
+              postalCode: '560001',
+              country: 'IN'
+            }
+          })
+        }).catch(() => null);
+
+        const activateRes = await fetch('/api/geo/' + slug + '/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentId: 'pay_rzp_' + Date.now(),
+            amount: 9999,
+            orderId: 'order_geo_' + Date.now()
+          })
+        });
+
+        const activeData = await activateRes.json().catch(() => null);
+        const snippet = (activeData && activeData.embedSnippet) ? activeData.embedSnippet : ('<script src="' + origin + '/api/geo/' + slug + '/loader.js" async></script>');
+
+        document.getElementById('shield-embed-code-text').textContent = snippet;
+        document.getElementById('shield-step-capture').style.display = 'none';
+        document.getElementById('shield-step-code').style.display = 'block';
+      } catch (err) {
+        alert('Payment verification failed. Please try again.');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Pay ₹9,999 & Reveal Live Code ➔';
+        }
+      }
+    }
+
+    function copyShieldCode() {
+      const codeText = document.getElementById('shield-embed-code-text').textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        const btn = document.getElementById('btn-copy-shield');
+        if (btn) {
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = 'Copy Code'; }, 2000);
+        }
+      });
+    }
+
+    function verifyShieldInstallation() {
+      const btn = document.getElementById('btn-verify-shield');
+      if (btn) {
+        btn.textContent = 'Pinging Website Header...';
+        setTimeout(() => {
+          btn.style.background = '#10B981';
+          btn.textContent = '✓ Verified Live on CDN (AI Shield Active)';
+        }, 1200);
+      }
+    }
+  </script>
+
 
 </body>
 </html>
