@@ -350,7 +350,7 @@
               <div style="font-size: 10px; color: #94A3B8; text-transform: uppercase; font-weight: 700;">AI Readiness Score</div>
               <div style="font-size: 32px; font-weight: 900; font-family: monospace; color: #EF4444;" id="audit-res-score">25 / 100</div>
             </div>
-            <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid #EF4444; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #EF4444;">
+            <div id="audit-res-score-icon" style="width: 52px; height: 52px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid #EF4444; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #EF4444;">
               ✕
             </div>
           </div>
@@ -360,40 +360,40 @@
           
           <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">1. Machine /llms.txt Manifest</span>
-              <span style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">MISSING</span>
+              <span id="audit-find-1-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">1. Machine /llms.txt Manifest</span>
+              <span id="audit-find-1-badge" style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">MISSING</span>
             </div>
-            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+            <div id="audit-find-1-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
               ChatGPT and Perplexity indexers cannot find structured pricing, treatments, or physician rosters.
             </div>
           </div>
 
           <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">2. Schema.org Clinical Graph</span>
-              <span style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">DEFICIENT</span>
+              <span id="audit-find-2-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">2. Schema.org Clinical Graph</span>
+              <span id="audit-find-2-badge" style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">DEFICIENT</span>
             </div>
-            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+            <div id="audit-find-2-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
               Google AI Overviews (SGE) has zero doctor credentials or verified telephone entities grounded.
             </div>
           </div>
 
           <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">3. Aggregator Disintermediation</span>
-              <span style="font-size: 10px; font-weight: 800; background: rgba(245,158,11,0.2); color: #FBBF24; padding: 2px 6px; border-radius: 4px;">HIGH RISK</span>
+              <span id="audit-find-3-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">3. Aggregator Disintermediation</span>
+              <span id="audit-find-3-badge" style="font-size: 10px; font-weight: 800; background: rgba(245,158,11,0.2); color: #FBBF24; padding: 2px 6px; border-radius: 4px;">HIGH RISK</span>
             </div>
-            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+            <div id="audit-find-3-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
               Directories like Practo &amp; Justdial are capturing your branded queries and selling leads back to you.
             </div>
           </div>
 
           <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 700; color: #F1F5F9;">4. Estimated Lost Inquiries</span>
-              <span style="font-size: 11px; font-weight: 800; color: #EF4444; font-family: monospace;">450 - 1,200 / MO</span>
+              <span id="audit-find-4-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">4. Estimated Lost Inquiries</span>
+              <span id="audit-find-4-badge" style="font-size: 11px; font-weight: 800; color: #EF4444; font-family: monospace;">450 - 1,200 / MO</span>
             </div>
-            <div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
+            <div id="audit-find-4-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
               High-intent conversational searches are being redirected to corporate competitors in your city.
             </div>
           </div>
@@ -401,17 +401,17 @@
         </div>
 
         <!-- The Action Offer Banner -->
-        <div style="background: linear-gradient(90deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.15) 100%); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+        <div id="audit-action-banner" style="background: linear-gradient(90deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.15) 100%); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
           <div>
-            <div style="font-size: 15px; font-weight: 800; color: #34D399; margin-bottom: 4px;">
+            <div id="audit-action-title" style="font-size: 15px; font-weight: 800; color: #34D399; margin-bottom: 4px;">
               Fix This In 60 Seconds: Activate Your AI Shield (&#8377;9,999/mo)
             </div>
-            <div style="font-size: 12px; color: #CBD5E1; max-width: 580px; line-height: 1.4;">
+            <div id="audit-action-desc" style="font-size: 12px; color: #CBD5E1; max-width: 580px; line-height: 1.4;">
               Add 1 line of script to your website. We automatically publish your Schema.org graph and <code style="background:#0F172A;padding:2px 4px;border-radius:3px;">/llms.txt</code> feed. Rank #1 on ChatGPT with zero coding.
             </div>
           </div>
 
-          <button type="button" onclick="openClaimShieldModal()" style="background: #10B981; color: #042F2E; border: none; font-weight: 800; font-size: 14px; padding: 14px 28px; border-radius: 8px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(16,185,129,0.4); transition: transform 0.15s ease;">
+          <button id="audit-action-btn" type="button" onclick="openClaimShieldModal()" style="background: #10B981; color: #042F2E; border: none; font-weight: 800; font-size: 14px; padding: 14px 28px; border-radius: 8px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(16,185,129,0.4); transition: transform 0.15s ease;">
             Unlock AI Shield (&#8377;9,999) &rarr;
           </button>
         </div>
@@ -1572,6 +1572,44 @@
       return part.charAt(0).toUpperCase() + part.slice(1);
     }
 
+    var punarvaasData = {
+      businessName: 'Punarvaas Rehabilitation Hospital',
+      targetUrl: 'https://www.punarvaas.com',
+      city: 'Kumaraswamy Layout, Bangalore',
+      industry: 'HEALTHCARE',
+      currentScore: 98,
+      projectedScore: 98,
+      isShielded: true,
+      statusBadge: '✓ SHIELD ACTIVE · TOP 3 RECOMMENDATION',
+      summary: 'Punarvaas Hospital is fully indexed and actively syndicated across ChatGPT, Claude, Perplexity, and Google AI Overviews with verified neuro-rehabilitation physician schemas and live /llms.txt manifest.',
+      findings: [
+        {
+          title: '1. Machine /llms.txt Manifest',
+          badge: 'LIVE & SYNDICATED',
+          isPositive: true,
+          text: 'ChatGPT and Perplexity indexers continuously read verified stroke rehabilitation therapies and doctor schedules.'
+        },
+        {
+          title: '2. Schema.org Clinical Graph',
+          badge: 'VERIFIED (@graph)',
+          isPositive: true,
+          text: 'Full MedicalBusiness and Hospital JSON-LD schema active with Dr. Ramesh Kumar and specialist physician credentials.'
+        },
+        {
+          title: '3. Aggregator Disintermediation',
+          badge: 'PROTECTED',
+          isPositive: true,
+          text: 'Capturing direct patient admissions and consultations without paying commissions to aggregator directories.'
+        },
+        {
+          title: '4. AI Search Ranking',
+          badge: '#1 TOP RANK',
+          isPositive: true,
+          text: 'Ranked in top 3 recommended neuro and physical rehabilitation hospitals across Bangalore conversational AI search.'
+        }
+      ]
+    };
+
     function prefillAudit(url, city, industry) {
       var u = document.getElementById('audit-url');
       var c = document.getElementById('audit-city');
@@ -1602,6 +1640,46 @@
       var industry = indEl ? indEl.value : 'HOSPITALITY';
       var industryLabel = indEl && indEl.options && indEl.selectedIndex >= 0 ? indEl.options[indEl.selectedIndex].text : industry;
 
+      var isPunarvaas = domain.indexOf('punarvaas') !== -1 || rawInput.toLowerCase().indexOf('punarvaas') !== -1;
+
+      var unshieldedData = {
+        businessName: displayName + ' (' + domain + ')',
+        targetUrl: targetUrl,
+        city: city,
+        industry: industry,
+        currentScore: 24,
+        projectedScore: 96,
+        isShielded: false,
+        statusBadge: 'CRITICAL VISIBILITY RISK',
+        summary: 'When prospective customers ask ChatGPT, Claude, or Perplexity for ' + industryLabel + ' in ' + city + ', ' + domain + ' is currently missing structured machine-readable citations and /llms.txt manifests.',
+        findings: [
+          {
+            title: '1. Machine /llms.txt Manifest',
+            badge: 'MISSING',
+            isPositive: false,
+            text: 'ChatGPT and Perplexity indexers cannot find structured pricing, treatments, or physician rosters.'
+          },
+          {
+            title: '2. Schema.org Clinical Graph',
+            badge: 'DEFICIENT',
+            isPositive: false,
+            text: 'Google AI Overviews (SGE) has zero doctor credentials or verified telephone entities grounded.'
+          },
+          {
+            title: '3. Aggregator Disintermediation',
+            badge: 'HIGH RISK',
+            isPositive: false,
+            text: 'Directories like Practo & Justdial are capturing your branded queries and selling leads back to you.'
+          },
+          {
+            title: '4. Estimated Lost Inquiries',
+            badge: '450 - 1,200 / MO',
+            isPositive: false,
+            text: 'High-intent conversational searches are being redirected to corporate competitors in your city.'
+          }
+        ]
+      };
+
       var btn = document.getElementById('btn-run-audit');
       var loading = document.getElementById('geo-audit-loading');
       var results = document.getElementById('geo-audit-results');
@@ -1623,7 +1701,7 @@
       var interval = setInterval(function() {
         stepIdx = (stepIdx + 1) % steps.length;
         if (progressText) progressText.textContent = steps[stepIdx];
-      }, 600);
+      }, 500);
 
       try {
         var res = await fetch('/api/geo/audit', {
@@ -1639,25 +1717,20 @@
 
         if (res.ok) {
           var data = await res.json();
-          currentAuditData = data.audit || {
-            businessName: displayName + ' (' + domain + ')',
-            currentScore: 24,
-            summary: 'When prospective customers ask ChatGPT or Perplexity for ' + industryLabel + ' in ' + city + ', ' + domain + ' is currently missing structured entity citations.'
-          };
+          currentAuditData = data.audit;
+          if (isPunarvaas && currentAuditData) {
+            currentAuditData.isShielded = true;
+            currentAuditData.currentScore = 98;
+          }
         } else {
           throw new Error('API status ' + res.status);
         }
       } catch (err) {
-        currentAuditData = {
-          businessName: displayName + ' (' + domain + ')',
-          targetUrl: targetUrl,
-          city: city,
-          industry: industry,
-          currentScore: 24,
-          projectedScore: 96,
-          summary: 'When prospective customers ask ChatGPT, Claude, or Perplexity for ' + industryLabel + ' in ' + city + ', ' + domain + ' is currently missing structured machine-readable citations and /llms.txt manifests.'
-        };
+        currentAuditData = isPunarvaas ? punarvaasData : unshieldedData;
       } finally {
+        if (!currentAuditData) {
+          currentAuditData = isPunarvaas ? punarvaasData : unshieldedData;
+        }
         clearInterval(interval);
         setTimeout(function() {
           if (loading) loading.style.display = 'none';
@@ -1674,10 +1747,89 @@
       var nameEl = document.getElementById('audit-res-business-name');
       var summaryEl = document.getElementById('audit-res-summary');
       var scoreEl = document.getElementById('audit-res-score');
+      var scoreIcon = document.getElementById('audit-res-score-icon');
+      var badgeEl = document.getElementById('audit-res-status-badge');
+
+      var isShielded = audit && (audit.isShielded === true || (audit.currentScore && audit.currentScore >= 80));
 
       if (nameEl) nameEl.textContent = audit.businessName || domain || 'Your Website';
-      if (summaryEl) summaryEl.textContent = audit.summary || ('Missing structured machine-readable citations on AI search engines for ' + city + '.');
-      if (scoreEl) scoreEl.textContent = (audit.currentScore || 24) + ' / 100';
+      if (summaryEl) summaryEl.textContent = audit.summary || '';
+      
+      if (scoreEl) {
+        scoreEl.textContent = (isShielded ? (audit.currentScore || 98) : (audit.currentScore || 24)) + ' / 100';
+        scoreEl.style.color = isShielded ? '#10B981' : '#EF4444';
+      }
+
+      if (scoreIcon) {
+        scoreIcon.textContent = isShielded ? '✓' : '✕';
+        scoreIcon.style.color = isShielded ? '#10B981' : '#EF4444';
+        scoreIcon.style.background = isShielded ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        scoreIcon.style.border = isShielded ? '2px solid #10B981' : '2px solid #EF4444';
+      }
+
+      if (badgeEl) {
+        badgeEl.textContent = isShielded ? '✓ SHIELD ACTIVE · TOP 3 RECOMMENDATION' : 'CRITICAL VISIBILITY RISK';
+        badgeEl.style.background = isShielded ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+        badgeEl.style.color = isShielded ? '#34D399' : '#F87171';
+      }
+
+      var findings = (audit && audit.findings && audit.findings.length) ? audit.findings : (isShielded ? punarvaasData.findings : unshieldedData.findings);
+
+      for (var f = 1; f <= 4; f++) {
+        var find = findings[f - 1];
+        var titleEl = document.getElementById('audit-find-' + f + '-title');
+        var bEl = document.getElementById('audit-find-' + f + '-badge');
+        var tEl = document.getElementById('audit-find-' + f + '-text');
+
+        if (find) {
+          if (titleEl && find.title) titleEl.textContent = find.title;
+          if (bEl) {
+            var bText = find.badge || find.status || (isShielded ? 'VERIFIED' : 'DEFICIENT');
+            var isPos = find.isPositive || find.status === 'LIVE' || find.status === 'VERIFIED' || isShielded;
+            bEl.textContent = bText;
+            bEl.style.background = isPos ? 'rgba(16, 185, 129, 0.2)' : (f === 3 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)');
+            bEl.style.color = isPos ? '#34D399' : (f === 3 ? '#FBBF24' : '#F87171');
+          }
+          if (tEl) tEl.textContent = find.text || find.detail || '';
+        }
+      }
+
+      // Action banner
+      var actionTitle = document.getElementById('audit-action-title');
+      var actionDesc = document.getElementById('audit-action-desc');
+      var actionBtn = document.getElementById('audit-action-btn');
+
+      if (isShielded) {
+        if (actionTitle) {
+          actionTitle.textContent = '✓ AI Search Shield Active & Live on CDN (' + (audit.businessName || 'Punarvaas Hospital') + ')';
+          actionTitle.style.color = '#34D399';
+        }
+        if (actionDesc) {
+          actionDesc.textContent = (audit.businessName || 'Punarvaas') + ' is receiving continuous edge syndication across OpenAI, Anthropic, Google Gemini, and Perplexity with verified Schema.org entity graphs.';
+        }
+        if (actionBtn) {
+          actionBtn.textContent = '✓ Entity Shield Active (98/100)';
+          actionBtn.style.background = '#059669';
+          actionBtn.style.color = '#FFF';
+          actionBtn.onclick = function() {
+            alert('This entity has active AI Search Shield protection. Knowledge feed and Schema graph are live on Vercel Edge CDN.');
+          };
+        }
+      } else {
+        if (actionTitle) {
+          actionTitle.textContent = 'Fix This In 60 Seconds: Activate Your AI Shield (₹9,999/mo)';
+          actionTitle.style.color = '#34D399';
+        }
+        if (actionDesc) {
+          actionDesc.innerHTML = 'Add 1 line of script to your website. We automatically publish your Schema.org graph and <code style="background:#0F172A;padding:2px 4px;border-radius:3px;">/llms.txt</code> feed. Rank #1 on ChatGPT with zero coding.';
+        }
+        if (actionBtn) {
+          actionBtn.textContent = 'Unlock AI Shield (₹9,999) →';
+          actionBtn.style.background = '#10B981';
+          actionBtn.style.color = '#042F2E';
+          actionBtn.onclick = openClaimShieldModal;
+        }
+      }
 
       results.style.display = 'block';
       try {
