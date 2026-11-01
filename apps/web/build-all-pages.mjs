@@ -1571,8 +1571,6 @@ const homepageHtml = `<!DOCTYPE html>
       const rawTarget = (currentAuditData && currentAuditData.businessName ? currentAuditData.businessName : sanitizeDomain(businessUrl)) || 'business';
       const slug = rawTarget.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'client-entity';
 
-      const origin = window.location.origin || 'https://vanni.ai';
-
       try {
         await fetch('/api/geo/extract', {
           method: 'POST',
@@ -1583,7 +1581,6 @@ const homepageHtml = `<!DOCTYPE html>
             name: name + ' (' + (currentAuditData?.businessName || 'Business') + ')',
             telephone: phone,
             industry: document.getElementById('audit-industry').value || 'HEALTHCARE',
-            paymentVerified: true,
             address: {
               street: 'Main Road',
               locality: document.getElementById('audit-city').value || 'Bengaluru',
@@ -1598,17 +1595,15 @@ const homepageHtml = `<!DOCTYPE html>
         const activateRes = await fetch('/api/geo/' + slug + '/activate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            paymentId: 'pay_rzp_' + Date.now(),
-            amount: 9999,
-            orderId: 'order_geo_' + Date.now()
-          })
+          body: JSON.stringify({})
         });
 
         const activeData = await activateRes.json().catch(() => null);
-        const snippet = (activeData && activeData.embedSnippet) ? activeData.embedSnippet : ('<script src="' + origin + '/api/geo/' + slug + '/loader.js" async><' + '/script>');
+        if (!activateRes.ok || !activeData || !activeData.embedSnippet) {
+          throw new Error('PAYMENT_REQUIRED');
+        }
 
-        document.getElementById('shield-embed-code-text').textContent = snippet;
+        document.getElementById('shield-embed-code-text').textContent = activeData.embedSnippet;
         document.getElementById('shield-step-capture').style.display = 'none';
         document.getElementById('shield-step-code').style.display = 'block';
       } catch (err) {

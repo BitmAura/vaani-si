@@ -153,9 +153,10 @@ describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
     expect(res.statusCode).toBe(200);
     const data = JSON.parse(res.payload);
     expect(data.success).toBe(true);
-    expect(data.profile.slug).toBe('my-specialty-clinic');
-    expect(data.embedSnippet).toContain('/api/geo/my-specialty-clinic/loader.js');
-    expect(data.urls.llmsTxt).toContain('/api/geo/my-specialty-clinic/llms.txt');
+    expect(data.paymentRequired).toBe(true);
+    expect(data.profile.slug).toBeUndefined();
+    expect(data.embedSnippet).toBeUndefined();
+    expect(data.profile.subscriptionStatus).toBe('PENDING_PAYMENT');
 
     // Verify it is now immediately queryable
     const checkRes = await server.inject({

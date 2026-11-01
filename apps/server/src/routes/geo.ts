@@ -547,9 +547,9 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
           doctorsOrTeam: Array.isArray(body?.doctorsOrTeam) ? body.doctorsOrTeam : [],
           services: Array.isArray(body?.services) ? body.services : [],
           faqs: Array.isArray(body?.faqs) ? body.faqs : [],
-          geoEnabled: body?.paymentVerified === true,
+          geoEnabled: false,
           voiceEnabled: true,
-          subscriptionStatus: body?.paymentVerified === true ? 'ACTIVE' : 'PENDING_PAYMENT',
+          subscriptionStatus: 'PENDING_PAYMENT',
           updatedAt: new Date().toISOString()
         };
 
@@ -571,17 +571,26 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
       if (typeof body.description === 'string') profile.description = body.description.trim();
       if (typeof body.openingHours === 'string') profile.openingHours = body.openingHours.trim();
       if (typeof body.priceRange === 'string') profile.priceRange = body.priceRange.trim();
-      if (body.paymentVerified === true) {
-        profile.geoEnabled = true;
-        profile.subscriptionStatus = 'ACTIVE';
-      }
       profile.updatedAt = new Date().toISOString();
       GEO_PROFILES.set(generatedSlug, profile);
+
+      const paid = profile.geoEnabled && profile.subscriptionStatus === 'ACTIVE';
+      if (!paid) {
+        return reply.status(200).send({
+          success: true,
+          paymentRequired: true,
+          subscriptionStatus: profile.subscriptionStatus,
+          profile: {
+            name: profile.name,
+            industry: profile.industry,
+            subscriptionStatus: profile.subscriptionStatus,
+          },
+        });
+      }
 
       const host = req.headers.host || 'localhost:4000';
       const protocol = req.headers['x-forwarded-proto'] || 'http';
       const origin = `${protocol}://${host}`;
-
       const snippet = `<script src="${origin}/api/geo/${profile.slug}/loader.js" async></script>`;
 
       return reply.status(200).send({
@@ -743,20 +752,26 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
       profile.doctorsOrTeam.length > 0 ? 20 : 10
     ].reduce((a, b) => a + b, 0);
 
+    const paid = profile.geoEnabled && profile.subscriptionStatus === 'ACTIVE';
     return reply.status(200).send({
-      slug: profile.slug,
+      slug: paid ? profile.slug : undefined,
       name: profile.name,
       industry: profile.industry,
       readinessScore: score,
       geoEnabled: profile.geoEnabled,
       voiceEnabled: profile.voiceEnabled,
       subscriptionStatus: profile.subscriptionStatus,
-      embedSnippet: `<script src="${origin}/api/geo/${profile.slug}/loader.js" async></script>`,
-      urls: {
-        loaderJs: `${origin}/api/geo/${profile.slug}/loader.js`,
-        llmsTxt: `${origin}/api/geo/${profile.slug}/llms.txt`,
-        schemaJson: `${origin}/api/geo/${profile.slug}/schema.json`
-      }
+      paymentRequired: !paid,
+      ...(paid
+        ? {
+            embedSnippet: `<script src="${origin}/api/geo/${profile.slug}/loader.js" async></script>`,
+            urls: {
+              loaderJs: `${origin}/api/geo/${profile.slug}/loader.js`,
+              llmsTxt: `${origin}/api/geo/${profile.slug}/llms.txt`,
+              schemaJson: `${origin}/api/geo/${profile.slug}/schema.json`,
+            },
+          }
+        : {}),
     });
   });
 
@@ -975,14 +990,36 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
   // 10. Activate Entity after ₹9,999 Payment Confirmation
   fastify.post('/api/geo/:slug/activate', async (req: FastifyRequest, reply: FastifyReply) => {
     const { slug } = req.params as { slug: string };
-    const body = req.body as { paymentId?: string; orderId?: string; amount?: number } | undefined;
+    const body = (req.body || {}) as {
+      paymentId?: string;
+      orderId?: string;
+      razorpay_payment_id?: string;
+      razorpay_order_id?: string;
+      razorpay_signature?: string;
+    };
     const profile = GEO_PROFILES.get(slug);
 
     if (!profile) {
       return reply.status(404).send({ error: 'Entity not found' });
     }
 
-    // Mark active upon verified payment
+    const secret = process.env.RAZORPAY_KEY_SECRET || '';
+    const paymentId = body.razorpay_payment_id || '';
+    const orderId = body.razorpay_order_id || '';
+    const signature = body.razorpay_signature || '';
+    const expected = secret && paymentId && orderId
+      ? crypto.createHmac('sha256', secret).update(`${orderId}|${paymentId}`).digest('hex')
+      : '';
+    const paid = expected.length > 0
+      && signature.length === expected.length
+      && crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    if (!paid) {
+      return reply.status(402).send({
+        error: 'PAYMENT_REQUIRED',
+        message: 'GEO Shield activates only after a verified Razorpay payment of ₹9,999.',
+      });
+    }
+
     profile.geoEnabled = true;
     profile.subscriptionStatus = 'ACTIVE';
     profile.updatedAt = new Date().toISOString();
