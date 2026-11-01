@@ -1,116 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In — VANNI</title>
-  <meta name="description" content="Sign in to your VANNI organization tenant.">
+  <title>Sign In — VANNI Enterprise Telephony & AI Employees</title>
+  <meta name="description" content="Sign in to your VANNI organization tenant console.">
   <link rel="canonical" href="https://vanni.ai/login">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vanni.css">
   <script src="/assets/vanni-auth.js"></script>
   <style>
+    :root {
+      --navy-deep: #070D1E;
+      --navy-card: #0B132B;
+      --navy-border: #1E293B;
+      --navy-border-focus: #38BDF8;
+      --accent-glow: rgba(56, 189, 248, 0.15);
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+    }
     body {
       margin: 0;
-      background: var(--vanni-bg);
-      color: var(--vanni-text-primary);
-      font-family: var(--vanni-font-sans);
+      background: radial-gradient(circle at 50% 0%, #0F1D40 0%, #070D1E 70%);
+      color: #F8FAFC;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
+    }
+    .auth-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      position: relative;
+    }
+    .auth-container::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
     }
     .auth-card {
       width: 100%;
       max-width: 440px;
-      background: var(--vanni-surface);
-      border: 1px solid var(--vanni-border);
-      border-radius: var(--vanni-radius-lg);
+      background: rgba(11, 19, 43, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--navy-border);
+      border-radius: 16px;
       padding: 36px;
-      box-shadow: var(--vanni-shadow-md);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
       box-sizing: border-box;
+      position: relative;
+      z-index: 1;
+      animation: authCardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes authCardFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .auth-input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .auth-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #CBD5E1;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    .auth-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .auth-input {
+      width: 100%;
+      background: #060B18;
+      border: 1px solid var(--navy-border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: #F8FAFC;
+      font-family: inherit;
+      box-sizing: border-box;
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .auth-input:focus {
+      border-color: #38BDF8;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+      background: #081022;
+    }
+    .auth-input::placeholder {
+      color: #475569;
+    }
+    .toggle-pass-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: #64748B;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.15s ease;
+    }
+    .toggle-pass-btn:hover {
+      color: #94A3B8;
+    }
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(180deg, #2563EB 0%, #1D4ED8 100%);
+      border: 1px solid #3B82F6;
+      border-radius: 8px;
+      padding: 12px 18px;
+      color: #FFF;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    }
+    .btn-submit:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .btn-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      filter: grayscale(20%);
     }
     .auth-alert-error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #EF4444;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #F87171;
       padding: 10px 14px;
-      border-radius: var(--vanni-radius-md);
+      border-radius: 8px;
       font-size: 13px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
       display: none;
+      animation: alertShake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     }
-    .auth-alert-success {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #10B981;
-      padding: 10px 14px;
-      border-radius: var(--vanni-radius-md);
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
+    @keyframes alertShake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+      40%, 60% { transform: translate3d(3px, 0, 0); }
+    }
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #FFF;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
-  
 </head>
 <body>
   
-  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
-    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
-      <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+  <header style="height: 64px; background: rgba(11, 19, 43, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid var(--navy-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: relative; z-index: 10;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFF;">
+      <div style="width: 32px; height: 32px; border-radius: 8px; background: #2563EB; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: 'JetBrains Mono', monospace;">
         V
       </div>
       <div>
         <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
-        <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+        <div style="font-size: 10px; color: #94A3B8; font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
       </div>
     </a>
     <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
-      <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
-      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
+      <a href="/pricing" style="color: #94A3B8; text-decoration: none; transition: color 0.15s ease;">Pricing</a>
+      <a href="/security" style="color: #94A3B8; text-decoration: none; transition: color 0.15s ease;">Security</a>
     </div>
   </header>
   
-  <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+  <main class="auth-container">
     <div class="auth-card">
-      <div style="margin-bottom: 20px;">
-        <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 6px 0;">Sign in to VANNI</h1>
-        <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Access your organization dashboard and AI voice telemetry.</p>
+      <div style="margin-bottom: 24px;">
+        <span style="font-size: 10px; font-weight: 800; background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 10px;">ENTERPRISE CONSOLE</span>
+        <h1 style="font-size: 22px; font-weight: 800; margin: 0 0 6px 0; color: #FFF; letter-spacing: -0.02em;">Sign in to VANNI</h1>
+        <p style="font-size: 13px; color: #94A3B8; margin: 0; line-height: 1.5;">Access your multi-client workspaces, call telemetry, and AI Shield controls.</p>
       </div>
-
-      
-
 
       <div id="login-error" class="auth-alert-error"></div>
 
       <form id="login-form" onsubmit="handleLoginSubmit(event)">
-        <div class="vanni-form-group">
-          <label for="login-email" class="vanni-label">Work Email</label>
-          <input type="email" id="login-email" name="email" placeholder="name@company.com" required class="vanni-input" autofocus />
-        </div>
-
-        <div class="vanni-form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label for="login-password" class="vanni-label" style="margin-bottom: 0;">Password</label>
-            <a href="/forgot-password" style="font-size: 12px; color: var(--vanni-accent); text-decoration: none;">Forgot password?</a>
+        <div class="auth-input-group">
+          <label for="login-email" class="auth-label">Work Email</label>
+          <div class="auth-input-wrapper">
+            <input type="email" id="login-email" name="email" placeholder="name@company.com" required class="auth-input" autofocus autocomplete="email" />
           </div>
-          <input type="password" id="login-password" name="password" placeholder="••••••••••••" required class="vanni-input" />
         </div>
 
-        <button type="submit" id="login-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 8px;">
+        <div class="auth-input-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="login-password" class="auth-label" style="margin-bottom: 0;">Password</label>
+            <a href="mailto:support@vanni.ai?subject=Password%20Reset%20Request" style="font-size: 12px; color: #38BDF8; text-decoration: none;">Forgot password?</a>
+          </div>
+          <div class="auth-input-wrapper">
+            <input type="password" id="login-password" name="password" placeholder="••••••••••••" required class="auth-input" autocomplete="current-password" />
+            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()">Show</button>
+          </div>
+        </div>
+
+        <button type="submit" id="login-submit-btn" class="btn-submit" style="margin-top: 8px;">
           <span>Sign In to Console</span>
         </button>
       </form>
 
-      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--vanni-border-subdued); text-align: center; font-size: 13px; color: var(--vanni-text-muted);">
-        Don't have an organization? <a href="/signup" style="color: var(--vanni-accent); font-weight: 600; text-decoration: none;">Create an account</a>
+      <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--navy-border); text-align: center; font-size: 13px; color: #64748B;">
+        Don't have an organization tenant? <a href="/signup" style="color: #38BDF8; font-weight: 600; text-decoration: none;">Create an account</a>
       </div>
     </div>
   </main>
 
   <script>
+    function togglePasswordVisibility() {
+      const passInput = document.getElementById('login-password');
+      const toggleBtn = document.querySelector('.toggle-pass-btn');
+      if (!passInput || !toggleBtn) return;
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        toggleBtn.textContent = 'Hide';
+      } else {
+        passInput.type = 'password';
+        toggleBtn.textContent = 'Show';
+      }
+    }
+
     async function handleLoginSubmit(e) {
       e.preventDefault();
       const errEl = document.getElementById('login-error');
@@ -118,7 +266,7 @@
       if (errEl) errEl.style.display = 'none';
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span>Verifying credentials with Supabase Auth...</span>';
+        btn.innerHTML = '<div class="spinner"></div><span>Verifying with Supabase Auth...</span>';
       }
 
       const email = document.getElementById('login-email').value.trim();
@@ -141,7 +289,7 @@
           body: JSON.stringify({ email, password })
         });
 
-        const supaData = await supaRes.json();
+        const supaData = await supaRes.json().catch(() => null);
 
         if (supaRes.ok && supaData && supaData.access_token) {
           authUser = supaData.user;
@@ -175,7 +323,6 @@
           } catch (e) {}
 
           if (!serverSuccess) {
-            // STRICT AUTH ENFORCEMENT: Reject fake/invalid credentials!
             const errorMsg = (supaData && supaData.error_description) || (supaData && supaData.msg) || 'Invalid email or password. Please verify your credentials or create a new account.';
             throw new Error(errorMsg);
           }
@@ -214,7 +361,7 @@
         const safeRedirect = (window.VanniAuth && window.VanniAuth.getSafeRedirectUrl('/app/dashboard')) || '/app/dashboard';
         setTimeout(() => {
           window.location.href = safeRedirect;
-        }, 400);
+        }, 350);
 
       } catch (err) {
         if (errEl) {
