@@ -13,17 +13,17 @@
   <script src="/assets/vanni-auth.js"></script>
   <style>
     :root {
-      --navy-deep: #070D1E;
-      --navy-card: #0B132B;
-      --navy-border: #1E293B;
-      --navy-border-focus: #38BDF8;
-      --accent-glow: rgba(56, 189, 248, 0.15);
+      --navy-deep: #F8FAFC;
+      --navy-card: #FFFFFF;
+      --navy-border: #E2E8F0;
+      --navy-border-focus: #2563EB;
+      --accent-glow: rgba(37, 99, 235, 0.12);
       --emerald-glow: rgba(16, 185, 129, 0.2);
     }
     body {
       margin: 0;
-      background: radial-gradient(circle at 50% 0%, #0F1D40 0%, #070D1E 70%);
-      color: #F8FAFC;
+      background: #F8FAFC;
+      color: #0F172A;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       display: flex;
@@ -43,7 +43,7 @@
       position: absolute;
       width: 500px;
       height: 500px;
-      background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
       top: 20%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -53,13 +53,11 @@
     .auth-card {
       width: 100%;
       max-width: 440px;
-      background: rgba(11, 19, 43, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: #FFFFFF;
       border: 1px solid var(--navy-border);
       border-radius: 16px;
       padding: 36px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      box-shadow: 0 12px 32px -18px rgba(15, 23, 42, 0.25);
       box-sizing: border-box;
       position: relative;
       z-index: 1;
@@ -83,7 +81,7 @@
       display: block;
       font-size: 12.5px;
       font-weight: 600;
-      color: #CBD5E1;
+      color: #334155;
       margin-bottom: 6px;
       letter-spacing: -0.01em;
     }
@@ -94,21 +92,21 @@
     }
     .auth-input {
       width: 100%;
-      background: #060B18;
-      border: 1px solid var(--navy-border);
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
       border-radius: 8px;
       padding: 11px 14px;
       font-size: 14px;
-      color: #F8FAFC;
+      color: #0F172A;
       font-family: inherit;
       box-sizing: border-box;
       outline: none;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .auth-input:focus {
-      border-color: #38BDF8;
+      border-color: #2563EB;
       box-shadow: 0 0 0 3px var(--accent-glow);
-      background: #081022;
+      background: #FFFFFF;
     }
     .auth-input::placeholder {
       color: #475569;
@@ -158,9 +156,9 @@
       filter: grayscale(20%);
     }
     .auth-alert-error {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      color: #F87171;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #B91C1C;
       padding: 10px 14px;
       border-radius: 8px;
       font-size: 13px;
@@ -189,28 +187,28 @@
 </head>
 <body>
   
-  <header style="height: 64px; background: rgba(11, 19, 43, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid var(--navy-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: relative; z-index: 10;">
-    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFF;">
+  <header style="height: 64px; background: #FFFFFF; border-bottom: 1px solid var(--navy-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: relative; z-index: 10;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #0F172A;">
       <div style="width: 32px; height: 32px; border-radius: 8px; background: #2563EB; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: 'JetBrains Mono', monospace;">
         V
       </div>
       <div>
         <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
-        <div style="font-size: 10px; color: #94A3B8; font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+        <div style="font-size: 10px; color: #64748B; font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
       </div>
     </a>
     <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
-      <a href="/pricing" style="color: #94A3B8; text-decoration: none; transition: color 0.15s ease;">Pricing</a>
-      <a href="/security" style="color: #94A3B8; text-decoration: none; transition: color 0.15s ease;">Security</a>
+      <a href="/pricing" style="color: #475569; text-decoration: none; transition: color 0.15s ease;">Pricing</a>
+      <a href="/security" style="color: #475569; text-decoration: none; transition: color 0.15s ease;">Security</a>
     </div>
   </header>
   
   <main class="auth-container">
     <div class="auth-card">
       <div style="margin-bottom: 24px;">
-        <span style="font-size: 10px; font-weight: 800; background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 10px;">ENTERPRISE CONSOLE</span>
-        <h1 style="font-size: 22px; font-weight: 800; margin: 0 0 6px 0; color: #FFF; letter-spacing: -0.02em;">Sign in to VANNI</h1>
-        <p style="font-size: 13px; color: #94A3B8; margin: 0; line-height: 1.5;">Access your multi-client workspaces, call telemetry, and AI Shield controls.</p>
+        <span style="font-size: 10px; font-weight: 800; background: #EFF6FF; color: #1D4ED8; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 10px;">ENTERPRISE CONSOLE</span>
+        <h1 style="font-size: 22px; font-weight: 800; margin: 0 0 6px 0; color: #0F172A; letter-spacing: -0.02em;">Sign in to VANNI</h1>
+        <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">Access your multi-client workspaces, call telemetry, and AI Shield controls.</p>
       </div>
 
       <div id="login-error" class="auth-alert-error"></div>
@@ -226,7 +224,7 @@
         <div class="auth-input-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <label for="login-password" class="auth-label" style="margin-bottom: 0;">Password</label>
-            <a href="mailto:support@vanni.ai?subject=Password%20Reset%20Request" style="font-size: 12px; color: #38BDF8; text-decoration: none;">Forgot password?</a>
+            <a href="mailto:support@vanni.ai?subject=Password%20Reset%20Request" style="font-size: 12px; color: #1D4ED8; text-decoration: none;">Forgot password?</a>
           </div>
           <div class="auth-input-wrapper">
             <input type="password" id="login-password" name="password" placeholder="••••••••••••" required class="auth-input" autocomplete="current-password" />
@@ -240,7 +238,7 @@
       </form>
 
       <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--navy-border); text-align: center; font-size: 13px; color: #64748B;">
-        Don't have an organization tenant? <a href="/signup" style="color: #38BDF8; font-weight: 600; text-decoration: none;">Create an account</a>
+        Don't have an organization tenant? <a href="/signup" style="color: #1D4ED8; font-weight: 600; text-decoration: none;">Create an account</a>
       </div>
     </div>
   </main>
@@ -294,6 +292,15 @@
         if (supaRes.ok && supaData && supaData.access_token) {
           authUser = supaData.user;
           accessToken = supaData.access_token;
+          const cookieRes = await fetch('/api/auth/supabase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ accessToken })
+          });
+          if (!cookieRes.ok) {
+            throw new Error('Signed in, but the console session could not be started.');
+          }
         } else {
           // If Supabase rejects or user is not found, attempt server /api/auth/login
           let serverSuccess = false;
@@ -354,7 +361,6 @@
         localStorage.setItem('vanni_user_name', fullName);
         localStorage.setItem('vanni_industry', industry);
         localStorage.setItem('vanni_access_token', accessToken);
-        document.cookie = 'vanni_session=' + encodeURIComponent(JSON.stringify(session)) + '; path=/; max-age=2592000; SameSite=Lax';
 
         if (btn) btn.innerHTML = '<span>Authenticated! Entering workspace...</span>';
 

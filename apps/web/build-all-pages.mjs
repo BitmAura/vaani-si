@@ -161,40 +161,40 @@ const homepageHtml = `<!DOCTYPE html>
   </section>
 
   <!-- 2B. PRODUCT 2: INSTANT AI VISIBILITY AUDIT SCANNER (GEO / AEO) -->
-  <section id="geo-scanner" style="padding: 72px 24px; background: linear-gradient(180deg, #090E1A 0%, #111827 100%); color: #F8FAFC; border-bottom: 1px solid #1E293B;">
+  <section id="geo-scanner" style="padding: 72px 24px; background: #F8FAFC; color: #0F172A; border-bottom: 1px solid #E2E8F0;">
     <div style="max-width: 1040px; margin: 0 auto;">
       
       <!-- Section Header -->
       <div style="text-align: center; margin-bottom: 36px;">
-        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px; font-size: 11px; font-weight: 700; color: #34D399; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 9999px; font-size: 11px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
           <span>⚡ PRODUCT 2: AEO &amp; GEO ENGINE</span>
           <span style="background: #059669; color: #FFF; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">FREE INSTANT AUDIT</span>
         </div>
-        <h2 style="font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 12px 0; color: #FFFFFF; line-height: 1.2;">
+        <h2 style="font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 12px 0; color: #0F172A; line-height: 1.2;">
           Is ChatGPT Recommending Your Business, Or Your Direct Competitor?
         </h2>
-        <p style="font-size: 15px; color: #94A3B8; max-width: 680px; margin: 0 auto; line-height: 1.6;">
+        <p style="font-size: 15px; color: #475569; max-width: 680px; margin: 0 auto; line-height: 1.6;">
           When high-intent customers ask ChatGPT, Claude, and Perplexity for the top clinics, developers, or firms in your city, does AI name you? Scan your site in 5 seconds.
         </p>
       </div>
 
       <!-- Scanner Input Box -->
-      <div style="background: #1E293B; border: 1px solid #334155; border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5); margin-bottom: 24px;">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px -16px rgba(15,23,42,0.2); margin-bottom: 24px;">
         <form id="geo-audit-form" onsubmit="handleGeoAudit(event)" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: center;">
           
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Website URL *</label>
-            <input type="text" id="audit-url" placeholder="e.g. yourclinic.com or yourhotel.com" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #64748B; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Website URL *</label>
+            <input type="text" id="audit-url" placeholder="e.g. yourclinic.com or yourhotel.com" required style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #CBD5E1; color: #0F172A; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
           </div>
 
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">City / Locality</label>
-            <input type="text" id="audit-city" value="Bengaluru" style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #64748B; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">City / Locality</label>
+            <input type="text" id="audit-city" value="Bengaluru" style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #CBD5E1; color: #0F172A; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;" />
           </div>
 
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 600; color: #94A3B8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Industry Category</label>
-            <select id="audit-industry" style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #64748B; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Industry Category</label>
+            <select id="audit-industry" style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #CBD5E1; color: #0F172A; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;">
               <option value="HOSPITALITY">Hotels, Resorts &amp; Luxury Dining</option>
               <option value="HEALTHCARE">Hospitals, IVF &amp; Specialty Care</option>
               <option value="DENTAL">Dental &amp; Microscopic Clinics</option>
@@ -219,30 +219,30 @@ const homepageHtml = `<!DOCTYPE html>
         <!-- Quick Pick Chips -->
         <div style="display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 12px; color: #64748B; flex-wrap: wrap;">
           <span>Quick Sample:</span>
-          <button type="button" onclick="prefillAudit('kumarsdental.com', 'Yelahanka, Bangalore', 'DENTAL')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">kumarsdental.com</button>
-          <button type="button" onclick="prefillAudit('punarvaas.com', 'Kumaraswamy Layout, Bangalore', 'HEALTHCARE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">punarvaas.com</button>
-          <button type="button" onclick="prefillAudit('royalorchidhotels.com', 'MG Road, Bangalore', 'HOSPITALITY')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">royalorchidhotels.com</button>
-          <button type="button" onclick="prefillAudit('ballariplots.in', 'Ballari, Karnataka', 'REAL_ESTATE')" style="background: #334155; color: #CBD5E1; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">ballariplots.in</button>
+          <button type="button" onclick="prefillAudit('kumarsdental.com', 'Yelahanka, Bangalore', 'DENTAL')" style="background: #F1F5F9; color: #334155; border: 1px solid #E2E8F0; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">kumarsdental.com</button>
+          <button type="button" onclick="prefillAudit('punarvaas.com', 'Kumaraswamy Layout, Bangalore', 'HEALTHCARE')" style="background: #F1F5F9; color: #334155; border: 1px solid #E2E8F0; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">punarvaas.com</button>
+          <button type="button" onclick="prefillAudit('royalorchidhotels.com', 'MG Road, Bangalore', 'HOSPITALITY')" style="background: #F1F5F9; color: #334155; border: 1px solid #E2E8F0; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">royalorchidhotels.com</button>
+          <button type="button" onclick="prefillAudit('ballariplots.in', 'Ballari, Karnataka', 'REAL_ESTATE')" style="background: #F1F5F9; color: #334155; border: 1px solid #E2E8F0; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">ballariplots.in</button>
         </div>
       </div>
 
       <!-- Live Loading State -->
-      <div id="geo-audit-loading" style="display: none; background: #1E293B; border: 1px solid #334155; border-radius: 16px; padding: 36px; text-align: center;">
+      <div id="geo-audit-loading" style="display: none; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 36px; text-align: center;">
         <div style="display: inline-block; width: 44px; height: 44px; border: 3px solid #334155; border-top-color: #10B981; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;"></div>
-        <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #FFF;">Running Autonomous AI Knowledge Audit...</h4>
+        <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #0F172A;">Running Autonomous AI Knowledge Audit...</h4>
         <div style="font-size: 12px; color: #94A3B8; font-family: monospace;" id="geo-audit-progress-text">
           Pinging GPTBot &amp; PerplexityBot crawl indices...
         </div>
       </div>
 
       <!-- Audit Results Card -->
-      <div id="geo-audit-results" style="display: none; background: #131D31; border: 1px solid #1E293B; border-radius: 16px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
+      <div id="geo-audit-results" style="display: none; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 32px; box-shadow: 0 8px 24px -16px rgba(15,23,42,0.18);">
         
-        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; border-bottom: 1px solid #1E293B; padding-bottom: 24px; margin-bottom: 24px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; border-bottom: 1px solid #E2E8F0; padding-bottom: 24px; margin-bottom: 24px; flex-wrap: wrap;">
           <div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
               <span id="audit-res-status-badge" style="background: rgba(239, 68, 68, 0.2); color: #F87171; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">CRITICAL VISIBILITY RISK</span>
-              <span id="audit-res-business-name" style="font-size: 20px; font-weight: 700; color: #FFF;">Business Name</span>
+              <span id="audit-res-business-name" style="font-size: 20px; font-weight: 700; color: #0F172A;">Business Name</span>
             </div>
             <p id="audit-res-summary" style="font-size: 13px; color: #94A3B8; margin: 0; max-width: 620px; line-height: 1.5;">
               Summary of findings.
@@ -262,9 +262,9 @@ const homepageHtml = `<!DOCTYPE html>
 
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 28px;" class="vanni-steps-grid">
           
-          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span id="audit-find-1-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">1. Machine /llms.txt Manifest</span>
+              <span id="audit-find-1-title" style="font-size: 13px; font-weight: 700; color: #0F172A;">1. Machine /llms.txt Manifest</span>
               <span id="audit-find-1-badge" style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">MISSING</span>
             </div>
             <div id="audit-find-1-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
@@ -272,9 +272,9 @@ const homepageHtml = `<!DOCTYPE html>
             </div>
           </div>
 
-          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span id="audit-find-2-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">2. Schema.org Clinical Graph</span>
+              <span id="audit-find-2-title" style="font-size: 13px; font-weight: 700; color: #0F172A;">2. Schema.org Clinical Graph</span>
               <span id="audit-find-2-badge" style="font-size: 10px; font-weight: 800; background: rgba(239,68,68,0.2); color: #F87171; padding: 2px 6px; border-radius: 4px;">DEFICIENT</span>
             </div>
             <div id="audit-find-2-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
@@ -282,9 +282,9 @@ const homepageHtml = `<!DOCTYPE html>
             </div>
           </div>
 
-          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span id="audit-find-3-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">3. Aggregator Disintermediation</span>
+              <span id="audit-find-3-title" style="font-size: 13px; font-weight: 700; color: #0F172A;">3. Aggregator Disintermediation</span>
               <span id="audit-find-3-badge" style="font-size: 10px; font-weight: 800; background: rgba(245,158,11,0.2); color: #FBBF24; padding: 2px 6px; border-radius: 4px;">HIGH RISK</span>
             </div>
             <div id="audit-find-3-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
@@ -292,9 +292,9 @@ const homepageHtml = `<!DOCTYPE html>
             </div>
           </div>
 
-          <div style="background: #0B132B; border: 1px solid #1E293B; border-radius: 10px; padding: 16px;">
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span id="audit-find-4-title" style="font-size: 13px; font-weight: 700; color: #F1F5F9;">4. Estimated Lost Inquiries</span>
+              <span id="audit-find-4-title" style="font-size: 13px; font-weight: 700; color: #0F172A;">4. Estimated Lost Inquiries</span>
               <span id="audit-find-4-badge" style="font-size: 11px; font-weight: 800; color: #EF4444; font-family: monospace;">450 - 1,200 / MO</span>
             </div>
             <div id="audit-find-4-text" style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">
@@ -305,13 +305,13 @@ const homepageHtml = `<!DOCTYPE html>
         </div>
 
         <!-- The Action Offer Banner -->
-        <div id="audit-action-banner" style="background: linear-gradient(90deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.15) 100%); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+        <div id="audit-action-banner" style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
           <div>
-            <div id="audit-action-title" style="font-size: 15px; font-weight: 800; color: #34D399; margin-bottom: 4px;">
+            <div id="audit-action-title" style="font-size: 15px; font-weight: 800; color: #047857; margin-bottom: 4px;">
               Fix This In 60 Seconds: Activate Your AI Shield (&#8377;9,999/mo)
             </div>
-            <div id="audit-action-desc" style="font-size: 12px; color: #CBD5E1; max-width: 580px; line-height: 1.4;">
-              Add 1 line of script to your website. We automatically publish your Schema.org graph and <code style="background:#0F172A;padding:2px 4px;border-radius:3px;">/llms.txt</code> feed. Rank #1 on ChatGPT with zero coding.
+            <div id="audit-action-desc" style="font-size: 12px; color: #334155; max-width: 580px; line-height: 1.4;">
+              Add 1 line of script to your website. We automatically publish your Schema.org graph and <code style="background:#F1F5F9;padding:2px 4px;border-radius:3px;">/llms.txt</code> feed. Rank #1 on ChatGPT with zero coding.
             </div>
           </div>
 
@@ -1145,14 +1145,14 @@ const homepageHtml = `<!DOCTYPE html>
 
   <!-- ₹9,999 AI SHIELD PAYMENT GATE & ONBOARDING MODAL -->
   <div id="vanni-shield-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: #1E293B; border: 1px solid #334155; border-radius: 20px; max-width: 600px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); overflow: hidden; color: #FFF;">
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 20px; max-width: 600px; width: 100%; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18); overflow: hidden; color: #0F172A;">
       
       <!-- Modal Header -->
-      <div style="padding: 20px 24px; background: #0F172A; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between;">
+      <div style="padding: 20px 24px; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: #10B981; color: #042F2E; font-weight: 800; font-size: 14px;">⚡</span>
           <div>
-            <div style="font-weight: 800; font-size: 16px; color: #FFF;">Activate AI Search Shield — &#8377;9,999 / mo</div>
+            <div style="font-weight: 800; font-size: 16px; color: #0F172A;">Activate AI Search Shield — &#8377;9,999 / mo</div>
             <div style="font-size: 11px; color: #94A3B8;">ChatGPT, Perplexity &amp; SGE Knowledge Syndication</div>
           </div>
         </div>
@@ -1181,17 +1181,17 @@ const homepageHtml = `<!DOCTYPE html>
         <form id="shield-claim-form" onsubmit="handleClaimShieldSubmit(event)">
           <div style="margin-bottom: 14px;">
             <label style="display: block; font-size: 11px; font-weight: 600; color: #CBD5E1; margin-bottom: 5px; text-transform: uppercase;">Director Name *</label>
-            <input type="text" id="shield-name" placeholder="e.g. Dr. Ramesh Kumar" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
+            <input type="text" id="shield-name" placeholder="e.g. Dr. Ramesh Kumar" required style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #CBD5E1; color: #0F172A; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
             <div>
               <label style="display: block; font-size: 11px; font-weight: 600; color: #CBD5E1; margin-bottom: 5px; text-transform: uppercase;">WhatsApp Number *</label>
-              <input type="tel" id="shield-phone" placeholder="+91 98450 XXXXX" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
+              <input type="tel" id="shield-phone" placeholder="+91 98450 XXXXX" required style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #CBD5E1; color: #0F172A; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
             </div>
             <div>
               <label style="display: block; font-size: 11px; font-weight: 600; color: #CBD5E1; margin-bottom: 5px; text-transform: uppercase;">Work Email Address *</label>
-              <input type="email" id="shield-email" placeholder="doctor@clinic.com" required style="width: 100%; box-sizing: border-box; background: #0F172A; border: 1px solid #475569; color: #FFF; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
+              <input type="email" id="shield-email" placeholder="doctor@clinic.com" required style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #CBD5E1; color: #0F172A; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none;" />
             </div>
           </div>
 

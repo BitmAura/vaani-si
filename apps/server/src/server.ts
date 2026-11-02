@@ -220,10 +220,13 @@ export async function buildServer() {
   // SECURITY: explicit origin allowlist. Never reflect an arbitrary Origin while
   // credentials are enabled — that would let any third-party site read responses
   // from authenticated APIs using the victim's session cookie.
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:4000,http://127.0.0.1:4000,http://localhost:3000,http://localhost:4100,http://localhost:4200')
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:4100,http://localhost:4200')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
+  for (const localOrigin of ['http://localhost:4000', 'http://127.0.0.1:4000']) {
+    if (!allowedOrigins.includes(localOrigin)) allowedOrigins.push(localOrigin);
+  }
   await fastify.register(cors, {
     origin: (origin, cb) => {
       // Same-origin / server-to-server requests send no Origin header.
@@ -830,6 +833,45 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     } catch (err: any) {
       return reply.status(err.statusCode || 401).send({ error: err.message });
     }
+  });
+
+  // Mint the signed console cookie after Supabase confirms the password.
+  fastify.post('/api/auth/supabase', async (request, reply) => {
+    const accessToken = (request.body as { accessToken?: string } | undefined)?.accessToken;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+    if (!accessToken || !supabaseUrl || !supabaseKey) {
+      return reply.status(401).send({ error: 'Invalid email or password.' });
+    }
+    const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: supabaseKey },
+    });
+    if (!userRes.ok) {
+      return reply.status(401).send({ error: 'Invalid email or password.' });
+    }
+    const user = await userRes.json() as { id?: string; email?: string; user_metadata?: Record<string, string> };
+    if (!user.id || !user.email) {
+      return reply.status(401).send({ error: 'Invalid email or password.' });
+    }
+    const meta = user.user_metadata || {};
+    const session = {
+      userId: user.id,
+      email: user.email,
+      fullName: meta.fullName || meta.name || user.email.split('@')[0],
+      activeOrganizationId: 'org_punarvaas',
+      activeRole: 'OWNER' as const,
+      memberships: [{
+        organizationId: 'org_punarvaas',
+        organizationName: meta.company || 'Punarvaas Rehabilitation Hospital',
+        organizationSlug: 'punarvaas',
+        industry: 'HEALTHCARE',
+        role: 'OWNER' as const,
+        status: 'ACTIVE' as const,
+        onboardingStatus: 'ready' as const,
+      }],
+    };
+    reply.setCookie(SESSION_COOKIE_NAME, serializeSession(session), DEFAULT_COOKIE_OPTIONS);
+    return reply.send({ success: true, session });
   });
 
   // 1.3 POST /api/auth/logout: Clear session cookie
