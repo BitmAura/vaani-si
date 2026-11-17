@@ -77,7 +77,6 @@ function renderNavigation(activePath = '/') {
     { label: 'How It Works', href: '/how-it-works', id: 'how-it-works' },
     { label: 'Industries', href: '/industries', id: 'industries' },
     { label: 'Pricing', href: '/pricing', id: 'pricing' },
-    { label: 'Security', href: '/security', id: 'security' },
   ];
 
   const linksHtml = navItems.map(item => {
@@ -148,7 +147,6 @@ function renderNavigation(activePath = '/') {
       <a href="/how-it-works" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">How It Works</a>
       <a href="/industries" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Industry Solutions</a>
       <a href="/pricing" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Pricing Plans</a>
-      <a href="/security" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Enterprise Security</a>
       <div style="border-top: 1px solid var(--vanni-border-subdued); padding-top: 12px; display: flex; gap: 10px;">
         <a href="/login" class="vanni-button vanni-button-secondary" style="flex: 1; text-align: center; text-decoration: none;">Sign In</a>
         <button type="button" onclick="openDemoModal(); toggleMobileNav();" class="vanni-button vanni-button-primary" style="flex: 1;">Talk to VANNI</button>
@@ -186,8 +184,8 @@ function renderFooter() {
           <a href="/features" style="color: var(--vanni-text-secondary); text-decoration: none;">Platform Features</a>
           <a href="/how-it-works" style="color: var(--vanni-text-secondary); text-decoration: none;">How It Works</a>
           <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing & Tiers</a>
-          <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security & Isolation</a>
           <a href="/demo" style="color: var(--vanni-text-secondary); text-decoration: none;">Request Live Demo</a>
+          <a href="/login" style="color: var(--vanni-text-secondary); text-decoration: none;">Access Console</a>
         </div>
       </div>
 
@@ -203,14 +201,16 @@ function renderFooter() {
         </div>
       </div>
 
-      <!-- Col 4: Enterprise & Contact -->
+      <!-- Col 4: Trust & Compliance -->
       <div>
-        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Company & Support</div>
+        <div style="font-weight: 600; color: var(--vanni-text-primary); margin-bottom: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Trust & Compliance</div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <a href="/contact" style="color: var(--vanni-text-secondary); text-decoration: none;">Contact Sales</a>
-          <a href="/login" style="color: var(--vanni-text-secondary); text-decoration: none;">Console Sign In</a>
-          <a href="/signup" style="color: var(--vanni-text-secondary); text-decoration: none;">Create Organization</a>
-          <span style="color: var(--vanni-text-muted); font-size: 12px; margin-top: 4px;">Headquarters: Bengaluru, Karnataka</span>
+          <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none; font-weight: 600;">Trust & Security Center</a>
+          <a href="/security#zero-training" style="color: var(--vanni-text-secondary); text-decoration: none;">Zero Model Training Policy</a>
+          <a href="/security#data-residency" style="color: var(--vanni-text-secondary); text-decoration: none;">Indian Data Residency (BLR/BOM)</a>
+          <a href="/security#telephony" style="color: var(--vanni-text-secondary); text-decoration: none;">TRAI & Telephony Compliance</a>
+          <a href="/security#privacy" style="color: var(--vanni-text-secondary); text-decoration: none;">DPDP Act (2023) Privacy</a>
+          <a href="/security#terms" style="color: var(--vanni-text-secondary); text-decoration: none;">Terms of Service</a>
         </div>
       </div>
 

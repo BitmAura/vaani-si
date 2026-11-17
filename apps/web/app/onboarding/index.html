@@ -1,1217 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Workspace &amp; Product Onboarding — VAANI &amp; AEO Engine</title>
-  <meta name="description" content="Configure your client workspace for AEO/GEO Search Optimization or Autonomous Kannada Voice AI.">
+  <title>Organization Onboarding — VANNI</title>
+  <meta name="description" content="Complete setup for your AI employee.">
+  <link rel="canonical" href="https://vanni.ai/login">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vanni.css">
-  <script src="/assets/vanni-auth.js"></script>
   <style>
-    :root {
-      --bg: #F8FAFC;
-      --surface: #FFFFFF;
-      --border: #E2E8F0;
-      --border-focus: #2563EB;
-      --text-main: #0F172A;
-      --text-muted: #64748B;
-      --text-sub: #475569;
-      --primary: #0F172A;
-      --accent: #2563EB;
-      --accent-light: #EFF6FF;
-      --success: #10B981;
-      --error-bg: #FEF2F2;
-      --error-border: #FECACA;
-      --error-text: #DC2626;
-    }
-    * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: var(--bg);
-      color: var(--text-main);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--vanni-bg);
+      color: var(--vanni-text-primary);
+      font-family: var(--vanni-font-sans);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      -webkit-font-smoothing: antialiased;
     }
-    .header-bar {
-      height: 60px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      position: sticky;
-      top: 0;
-      z-index: 40;
-    }
-    .brand-mark {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: var(--text-main);
-    }
-    .logo-sq {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #FFF;
-      font-weight: 800;
-      font-size: 15px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .stepper-nav {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      overflow-x: auto;
-      padding: 16px 24px 0;
-      max-width: 860px;
-      margin: 0 auto;
+    .auth-card {
       width: 100%;
+      max-width: 440px;
+      background: var(--vanni-surface);
+      border: 1px solid var(--vanni-border);
+      border-radius: var(--vanni-radius-lg);
+      padding: 36px;
+      box-shadow: var(--vanni-shadow-md);
+      box-sizing: border-box;
     }
-    .step-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      background: transparent;
-      border: 1px solid transparent;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.15s ease;
-    }
-    .step-pill.active {
-      color: var(--accent);
-      background: var(--accent-light);
-      border-color: #BFDBFE;
-    }
-    .step-pill.completed {
-      color: var(--text-main);
-    }
-    .step-pill.completed .step-num {
-      background: var(--success);
-      color: #FFF;
-    }
-    .step-num {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #E2E8F0;
-      color: #475569;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .step-pill.active .step-num {
-      background: var(--accent);
-      color: #FFF;
-    }
-    .main-container {
-      flex: 1;
-      max-width: 860px;
-      width: 100%;
-      margin: 16px auto 48px;
-      padding: 0 24px;
-    }
-    .card-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 32px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-    .card-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin: 0 0 6px 0;
-      letter-spacing: -0.02em;
-    }
-    .card-desc {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      margin: 0 0 24px 0;
-      line-height: 1.5;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-sub);
-      margin-bottom: 6px;
-    }
-    .form-label span.req { color: var(--error-text); }
-    .form-input, .form-select, .form-textarea {
-      width: 100%;
+    .auth-alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #EF4444;
       padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #FFFFFF;
-      font-size: 13.5px;
-      color: var(--text-main);
-      font-family: inherit;
-      transition: all 0.15s ease;
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus {
-      outline: none;
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    @media (max-width: 640px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-    .tile-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .select-tile {
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 18px;
-      cursor: pointer;
-      background: #FFFFFF;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .select-tile:hover {
-      border-color: #CBD5E1;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    .select-tile.selected {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .tile-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 9999px;
-      font-size: 10px;
-      font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
-      width: fit-content;
-    }
-    .tile-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-    .tile-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-    .action-bar {
-      margin-top: 32px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .btn {
-      padding: 9px 18px;
-      border-radius: 8px;
+      border-radius: var(--vanni-radius-md);
       font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: none;
-      transition: all 0.15s ease;
-    }
-    .btn-dark {
-      background: var(--primary);
-      color: #FFFFFF;
-    }
-    .btn-dark:hover { background: #1E293B; }
-    .btn-outline {
-      background: #FFFFFF;
-      border: 1px solid var(--border);
-      color: var(--text-sub);
-    }
-    .btn-outline:hover { background: #F1F5F9; }
-    .btn-accent {
-      background: var(--accent);
-      color: #FFFFFF;
-    }
-    .btn-accent:hover { background: #1D4ED8; }
-    .alert-box {
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 12.5px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       display: none;
     }
-    .alert-danger {
-      background: var(--error-bg);
-      border: 1px solid var(--error-border);
-      color: var(--error-text);
+    .auth-alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10B981;
+      padding: 10px 14px;
+      border-radius: var(--vanni-radius-md);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
     }
-    .alert-info {
-      background: #F0FDF4;
-      border: 1px solid #BBF7D0;
-      color: #166534;
+  </style>
+  
+  <style>
+    .step-card {
+      border: 1px solid var(--vanni-border);
+      border-radius: var(--vanni-radius-lg);
+      padding: 24px;
+      background: var(--vanni-surface);
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-
-  <!-- Top Bar -->
-  <header class="header-bar">
-    <a href="/app/dashboard" class="brand-mark">
-      <div class="logo-sq">V</div>
+  
+  <header style="height: 64px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--vanni-text-primary);">
+      <div style="width: 32px; height: 32px; border-radius: var(--vanni-radius-md); background: var(--vanni-primary); display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 15px; font-family: var(--vanni-font-mono);">
+        V
+      </div>
       <div>
-        <div style="font-weight: 800; font-size: 15px; letter-spacing: -0.02em; line-height: 1;">VAANI &amp; AEO</div>
-        <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Workspace Onboarding</div>
+        <div style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+        <div style="font-size: 10px; color: var(--vanni-text-muted); font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
       </div>
     </a>
-    <div style="display: flex; align-items: center; gap: 12px; font-size: 12px;">
-      <span id="topbar-org-name" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #EEF2F6; color: #334155;">Organization Loading...</span>
-      <a href="/app/dashboard" style="color: var(--accent); text-decoration: none; font-weight: 600;">Back to Dashboard &rarr;</a>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
+      <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
+      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
     </div>
   </header>
-
-  <!-- Dynamic Stepper Navigation -->
-  <nav class="stepper-nav custom-scroll" id="main-stepper-nav">
-    <div class="step-pill active" id="pill-step-1" onclick="jumpToStep(1)">
-      <span class="step-num">1</span>
-      <span id="label-step-1">Product Track</span>
+  
+  <main style="flex: 1; max-width: 720px; margin: 40px auto; padding: 0 24px; width: 100%; box-sizing: border-box;">
+    
+    <div style="margin-bottom: 32px;">
+      <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(37, 99, 235, 0.1); border-radius: var(--vanni-radius-full); color: var(--vanni-accent); font-size: 11px; font-weight: 600; margin-bottom: 12px; font-family: var(--vanni-font-mono);">
+        ORGANIZATION ONBOARDING
+      </div>
+      <h1 style="font-size: 26px; font-weight: 800; margin: 0 0 8px 0;">Configure Your Business Brain</h1>
+      <p style="font-size: 14px; color: var(--vanni-text-muted); margin: 0;">Teach your autonomous AI employee your practice details, services, and call handling rules.</p>
     </div>
-    <div class="step-pill" id="pill-step-2" onclick="jumpToStep(2)">
-      <span class="step-num">2</span>
-      <span id="label-step-2">Business Model</span>
+
+    <!-- Step 1: Business Hours & Phone -->
+    <div class="step-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">1</div>
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Business & Operating Timings</h2>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">When should your AI answer customer queries?</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="vanni-form-group">
+          <label class="vanni-label">Daily Office Timings</label>
+          <input type="text" id="ob-timings" value="9:00 AM - 7:00 PM (Monday - Saturday)" class="vanni-input" />
+        </div>
+        <div class="vanni-form-group">
+          <label class="vanni-label">Escalation WhatsApp Number</label>
+          <input type="tel" id="ob-whatsapp" placeholder="+91 98450 XXXXX" value="+91 98450 12345" class="vanni-input" />
+        </div>
+      </div>
     </div>
-    <div class="step-pill" id="pill-step-3" onclick="jumpToStep(3)">
-      <span class="step-num">3</span>
-      <span id="label-step-3">Agency Profile</span>
+
+    <!-- Step 2: AI Employee Personality -->
+    <div class="step-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">2</div>
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">AI Employee Role & Dialect</h2>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Choose how your AI communicates with callers.</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="vanni-form-group">
+          <label class="vanni-label">AI Employee Name</label>
+          <input type="text" id="ob-agent-name" value="Sahana" class="vanni-input" />
+        </div>
+        <div class="vanni-form-group">
+          <label class="vanni-label">Regional Dialect</label>
+          <select id="ob-dialect" class="vanni-select">
+            <option value="KANGLISH_BUSINESS" selected>Kanglish (Kannada + English Mix)</option>
+            <option value="KANNADA_STANDARD_POLITE">Pure Polite Kannada (Bengaluru/Standard)</option>
+            <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka (Ballari/Hubballi Commercial)</option>
+            <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Corporate Professional)</option>
+          </select>
+        </div>
+      </div>
     </div>
-    <div class="step-pill" id="pill-step-4" onclick="jumpToStep(4)">
-      <span class="step-num">4</span>
-      <span id="label-step-4">Client Entity</span>
+
+    <!-- Step 3: Test Call Audio Simulator -->
+    <div class="step-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: var(--vanni-radius-sm); background: var(--vanni-primary); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">3</div>
+        <div>
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Verify & Launch Telephony Routing</h2>
+          <div style="font-size: 12px; color: var(--vanni-text-muted);">Ready to connect calls and sync confirmed leads.</div>
+        </div>
+      </div>
+      <div style="padding: 12px 16px; background: var(--vanni-surface-subdued); border-radius: var(--vanni-radius-md); font-size: 13px; color: var(--vanni-text-secondary); line-height: 1.5;">
+        Your AI employee is provisioned with tenant-isolated Row Level Security. All transcripts, recordings, and lead dossiers remain strictly accessible only to active members of this organization.
+      </div>
     </div>
-    <div class="step-pill" id="pill-step-5" onclick="jumpToStep(5)">
-      <span class="step-num">5</span>
-      <span id="label-step-5">AEO Knowledge</span>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+      <button type="button" onclick="completeOnboarding()" class="vanni-button vanni-button-primary vanni-button-lg" style="padding: 12px 28px;">
+        <span>Complete Setup & Open Dashboard &rarr;</span>
+      </button>
     </div>
-    <div class="step-pill" id="pill-step-6" onclick="jumpToStep(6)">
-      <span class="step-num">6</span>
-      <span id="label-step-6">Embed &amp; Install</span>
-    </div>
-    <div class="step-pill" id="pill-step-7" onclick="jumpToStep(7)">
-      <span class="step-num">7</span>
-      <span id="label-step-7">Activate</span>
-    </div>
-  </nav>
 
-  <!-- Main Card -->
-  <main class="main-container">
-    <div id="error-alert" class="alert-box alert-danger"></div>
-    <div id="success-alert" class="alert-box alert-info"></div>
-
-    <div class="card-box">
-      
-      <!-- STEP 1: WELCOME & PRODUCT FOCUS -->
-      <section id="step-panel-1">
-        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #ECFDF5; border-radius: 20px; color: #047857; font-size: 11px; font-weight: 700; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-          SELECT PRODUCT FOCUS
-        </div>
-        <h1 class="card-title">Choose Your Primary AI Growth Product</h1>
-        <p class="card-desc">
-          Select which engine you want to set up first. All steps following this will strictly adapt to your selected product.
-        </p>
-
-        <!-- Product Selector Grid -->
-        <div class="tile-grid">
-          
-          <!-- AEO & GEO CARD -->
-          <div class="select-tile selected" id="tile-prod-aeo" onclick="selectProductTrack('AEO_GEO')">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="tile-badge" style="background: #ECFDF5; color: #047857;">RECOMMENDED FOR PUNARVAAS</span>
-              <span style="font-size: 22px;">🌐</span>
-            </div>
-            <div class="tile-title" style="font-size: 15px; margin-top: 4px;">AEO &amp; GEO AI Search Engine</div>
-            <div class="tile-sub" style="font-size: 12.5px;">
-              Make your hospital or client <strong>#1 recommended across ChatGPT, Claude, Perplexity &amp; Google AI Overviews</strong> for all Bangalore rehab queries.
-            </div>
-            <div style="margin-top: 8px; font-size: 11px; font-weight: 600; color: #059669;">
-              ✓ Auto-generates /llms.txt · Clinical JSON-LD · Zero Microserver Needed
-            </div>
-          </div>
-
-          <!-- VOICE TELEPHONY CARD -->
-          <div class="select-tile" id="tile-prod-voice" onclick="selectProductTrack('VOICE')">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="tile-badge" style="background: #EFF6FF; color: #1E40AF;">REGIONAL TELEPHONY</span>
-              <span style="font-size: 22px;">📞</span>
-            </div>
-            <div class="tile-title" style="font-size: 15px; margin-top: 4px;">Autonomous Voice AI (Vaani-Si)</div>
-            <div class="tile-sub" style="font-size: 12.5px;">
-              Regional Kannada, Kanglish &amp; English sub-120ms voice AI employees for inbound appointments, instant lead qualification, and clinic calls.
-            </div>
-            <div style="margin-top: 8px; font-size: 11px; font-weight: 600; color: #2563EB;">
-              ✓ Sub-120ms duplex · Native Kannada accents · Twilio / Exotel ready
-            </div>
-          </div>
-
-          <!-- BUNDLE CARD -->
-          <div class="select-tile" id="tile-prod-bundle" onclick="selectProductTrack('BUNDLE')">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="tile-badge" style="background: #FDF4FF; color: #86198F;">ALL-IN-ONE</span>
-              <span style="font-size: 22px;">⚡</span>
-            </div>
-            <div class="tile-title" style="font-size: 15px; margin-top: 4px;">Complete Growth OS</div>
-            <div class="tile-sub" style="font-size: 12.5px;">
-              Unified Voice Telephony AI + AEO/GEO Visibility Engine for full-funnel patient acquisition and phone reception.
-            </div>
-            <div style="margin-top: 8px; font-size: 11px; font-weight: 600; color: #9333EA;">
-              ✓ Complete suite · Multi-client agency management
-            </div>
-          </div>
-
-        </div>
-
-        <div class="action-bar" style="justify-content: flex-end;">
-          <button type="button" class="btn btn-dark" onclick="nextStep(2)">Continue to Business Model &rarr;</button>
-        </div>
-      </section>
-
-      <!-- STEP 2: BUSINESS MODEL -->
-      <section id="step-panel-2" style="display: none;">
-        <h2 class="card-title" id="step2-title">Choose Your Business Model</h2>
-        <p class="card-desc" id="step2-desc">
-          Select whether you operate as a digital agency managing client accounts (e.g. AuraDigital managing Punarvaas) or directly as the business entity.
-        </p>
-
-        <!-- AEO BUSINESS MODEL TILES -->
-        <div class="tile-grid" id="tiles-model-aeo">
-          <div class="select-tile selected" id="tile-aeo-agency" onclick="selectBusinessModel('AGENCY', 'HEALTHCARE')">
-            <span class="tile-badge" style="background: #EEF2F6; color: #1E293B;">AGENCY ACCOUNT</span>
-            <div class="tile-title">🚀 Digital Marketing Agency (AuraDigital)</div>
-            <div class="tile-sub">Manage multiple client businesses under one dashboard. Onboard Punarvaas Hospital as your active client.</div>
-          </div>
-
-          <div class="select-tile" id="tile-aeo-hospital" onclick="selectBusinessModel('DIRECT_BUSINESS', 'HEALTHCARE')">
-            <span class="tile-badge" style="background: #E0E7FF; color: #3730A3;">DIRECT HEALTHCARE</span>
-            <div class="tile-title">🏥 Hospital / Rehabilitation Center</div>
-            <div class="tile-sub">Direct onboarding for Punarvaas Rehabilitation Hospital or specialty healthcare centers.</div>
-          </div>
-
-          <div class="select-tile" id="tile-aeo-realestate" onclick="selectBusinessModel('DIRECT_BUSINESS', 'REAL_ESTATE')">
-            <span class="tile-badge" style="background: #FEF3C7; color: #92400E;">REAL ESTATE &amp; OTHER</span>
-            <div class="tile-title">🏡 Real Estate &amp; Commercial Enterprises</div>
-            <div class="tile-sub">AEO search ranking for developers, villa layouts, and enterprise services.</div>
-          </div>
-        </div>
-
-        <!-- VOICE BUSINESS MODEL TILES -->
-        <div class="tile-grid" id="tiles-model-voice" style="display: none;">
-          <div class="select-tile selected" id="tile-voice-agency" onclick="selectBusinessModel('AGENCY', 'DIGITAL_AGENCY')">
-            <span class="tile-badge" style="background: #EEF2F6; color: #1E293B;">AGENCY ACCOUNT</span>
-            <div class="tile-title">🚀 Digital Marketing Agency</div>
-            <div class="tile-sub">Manage multiple client brands under one subscription. Add healthcare and real estate clients dynamically.</div>
-          </div>
-
-          <div class="select-tile" id="tile-voice-realestate" onclick="selectBusinessModel('DIRECT_BUSINESS', 'REAL_ESTATE')">
-            <span class="tile-badge" style="background: #FEF3C7; color: #92400E;">DIRECT BUSINESS</span>
-            <div class="tile-title">🏡 Real Estate &amp; Developer</div>
-            <div class="tile-sub">Configure voice agents directly for layout plot sales, apartment enquiries, and Sunday cab site visits.</div>
-          </div>
-
-          <div class="select-tile" id="tile-voice-healthcare" onclick="selectBusinessModel('DIRECT_BUSINESS', 'HEALTHCARE')">
-            <span class="tile-badge" style="background: #E0E7FF; color: #3730A3;">DIRECT CLINIC</span>
-            <div class="tile-title">🏥 Healthcare &amp; Clinic</div>
-            <div class="tile-sub">Automate OPD appointments, patient queries, doctor schedules, and emergency triage directly.</div>
-          </div>
-        </div>
-
-        <div class="action-bar">
-          <button type="button" class="btn btn-outline" onclick="jumpToStep(1)">&larr; Back</button>
-          <button type="button" class="btn btn-dark" onclick="submitStep2()">Continue to Organization &rarr;</button>
-        </div>
-      </section>
-
-      <!-- STEP 3: ORGANIZATION PROFILE -->
-      <section id="step-panel-3" style="display: none;">
-        <h2 class="card-title" id="step3-title">Organization Profile</h2>
-        <p class="card-desc" id="step3-desc">Enter your master agency or company account details.</p>
-
-        <div class="form-group">
-          <label class="form-label" for="org-name-input">Agency / Company Name <span class="req">*</span></label>
-          <input type="text" id="org-name-input" class="form-input" placeholder="e.g. AuraDigital / Punarvaas Health" value="AuraDigital" required>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label" for="org-region-input">Operating State &amp; City</label>
-            <input type="text" id="org-region-input" class="form-input" value="Bangalore, Karnataka, India">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="org-timezone-select">Business Timezone</label>
-            <select id="org-timezone-select" class="form-select">
-              <option value="Asia/Kolkata" selected>Asia/Kolkata (IST - UTC+05:30)</option>
-              <option value="Asia/Dubai">Asia/Dubai (GST - UTC+04:00)</option>
-              <option value="UTC">UTC (Universal Coordinated Time)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="org-phone-input">Primary Business Phone / WhatsApp <span class="req">*</span></label>
-          <input type="tel" id="org-phone-input" class="form-input" placeholder="+91 98450 00000" value="+91 98450 12345">
-        </div>
-
-        <div class="action-bar">
-          <button type="button" class="btn btn-outline" onclick="jumpToStep(2)">&larr; Back</button>
-          <button type="button" class="btn btn-dark" onclick="submitStep3()">Save &amp; Continue &rarr;</button>
-        </div>
-      </section>
-
-      <!-- STEP 4: CLIENT WORKSPACE / TARGET ENTITY -->
-      <section id="step-panel-4" style="display: none;">
-        <h2 class="card-title" id="step4-title">Target Client Entity Setup</h2>
-        <p class="card-desc" id="step4-desc">Configure the specific business entity whose AI presence is being built.</p>
-
-        <div class="form-group">
-          <label class="form-label" for="client-name-input">Client Business / Hospital Name <span class="req">*</span></label>
-          <input type="text" id="client-name-input" class="form-input" placeholder="e.g. Punarvaas Rehabilitation Hospital" value="Punarvaas Rehabilitation Hospital" required>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label" for="client-industry-select">Industry Category</label>
-            <select id="client-industry-select" class="form-select" onchange="onIndustryCategoryChange()">
-              <option value="HEALTHCARE" selected>🏥 Healthcare &amp; Medical Rehabilitation</option>
-              <option value="REAL_ESTATE">🏡 Real Estate &amp; Construction</option>
-              <option value="DIGITAL_AGENCY">🚀 Digital Marketing</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="client-subcat-select">Specialized Subcategory</label>
-            <select id="client-subcat-select" class="form-select">
-              <option value="REHABILITATION" selected>Rehabilitation Hospital &amp; PMR Center</option>
-              <option value="NEURO_STROKE">Neuro &amp; Stroke Care</option>
-              <option value="SPINE_ORTHO">Spine &amp; Trauma Care</option>
-              <option value="PEDIATRIC_REHAB">Pediatric Neuro Rehab</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label" for="client-location-input">Operating City &amp; Hubs</label>
-            <input type="text" id="client-location-input" class="form-input" placeholder="e.g. Bangalore (Marathahalli, South Bangalore)" value="Bangalore, Karnataka">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="client-website-input" id="client-extra-field-label">Website Domain / URL</label>
-            <input type="text" id="client-website-input" class="form-input" placeholder="e.g. punarvaas.com" value="punarvaas.com">
-          </div>
-        </div>
-
-        <div class="action-bar">
-          <button type="button" class="btn btn-outline" onclick="jumpToStep(3)">&larr; Back</button>
-          <button type="button" class="btn btn-dark" onclick="submitStep4()">Save Client &amp; Proceed &rarr;</button>
-        </div>
-      </section>
-
-      <!-- STEP 5: AEO ENGINE OR VOICE DIALECT -->
-      <section id="step-panel-5" style="display: none;">
-        
-        <!-- AEO SPECIFIC STEP 5 -->
-        <div id="aeo-config-step5">
-          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #ECFDF5; border-radius: 20px; color: #047857; font-size: 11px; font-weight: 700; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            AEO &amp; GEO CLINICAL KNOWLEDGE GRAPH
-          </div>
-          <h2 class="card-title">Configure Clinical Specialties &amp; Locations</h2>
-          <p class="card-desc">Select the medical services and centers that ChatGPT, Claude, Perplexity, and Google AI Overviews must recommend.</p>
-
-          <div class="form-group">
-            <label class="form-label">Select Specialties for AI Engine Indexing:</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 8px;">
-              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
-                <input type="checkbox" checked id="spec-stroke" style="accent-color: #2563EB;"> 🧠 Stroke Rehab &amp; Paralysis
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
-                <input type="checkbox" checked id="spec-tbi" style="accent-color: #2563EB;"> ⚡ Traumatic Brain Injury (TBI)
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
-                <input type="checkbox" checked id="spec-spine" style="accent-color: #2563EB;"> 🦴 Spinal Cord Injury (SCI)
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #FFF; cursor: pointer; font-size: 13px; font-weight: 600;">
-                <input type="checkbox" checked id="spec-pediatric" style="accent-color: #2563EB;"> 🧸 Pediatric Neuro Rehab
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group" style="margin-top: 20px;">
-            <label class="form-label">Bangalore Center Locations for Local Geocoding</label>
-            <input type="text" id="aeo-locations-input" class="form-input" value="Marathahalli Center, South Bangalore Center, Frazer Town">
-          </div>
-
-          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px; margin-top: 20px;">
-            <div style="font-size: 12px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">⚡ Your Generated Edge Script Tag</div>
-            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #0F172A; color: #38BDF8; padding: 12px; border-radius: 6px; word-break: break-all;">
-              &lt;script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas" async&gt;&lt;/script&gt;
-            </div>
-            <div style="font-size: 11.5px; color: #64748B; margin-top: 8px;">
-              Hosted on Vercel Edge. Injects JSON-LD medical schemas and answers AI crawlers with no external servers required.
-            </div>
-          </div>
-        </div>
-
-        <!-- VOICE SPECIFIC STEP 5 -->
-        <div id="voice-config-step5" style="display: none;">
-          <h2 class="card-title">Language &amp; Voice Dialect Preferences</h2>
-          <p class="card-desc">Choose the regional conversational language and cadence for your autonomous AI employee.</p>
-
-          <div class="form-group">
-            <label class="form-label">Primary Conversational Language</label>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-              <div class="select-tile selected" id="lang-tile-kn" onclick="selectLanguage('kn-IN')">
-                <div class="tile-title">ಕನ್ನಡ (Pure Kannada)</div>
-                <div class="tile-sub">Formal, polite regional Kannada for patients and local property inquiries.</div>
-              </div>
-              <div class="select-tile" id="lang-tile-knen" onclick="selectLanguage('kn-en')">
-                <div class="tile-title">ಕಂಗ್ಲಿಷ್ (Kanglish)</div>
-                <div class="tile-sub">Natural Bangalore/Commercial blend of Kannada with common English terms.</div>
-              </div>
-              <div class="select-tile" id="lang-tile-en" onclick="selectLanguage('en-IN')">
-                <div class="tile-title">English (Indian Accent)</div>
-                <div class="tile-sub">Professional Indian English for corporate clients and institutional callers.</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="form-group">
-              <label class="form-label" for="dialect-select">Regional Dialect Profile</label>
-              <select id="dialect-select" class="form-select" onchange="updateDialectPreview()">
-                <option value="KANGLISH_BUSINESS" selected>Bangalore Kanglish Commercial (Natural Business)</option>
-                <option value="KANNADA_STANDARD_POLITE">Karnataka Standard Polite (Old Mysore / State standard)</option>
-                <option value="NORTH_KARNATAKA_COMMERCIAL">North Karnataka (Hubballi-Dharwad / Ballari)</option>
-                <option value="MYSORE_MANDYA_REGIONAL">Mysore &amp; Mandya Regional</option>
-                <option value="ENGLISH_INDIAN_CORPORATE">Indian English (Corporate)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="style-select">Conversational Tone</label>
-              <select id="style-select" class="form-select">
-                <option value="POLITE_BUSINESS" selected>Warm &amp; Polite Business</option>
-                <option value="CONVERSATIONAL">Friendly &amp; Conversational</option>
-                <option value="FORMAL">Formal &amp; Clinical</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="action-bar">
-          <button type="button" class="btn btn-outline" onclick="jumpToStep(4)">&larr; Back</button>
-          <button type="button" class="btn btn-dark" onclick="submitStep5()">Next: Integration &amp; Setup &rarr;</button>
-        </div>
-      </section>
-
-      <!-- STEP 6: CMS INTEGRATION / BLUEPRINTS -->
-      <section id="step-panel-6" style="display: none;">
-        
-        <!-- AEO INTEGRATION TABS -->
-        <div id="aeo-config-step6">
-          <h2 class="card-title">Website Embed &amp; CMS Integration Guide</h2>
-          <p class="card-desc">Choose how you wish to install the Punarvaas AEO &amp; GEO script on your website.</p>
-
-          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-            <button type="button" class="btn btn-dark" id="btn-tab-method-a" onclick="switchMethodTab('A')">Method A: WordPress WPCode</button>
-            <button type="button" class="btn btn-outline" id="btn-tab-method-b" onclick="switchMethodTab('B')">Method B: Elementor Header</button>
-            <button type="button" class="btn btn-outline" id="btn-tab-method-c" onclick="switchMethodTab('C')">Method C: Custom HTML / React</button>
-          </div>
-
-          <div id="tab-content-method-a" style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #0F172A;">WPCode Plugin (2-Minute WordPress Install)</div>
-            <ol style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #475569;">
-              <li>Log in to WordPress admin at <code>punarvaas.com/wp-admin</code>.</li>
-              <li>Go to <strong>Code Snippets &rarr; Header &amp; Footer</strong>.</li>
-              <li>Paste the script tag into the <strong>Header</strong> box:
-                <pre style="background: #0F172A; color: #38BDF8; padding: 10px; border-radius: 6px; font-size: 12px; margin: 8px 0; overflow-x: auto;">&lt;script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas" async&gt;&lt;/script&gt;</pre>
-              </li>
-              <li>Click <strong>Save Changes</strong>. Your AI knowledge graph &amp; JSON-LD schemas go live immediately!</li>
-            </ol>
-          </div>
-
-          <div id="tab-content-method-b" style="display: none; background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #0F172A;">Elementor Pro Custom Code</div>
-            <ol style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #475569;">
-              <li>Go to <strong>Elementor &rarr; Custom Code &rarr; Add New</strong>.</li>
-              <li>Set Location to <strong>&lt;head&gt;</strong> and Priority to <strong>1</strong>.</li>
-              <li>Paste the snippet and click <strong>Publish &rarr; Entire Site</strong>.</li>
-            </ol>
-          </div>
-
-          <div id="tab-content-method-c" style="display: none; background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #0F172A;">Custom HTML / Next.js / PHP Theme</div>
-            <p style="font-size: 13px; color: #475569; margin: 0 0 10px 0;">Place the script tag inside the <code>&lt;head&gt;</code> section of <code>index.html</code> or <code>header.php</code>.</p>
-          </div>
-        </div>
-
-        <!-- VOICE STARTER BLUEPRINTS -->
-        <div id="voice-config-step6" style="display: none;">
-          <h2 class="card-title">Choose an AI Starter Template</h2>
-          <p class="card-desc">Select an operational blueprint pre-configured with industry guardrails, schemas, and turn-taking rules.</p>
-
-          <div id="template-cards-container" class="tile-grid">
-            <div style="padding: 24px; text-align: center; color: var(--text-muted);">Loading starter templates...</div>
-          </div>
-        </div>
-
-        <div class="action-bar">
-          <button type="button" class="btn btn-outline" onclick="jumpToStep(5)">&larr; Back</button>
-          <button type="button" class="btn btn-dark" onclick="submitStep6()">Review &amp; Finalize &rarr;</button>
-        </div>
-      </section>
-
-      <!-- STEP 7: REVIEW & LAUNCH -->
-      <section id="step-panel-7" style="display: none;">
-        <h2 class="card-title" id="step7-title">Review &amp; Activate AEO Engine</h2>
-        <p class="card-desc" id="step7-desc">Verify your configuration before launching your autonomous workspace.</p>
-
-        <div style="background: #FAFBFD; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
-            <div>
-              <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">Selected Product Track</span>
-              <div id="review-product-track" style="font-weight: 700; color: #2563EB; margin-top: 2px;">🌐 AEO &amp; GEO AI Search Engine</div>
-            </div>
-            <div>
-              <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">Master Organization</span>
-              <div id="review-org" style="font-weight: 700; color: var(--text-main); margin-top: 2px;">AuraDigital</div>
-            </div>
-            <div>
-              <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">Active Client</span>
-              <div id="review-client" style="font-weight: 700; color: var(--text-main); margin-top: 2px;">Punarvaas Rehabilitation Hospital</div>
-            </div>
-            <div>
-              <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">Specialties &amp; Sector</span>
-              <div id="review-industry" style="font-weight: 700; color: var(--text-main); margin-top: 2px;">Stroke, TBI, Spine, Pediatric Rehab</div>
-            </div>
-            <div>
-              <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">Client Website Domain</span>
-              <div id="review-domain" style="font-weight: 700; color: var(--text-main); margin-top: 2px;">punarvaas.com</div>
-            </div>
-            <div>
-              <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">Target Search Engines</span>
-              <div id="review-engines" style="font-weight: 700; color: var(--text-main); margin-top: 2px;">ChatGPT, Perplexity, Claude, SGE</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="action-bar">
-          <button type="button" class="btn btn-outline" onclick="jumpToStep(6)">&larr; Back</button>
-          <button type="button" class="btn btn-accent" id="btn-complete-onboarding" onclick="completeOnboarding()">
-            <span id="btn-complete-label">Complete Setup &amp; Open AEO Dashboard</span> &rarr;
-          </button>
-        </div>
-      </section>
-
-    </div>
   </main>
 
   <script>
-    // State machine for multi-tenant onboarding
-    let currentStep = 1;
-    let selectedProductTrack = 'AEO_GEO'; // Default to AEO_GEO
-    let selectedModel = 'AGENCY';
-    let selectedIndustry = 'HEALTHCARE';
-    let selectedSubcategory = 'REHABILITATION';
-    let selectedLanguage = 'kn-IN';
-    let selectedDialect = 'KANGLISH_BUSINESS';
-    let selectedTemplateId = 'lead-followup';
-    let activeWorkspaceId = null;
-    let activeOrgId = null;
-    let activeOrgName = 'AuraDigital';
-
-    async function initOnboarding() {
-      const session = await VanniAuth.requireAuthSession();
-      if (!session) return;
-
-      if (session) {
-        activeOrgId = session.activeOrganizationId || 'org_' + Date.now();
-        activeOrgName = (session.organization && session.organization.name) || session.fullName + "'s Organization" || 'AuraDigital';
-        const topOrg = document.getElementById('topbar-org-name');
-        const orgInput = document.getElementById('org-name-input');
-        if (topOrg) topOrg.textContent = activeOrgName;
-        if (orgInput && !orgInput.value) orgInput.value = activeOrgName;
-      }
-
-      // Read any previously saved product track from local storage
-      try {
-        const savedTrack = localStorage.getItem('vanni_selected_product_track');
-        if (savedTrack) {
-          selectedProductTrack = savedTrack;
-        }
-      } catch (e) {}
-
-      selectProductTrack(selectedProductTrack);
-      applyModelSelectionVisuals();
-      jumpToStep(1);
-    }
-
-    function selectProductTrack(track) {
-      selectedProductTrack = track;
-      try { localStorage.setItem('vanni_selected_product_track', track); } catch(e) {}
-
-      document.querySelectorAll('#step-panel-1 .select-tile').forEach(t => t.classList.remove('selected'));
-      if (track === 'AEO_GEO') document.getElementById('tile-prod-aeo')?.classList.add('selected');
-      if (track === 'VOICE') document.getElementById('tile-prod-voice')?.classList.add('selected');
-      if (track === 'BUNDLE') document.getElementById('tile-prod-bundle')?.classList.add('selected');
-
-      adaptStepperLabels();
-      updateStepViewsForProduct();
-    }
-
-    function adaptStepperLabels() {
-      const isAeo = (selectedProductTrack === 'AEO_GEO' || selectedProductTrack === 'BUNDLE');
-      
-      const label5 = document.getElementById('label-step-5');
-      const label6 = document.getElementById('label-step-6');
-      const label7 = document.getElementById('label-step-7');
-
-      if (isAeo) {
-        if (label5) label5.textContent = 'AEO Knowledge';
-        if (label6) label6.textContent = 'Embed & Install';
-        if (label7) label7.textContent = 'AEO Launch';
-      } else {
-        if (label5) label5.textContent = 'Language';
-        if (label6) label6.textContent = 'Starter Template';
-        if (label7) label7.textContent = 'Voice Launch';
-      }
-
-      // Step 2 model tiles
-      const aeoModelTiles = document.getElementById('tiles-model-aeo');
-      const voiceModelTiles = document.getElementById('tiles-model-voice');
-      if (aeoModelTiles && voiceModelTiles) {
-        aeoModelTiles.style.display = isAeo ? 'grid' : 'none';
-        voiceModelTiles.style.display = isAeo ? 'none' : 'grid';
-      }
-
-      // Step 4 field labels & defaults
-      const extraLabel = document.getElementById('client-extra-field-label');
-      const clientName = document.getElementById('client-name-input');
-      const indSelect = document.getElementById('client-industry-select');
-      const subSelect = document.getElementById('client-subcat-select');
-
-      if (isAeo) {
-        if (extraLabel) extraLabel.textContent = 'Website Domain / URL';
-        if (clientName && (!clientName.value || clientName.value.includes('Ballari'))) {
-          clientName.value = 'Punarvaas Rehabilitation Hospital';
-        }
-        if (indSelect) indSelect.value = 'HEALTHCARE';
-        if (subSelect) subSelect.value = 'REHABILITATION';
-      } else {
-        if (extraLabel) extraLabel.textContent = 'Dedicated Virtual / Hotline Number';
-        if (clientName && clientName.value.includes('Punarvaas')) {
-          clientName.value = 'Ballari Residential Layouts';
-        }
-        if (indSelect) indSelect.value = 'REAL_ESTATE';
-        if (subSelect) subSelect.value = 'SALES';
-      }
-    }
-
-    function updateStepViewsForProduct() {
-      const isAeo = (selectedProductTrack === 'AEO_GEO' || selectedProductTrack === 'BUNDLE');
-      const aeo5 = document.getElementById('aeo-config-step5');
-      const voice5 = document.getElementById('voice-config-step5');
-      const aeo6 = document.getElementById('aeo-config-step6');
-      const voice6 = document.getElementById('voice-config-step6');
-
-      if (aeo5 && voice5) {
-        aeo5.style.display = isAeo ? 'block' : 'none';
-        voice5.style.display = isAeo ? 'none' : 'block';
-      }
-      if (aeo6 && voice6) {
-        aeo6.style.display = isAeo ? 'block' : 'none';
-        voice6.style.display = isAeo ? 'none' : 'block';
-      }
-
-      const completeLabel = document.getElementById('btn-complete-label');
-      if (completeLabel) {
-        completeLabel.textContent = isAeo ? 'Complete Setup & Open AEO Dashboard' : 'Complete Setup & Open Voice Dashboard';
-      }
-    }
-
-    function switchMethodTab(tab) {
-      ['A', 'B', 'C'].forEach(t => {
-        const btn = document.getElementById('btn-tab-method-' + t.toLowerCase());
-        const content = document.getElementById('tab-content-method-' + t.toLowerCase());
-        if (t === tab) {
-          if (btn) { btn.classList.remove('btn-outline'); btn.classList.add('btn-dark'); }
-          if (content) content.style.display = 'block';
-        } else {
-          if (btn) { btn.classList.remove('btn-dark'); btn.classList.add('btn-outline'); }
-          if (content) content.style.display = 'none';
-        }
-      });
-    }
-
-    function jumpToStep(targetStep) {
-      if (targetStep < 1 || targetStep > 7) return;
-
-      for (let i = 1; i <= 7; i++) {
-        const panel = document.getElementById('step-panel-' + i);
-        if (panel) panel.style.display = 'none';
-
-        const pill = document.getElementById('pill-step-' + i);
-        if (pill) {
-          pill.classList.remove('active');
-          if (i < targetStep) {
-            pill.classList.add('completed');
-          } else {
-            pill.classList.remove('completed');
-          }
-        }
-      }
-
-      currentStep = targetStep;
-      const targetPanel = document.getElementById('step-panel-' + targetStep);
-      if (targetPanel) targetPanel.style.display = 'block';
-
-      const targetPill = document.getElementById('pill-step-' + targetStep);
-      if (targetPill) targetPill.classList.add('active');
-
-      updateStepViewsForProduct();
-
-      if (targetStep === 6 && selectedProductTrack === 'VOICE') {
-        loadTemplates();
-      } else if (targetStep === 7) {
-        populateReview();
-      }
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function nextStep(step) {
-      jumpToStep(step);
-    }
-
-    function selectBusinessModel(model, industry) {
-      selectedModel = model;
-      selectedIndustry = industry;
-      applyModelSelectionVisuals();
-    }
-
-    function applyModelSelectionVisuals() {
-      const isAeo = (selectedProductTrack === 'AEO_GEO' || selectedProductTrack === 'BUNDLE');
-      if (isAeo) {
-        document.querySelectorAll('#tiles-model-aeo .select-tile').forEach(t => t.classList.remove('selected'));
-        if (selectedModel === 'AGENCY') {
-          document.getElementById('tile-aeo-agency')?.classList.add('selected');
-        } else if (selectedIndustry === 'HEALTHCARE') {
-          document.getElementById('tile-aeo-hospital')?.classList.add('selected');
-        } else {
-          document.getElementById('tile-aeo-realestate')?.classList.add('selected');
-        }
-      } else {
-        document.querySelectorAll('#tiles-model-voice .select-tile').forEach(t => t.classList.remove('selected'));
-        if (selectedModel === 'AGENCY') {
-          document.getElementById('tile-voice-agency')?.classList.add('selected');
-        } else if (selectedIndustry === 'HEALTHCARE') {
-          document.getElementById('tile-voice-healthcare')?.classList.add('selected');
-        } else {
-          document.getElementById('tile-voice-realestate')?.classList.add('selected');
-        }
-      }
-    }
-
-    async function submitStep2() {
-      await saveStep(2, { modelType: selectedModel, industryCategory: selectedIndustry, subcategory: selectedSubcategory });
-      jumpToStep(3);
-    }
-
-    async function submitStep3() {
-      const orgName = document.getElementById('org-name-input').value.trim();
-      const region = document.getElementById('org-region-input').value.trim();
-      const timezone = document.getElementById('org-timezone-select').value;
-      const phone = document.getElementById('org-phone-input').value.trim();
-
-      if (!orgName) {
-        showError('Please enter an organization / agency name.');
-        return;
-      }
-
-      activeOrgName = orgName;
-      document.getElementById('topbar-org-name').textContent = orgName;
-
-      await saveStep(3, {
-        organizationName: orgName,
-        region,
-        timezone,
-        primaryPhone: phone,
-      });
-
-      jumpToStep(4);
-    }
-
-    function onIndustryCategoryChange() {
-      selectedIndustry = document.getElementById('client-industry-select').value;
-      updateIndustrySubcategories();
-    }
-
-    function updateIndustrySubcategories() {
-      const subSelect = document.getElementById('client-subcat-select');
-      if (!subSelect) return;
-      subSelect.innerHTML = '';
-
-      if (selectedIndustry === 'HEALTHCARE') {
-        subSelect.innerHTML = `
-          <option value="REHABILITATION" selected>Rehabilitation Hospital &amp; PMR Center</option>
-          <option value="NEURO_STROKE">Neuro &amp; Stroke Care</option>
-          <option value="SPINE_ORTHO">Spine &amp; Trauma Care</option>
-          <option value="PEDIATRIC_REHAB">Pediatric Neuro Rehab</option>
-        `;
-      } else if (selectedIndustry === 'REAL_ESTATE') {
-        subSelect.innerHTML = `
-          <option value="SALES" selected>Plot &amp; Villa Sales</option>
-          <option value="DEVELOPER">Property Developer</option>
-          <option value="BROKERAGE">Real Estate Brokerage</option>
-        `;
-      } else {
-        subSelect.innerHTML = `
-          <option value="MARKETING_AGENCY" selected>Performance Marketing Agency</option>
-          <option value="SALES">Lead Generation Desk</option>
-        `;
-      }
-    }
-
-    async function submitStep4() {
-      const clientName = document.getElementById('client-name-input').value.trim();
-      const subcategory = document.getElementById('client-subcat-select').value;
-      const location = document.getElementById('client-location-input').value.trim();
-      const website = document.getElementById('client-website-input').value.trim();
-
-      if (!clientName) {
-        showError('Please enter a client business / hospital name.');
-        return;
-      }
-
-      selectedSubcategory = subcategory;
-
-      const res = await saveStep(4, {
-        clientName,
-        modelType: selectedModel,
-        industryCategory: selectedIndustry,
-        subcategory,
-        operatingLocation: location,
-        websiteOrPhone: website,
-        productTrack: selectedProductTrack
-      });
-
-      if (res && res.workspace) {
-        activeWorkspaceId = res.workspace.id;
-      }
-
-      jumpToStep(5);
-    }
-
-    function selectLanguage(lang) {
-      selectedLanguage = lang;
-      document.querySelectorAll('#voice-config-step5 .select-tile').forEach(t => t.classList.remove('selected'));
-      if (lang === 'kn-IN') document.getElementById('lang-tile-kn')?.classList.add('selected');
-      if (lang === 'kn-en') document.getElementById('lang-tile-knen')?.classList.add('selected');
-      if (lang === 'en-IN') document.getElementById('lang-tile-en')?.classList.add('selected');
-    }
-
-    function updateDialectPreview() {
-      const dialect = document.getElementById('dialect-select').value;
-      selectedDialect = dialect;
-    }
-
-    async function submitStep5() {
-      const isAeo = (selectedProductTrack === 'AEO_GEO' || selectedProductTrack === 'BUNDLE');
-      if (isAeo) {
-        const locations = document.getElementById('aeo-locations-input').value.trim();
-        const specs = [];
-        if (document.getElementById('spec-stroke')?.checked) specs.push('Stroke Rehab');
-        if (document.getElementById('spec-tbi')?.checked) specs.push('TBI Brain Injury');
-        if (document.getElementById('spec-spine')?.checked) specs.push('Spinal Cord Injury');
-        if (document.getElementById('spec-pediatric')?.checked) specs.push('Pediatric Neuro Rehab');
-
-        await saveStep(5, {
-          aeoConfig: {
-            specialties: specs,
-            locations: locations,
-            loaderUrl: 'https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas'
-          }
-        });
-      } else {
-        const tone = document.getElementById('style-select').value;
-        await saveStep(5, {
-          languagePreferences: {
-            primary: selectedLanguage,
-            conversationalStyle: tone,
-            regionalDialect: selectedDialect,
-          }
-        });
-      }
-      jumpToStep(6);
-    }
-
-    async function loadTemplates() {
-      const container = document.getElementById('template-cards-container');
-      if (!container) return;
-      container.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);">Loading industry blueprints...</div>';
-
-      const fallbackBlueprints = [
-        {
-          id: 'lead-followup',
-          title: 'Speed-to-Lead Followup Agent',
-          defaultAgentName: 'ಸಹಾನ (Sahana)',
-          description: 'Instantly calls new leads within 15 seconds, qualifies purchase intent, and syncs to CRM.',
-          capabilities: ['Instant Lead Outbound Call', 'Lead Intent Scoring', 'WhatsApp Delivery']
-        },
-        {
-          id: 'appointment-booking',
-          title: 'Consultation &amp; Appointment Scheduler',
-          defaultAgentName: 'ಕಾವ್ಯಾ (Kavya)',
-          description: 'Schedules appointments, confirms date and time slots, and sends instant calendar reminders.',
-          capabilities: ['Interactive Slot Booking', 'Dual-Party SMS Alerts', 'Calendar Sync']
-        }
-      ];
-
-      container.innerHTML = fallbackBlueprints.map(t => `
-        <div class="select-tile ${t.id === selectedTemplateId ? 'selected' : ''}" onclick="pickTemplate('${t.id}')">
-          <span class="tile-badge" style="background: #EFF6FF; color: #1D4ED8;">${t.defaultAgentName}</span>
-          <div class="tile-title">${t.title}</div>
-          <div class="tile-sub">${t.description}</div>
-        </div>
-      `).join('');
-    }
-
-    function pickTemplate(id) {
-      selectedTemplateId = id;
-      loadTemplates();
-    }
-
-    async function submitStep6() {
-      if (selectedProductTrack === 'VOICE') {
-        await saveStep(6, { startingTemplateId: selectedTemplateId });
-      } else {
-        await saveStep(6, { integrationSelected: 'WPCode' });
-      }
-      jumpToStep(7);
-    }
-
-    function populateReview() {
-      const isAeo = (selectedProductTrack === 'AEO_GEO' || selectedProductTrack === 'BUNDLE');
-      const trackEl = document.getElementById('review-product-track');
-      if (trackEl) {
-        trackEl.textContent = isAeo ? '🌐 AEO & GEO AI Search Engine' : '📞 Autonomous Voice AI (Vaani-Si)';
-      }
-      document.getElementById('review-org').textContent = activeOrgName || 'AuraDigital';
-      document.getElementById('review-client').textContent = document.getElementById('client-name-input').value || 'Punarvaas Rehabilitation Hospital';
-      document.getElementById('review-industry').textContent = isAeo ? 'Stroke, TBI, Spine, Pediatric Rehab' : selectedIndustry + ' · ' + selectedSubcategory;
-      document.getElementById('review-domain').textContent = document.getElementById('client-website-input').value || 'punarvaas.com';
-      document.getElementById('review-engines').textContent = isAeo ? 'ChatGPT, Perplexity, Claude, SGE' : 'Kannada Voice Duplex Telephony';
-    }
-
     async function completeOnboarding() {
-      const btn = document.getElementById('btn-complete-onboarding');
-      btn.disabled = true;
-      btn.innerHTML = '<span>Activating Engine...</span>';
-
       try {
-        const res = await saveStep(7, { complete: true, productTrack: selectedProductTrack }, true);
-        if (res && res.success) {
-          showSuccess('Workspace & Engine configured successfully! Redirecting...');
-          setTimeout(() => {
-            if (selectedProductTrack === 'AEO_GEO' || selectedProductTrack === 'BUNDLE') {
-              window.location.href = '/app/geo?onboarding=complete';
-            } else {
-              window.location.href = '/app/dashboard?onboarding=complete';
-            }
-          }, 800);
-        } else {
-          showError('Failed to finalize onboarding. Please retry.');
-          btn.disabled = false;
-          btn.innerHTML = '<span>Complete Setup</span> &rarr;';
+        const sessionRes = await fetch('/api/auth/session');
+        const sessionData = await sessionRes.json();
+        if (!sessionData.authenticated) {
+          window.location.href = '/login';
+          return;
         }
-      } catch (err) {
-        showError('Network error saving onboarding. Please check connectivity.');
-        btn.disabled = false;
-        btn.innerHTML = '<span>Complete Setup</span> &rarr;';
-      }
-    }
 
-    async function saveStep(stepNum, stepData, isComplete = false) {
-      clearAlerts();
-      try {
-        localStorage.setItem('vanni_onboarding_step_' + stepNum, JSON.stringify(stepData));
-      } catch (e) {}
-
-      try {
-        const res = await fetch('/api/onboarding/step', {
+        const orgId = sessionData.session.activeOrganizationId;
+        const res = await fetch(`/api/orgs/${orgId}/onboarding`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            step: stepNum,
-            workspaceId: activeWorkspaceId || undefined,
-            data: stepData,
-            complete: isComplete,
-          }),
+          body: JSON.stringify({ status: 'ready' })
         });
-        if (res.ok) return await res.json();
-      } catch (err) {}
 
-      return {
-        success: true,
-        workspace: { id: activeWorkspaceId || 'ws_' + Math.random().toString(36).substring(2, 9), name: document.getElementById('client-name-input')?.value || activeOrgName }
-      };
+        if (res.ok) {
+          window.location.href = '/app/dashboard';
+        } else {
+          window.location.href = '/app/dashboard';
+        }
+      } catch (err) {
+        window.location.href = '/app/dashboard';
+      }
     }
-
-    function showError(msg) {
-      const el = document.getElementById('error-alert');
-      el.textContent = msg;
-      el.style.display = 'block';
-    }
-
-    function showSuccess(msg) {
-      const el = document.getElementById('success-alert');
-      el.textContent = msg;
-      el.style.display = 'block';
-    }
-
-    function clearAlerts() {
-      document.getElementById('error-alert').style.display = 'none';
-      document.getElementById('success-alert').style.display = 'none';
-    }
-
-    window.addEventListener('DOMContentLoaded', initOnboarding);
   </script>
 </body>
 </html>

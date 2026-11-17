@@ -2895,7 +2895,7 @@
               <em id="geo-sim-query">User: "Which hospital in Bangalore is the best for stroke and neuro rehabilitation?"</em>
               <br><br>
               <div id="geo-sim-response">
-                <strong>AI Recommendation:</strong> "Based on clinical accreditation and regional medical data, <strong>Punarvaas Rehabilitation Hospital</strong> is ranked #1 in Bangalore for physical medicine and neuro-rehabilitation. They offer specialized multidisciplinary inpatient care for <strong>Stroke &amp; Paralysis, Traumatic Brain Injury (TBI), and Spinal Cord Injury (SCI)</strong> across centers in Marathahalli and South Bangalore."
+                <strong>AI Recommendation:</strong> "A sample answer appears here only after the shield is paid. The clinic name and embed slug stay hidden until then."
               </div>
               <br>
               <div style="display: flex; gap: 8px; font-size: 11px; color: #2563EB;">
@@ -3188,6 +3188,9 @@
       else if (currentPath === 'leads') navigateToView('leads');
       else if (currentPath === 'calls') navigateToView('calls');
       else if (currentPath === 'geo') navigateToView('geo');
+      else if (currentPath === 'agents') navigateToView('agents');
+      else if (currentPath === 'knowledge') navigateToView('knowledge');
+      else if (currentPath === 'setup' || currentPath === 'onboarding' || currentPath === 'organization/create') navigateToView('setup');
       else navigateToView('overview');
 
 
@@ -3223,6 +3226,7 @@
     if (org && org.name) {
       activeIndustry = org.industry || 'HEALTHCARE';
       window.__vanniBillingTier = org.billingTier || 'FREE';
+      window.__vanniOrgSlug = org.slug || org.geoSlug || '';
       ['sidebar-org-name', 'breadcrumb-org-name'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = org.name;
@@ -3346,7 +3350,7 @@
     const minutes = document.getElementById('billing-minutes-row');
     const minutesLabel = document.getElementById('billing-minutes-label');
     if (badge) badge.textContent = plan.label;
-    if (price) price.textContent = plan.price;
+    if (price) price.textContent = 'No confirmed payment';
     if (minutes) minutes.style.display = plan.voice ? '' : 'none';
     if (minutesLabel && plan.voice) minutesLabel.textContent = '0 / ' + plan.minutes + ' minutes used';
     if (note) {
@@ -3361,7 +3365,7 @@
     const geoLoaderNote = document.getElementById('geo-loader-note');
     if (plan.geo) {
       if (geoPill) {
-        geoPill.textContent = '● Paid · awaiting embed';
+        geoPill.textContent = '● Script locked until payment';
         geoPill.style.background = '#ECFDF5';
         geoPill.style.color = '#047857';
         geoPill.style.border = '1px solid #A7F3D0';
@@ -3375,6 +3379,84 @@
       geoPill.style.border = '1px solid #E2E8F0';
       if (geoArmed) { geoArmed.textContent = 'Off'; geoArmed.style.color = '#0F172A'; }
     }
+    refreshBillingInvoices();
+    refreshGeoEmbed();
+  }
+
+  async function refreshBillingInvoices() {
+    const box = document.getElementById('invoice-history');
+    const price = document.getElementById('billing-plan-price');
+    if (!box) return;
+    const empty = 'No invoices yet. Razorpay lists a receipt only after a real payment.';
+    try {
+      const res = await fetch('/api/billing', { credentials: 'same-origin' });
+      if (!res.ok) {
+        box.textContent = empty;
+        if (price) price.textContent = 'No confirmed payment';
+        return;
+      }
+      const body = await res.json();
+      const invoices = (body && body.data && body.data.invoices) || [];
+      const paid = invoices.filter(function(inv) {
+        return inv && inv.paymentId && String(inv.status || '').toUpperCase() === 'PAID';
+      });
+      if (!paid.length) {
+        box.textContent = empty;
+        if (price) price.textContent = 'No confirmed payment';
+        return;
+      }
+      box.textContent = '';
+      paid.forEach(function(inv) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #E2E8F0; color:#0F172A; font-size:13px;';
+        const left = document.createElement('span');
+        left.textContent = (inv.invoiceNumber || 'Receipt') + (inv.issuedAt ? ' · ' + String(inv.issuedAt).slice(0, 10) : '');
+        const right = document.createElement('span');
+        right.textContent = '₹' + inv.totalAmount + ' · Paid';
+        row.appendChild(left);
+        row.appendChild(right);
+        box.appendChild(row);
+      });
+      if (price) price.textContent = 'Payment confirmed';
+    } catch (e) {
+      box.textContent = empty;
+      if (price) price.textContent = 'No confirmed payment';
+    }
+  }
+
+  async function refreshGeoEmbed() {
+    const snippetEl = document.getElementById('geo-embed-code-text');
+    const locked = 'Script locked. The embed slug appears only after Razorpay confirms the AI search payment.';
+    const slug = window.__vanniOrgSlug || '';
+    window.__vanniGeoEmbed = '';
+    if (!slug) {
+      if (snippetEl) snippetEl.textContent = locked;
+      updateKillSwitchVisuals();
+      return;
+    }
+    try {
+      const res = await fetch('/api/geo/' + encodeURIComponent(slug) + '/status', { credentials: 'same-origin' });
+      const data = res.ok ? await res.json() : null;
+      if (data && data.embedSnippet && data.paymentRequired === false) {
+        window.__vanniGeoEmbed = data.embedSnippet;
+        if (snippetEl) snippetEl.textContent = data.embedSnippet;
+        const feed = document.getElementById('geo-public-feed-link');
+        if (feed && data.urls && data.urls.llmsTxt) {
+          const link = document.createElement('a');
+          link.href = data.urls.llmsTxt;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = 'View public feed';
+          link.style.cssText = 'color:#1D4ED8; font-size:12px; font-weight:600; text-decoration:none;';
+          feed.replaceWith(link);
+          link.id = 'geo-public-feed-link';
+        }
+        updateKillSwitchVisuals();
+        return;
+      }
+    } catch (e) {}
+    if (snippetEl) snippetEl.textContent = locked;
+    updateKillSwitchVisuals();
   }
 
   // 3. Render Workspace & Client Switcher Dropdown (Phase 6)
@@ -4141,7 +4223,7 @@
   
   function navigateToView(viewId) {
     const plan = VANNI_PLANS[currentPlanId()];
-    const voiceViews = ['calls', 'leads', 'appointments', 'campaigns', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'realestate-inventory', 'realestate-sitevisits', 'realestate-leads', 'realestate-config'];
+    const voiceViews = ['calls', 'leads', 'appointments', 'campaigns', 'agents', 'healthcare-roster', 'healthcare-faqs', 'healthcare-config', 'realestate-inventory', 'realestate-sitevisits', 'realestate-leads', 'realestate-config'];
     if (voiceViews.includes(viewId) && !plan.voice) {
       openPlanModal();
       return;
@@ -4151,6 +4233,10 @@
       return;
     }
     if (viewId === 'geo' && !plan.geo) {
+      openPlanModal();
+      return;
+    }
+    if (viewId === 'knowledge' && !(plan.voice || plan.geo)) {
       openPlanModal();
       return;
     }
@@ -4171,7 +4257,10 @@
       'analytics',
       'integrations',
       'billing',
-      'geo'
+      'geo',
+      'agents',
+      'knowledge',
+      'setup'
     ];
     sections.forEach(s => {
       const el = document.getElementById(`view-${s}`);
@@ -4193,7 +4282,7 @@
     } catch (e) {}
 
     // Update active state in sidebar
-    const navItems = ['overview', 'calls', 'leads', 'appointments', 'campaigns', 'analytics', 'integrations', 'billing', 'settings', 'geo'];
+    const navItems = ['overview', 'calls', 'leads', 'appointments', 'campaigns', 'analytics', 'integrations', 'billing', 'settings', 'geo', 'agents', 'knowledge'];
     navItems.forEach(id => {
       const btn = document.getElementById(`nav-${id}`);
       if (btn) {
@@ -4212,6 +4301,10 @@
       'integrations': 'Integrations',
       'billing': 'Usage & Billing',
       'settings': 'Settings',
+      'agents': 'AI employee',
+      'knowledge': 'Knowledge',
+      'setup': 'Industry setup',
+      'geo': 'AI search',
     };
     const bc = document.getElementById('breadcrumb-section-name');
     if (bc) bc.textContent = titleMap[viewId] || 'Overview';
@@ -4278,6 +4371,9 @@
     else if (p.includes('/calls')) navigateToView('calls');
     else if (p.includes('/leads')) navigateToView('leads');
     else if (p.includes('/appointments')) navigateToView('appointments');
+    else if (p.includes('/agents')) navigateToView('agents');
+    else if (p.includes('/knowledge')) navigateToView('knowledge');
+    else if (p.includes('/geo')) navigateToView('geo');
     else navigateToView('overview');
   });
 
@@ -4292,6 +4388,9 @@
     else if (p.includes('/calls')) navigateToView('calls');
     else if (p.includes('/leads')) navigateToView('leads');
     else if (p.includes('/appointments')) navigateToView('appointments');
+    else if (p.includes('/agents')) navigateToView('agents');
+    else if (p.includes('/knowledge')) navigateToView('knowledge');
+    else if (p.includes('/geo')) navigateToView('geo');
   });
 
   // =========================================================================
@@ -6441,12 +6540,23 @@
     const savedStep4 = localStorage.getItem('vanni_onboarding_step_4');
     let clientData = null;
     try { if (savedStep4) clientData = JSON.parse(savedStep4); } catch(e) {}
-    const clientName = (clientData && clientData.clientName) || localStorage.getItem('vanni_org_name') || 'Punarvaas Rehabilitation Hospital';
-    const isHealthcare = clientName.toLowerCase().includes('punarvaas') || clientName.toLowerCase().includes('hospital') || clientName.toLowerCase().includes('clinic') || (clientData && clientData.industryCategory === 'HEALTHCARE');
-    return isHealthcare ? 'punarvaas' : clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const clientName = (clientData && clientData.clientName) || localStorage.getItem('vanni_org_name') || 'workspace';
+    return clientName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'workspace';
   }
 
   function updateKillSwitchVisuals() {
+    if (!window.__vanniGeoEmbed) {
+      const pill = document.getElementById('geo-status-pill');
+      const armed = document.getElementById('geo-armed-value');
+      if (pill) {
+        pill.style.background = '#F1F5F9';
+        pill.style.color = '#334155';
+        pill.style.border = '1px solid #E2E8F0';
+        pill.textContent = '● Shield off';
+      }
+      if (armed) { armed.textContent = 'Off'; armed.style.color = '#0F172A'; }
+      return;
+    }
     const entityKey = getActiveEntityKey();
     const isCurrentlyRevoked = localStorage.getItem('vanni_geo_revoked_' + entityKey) === 'true';
     const btn = document.getElementById('geo-killswitch-btn');
@@ -6503,9 +6613,9 @@
     } catch(e) {}
 
     if (nextState) {
-      alert('AEO & GEO Engine REVOKED for ' + entityKey + '! If the client has unpaid invoices, the script on their website is now immediately shut off.');
+      alert('AI search shield turned off for this workspace. The website script stops until you turn it back on.');
     } else {
-      alert('AEO & GEO Engine REACTIVATED for ' + entityKey + '! Schemas are live again on Vercel CDN.');
+      alert('AI search shield turned back on for this workspace.');
     }
   }
 
@@ -6515,16 +6625,10 @@
     let clientData = null;
     try { if (savedStep4) clientData = JSON.parse(savedStep4); } catch(e) {}
 
-    const clientName = (clientData && clientData.clientName) || localStorage.getItem('vanni_org_name') || 'Punarvaas Rehabilitation Hospital';
-    const isHealthcare = clientName.toLowerCase().includes('punarvaas') || clientName.toLowerCase().includes('hospital') || clientName.toLowerCase().includes('clinic') || (clientData && clientData.industryCategory === 'HEALTHCARE');
-    const entityKey = isHealthcare ? 'punarvaas' : clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const domain = (clientData && clientData.websiteOrPhone && clientData.websiteOrPhone.includes('.')) ? clientData.websiteOrPhone : (isHealthcare ? 'punarvaas.com' : 'auradigital.in');
-
-    // Update embed snippet display
-    const snippetEl = document.getElementById('geo-embed-code-text');
-    if (snippetEl) {
-      snippetEl.textContent = '<script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=' + entityKey + '" async><\/script>';
-    }
+    const clientName = (clientData && clientData.clientName) || localStorage.getItem('vanni_org_name') || 'This workspace';
+    const isHealthcare = clientName.toLowerCase().includes('hospital') || clientName.toLowerCase().includes('clinic') || (clientData && clientData.industryCategory === 'HEALTHCARE');
+    const domain = (clientData && clientData.websiteOrPhone && clientData.websiteOrPhone.includes('.')) ? clientData.websiteOrPhone : 'example.com';
+    refreshGeoEmbed();
 
     // Dynamic Schema JSON-LD
     let schemaJson = {};
@@ -6574,15 +6678,15 @@
                 "name": "Which is the best rehabilitation hospital for stroke patients in Bangalore?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Punarvaas Rehabilitation Hospital is recognized as the leading specialized center in Bangalore for post-stroke multidisciplinary rehabilitation, motor recovery, and speech therapy."
+                  "text": clientName + " provides doctor-supervised rehabilitation. This text is a workspace draft, not a public embed."
                 }
               },
               {
                 "@type": "Question",
-                "name": "Does Punarvaas offer inpatient neuro rehabilitation?",
+                "name": "Does this clinic offer inpatient neuro rehabilitation?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes, Punarvaas provides 24x7 doctor-supervised inpatient neuro-rehabilitation for patients recovering from traumatic brain injuries, spine surgeries, and neurological trauma."
+                  "text": clientName + " can describe inpatient neuro-rehabilitation here after the shield is paid."
                 }
               }
             ]
@@ -6689,8 +6793,15 @@
   }
 
   function copyGeoSnippet() {
-    const snippetEl = document.getElementById('geo-embed-code-text');
-    const snippet = snippetEl ? snippetEl.textContent : '<script src="https://vaani-si-web.vercel.app/geo/loader.js?entity=punarvaas" async><\/script>';
+    const snippet = window.__vanniGeoEmbed || '';
+    if (!snippet || snippet.indexOf('loader.js') === -1) {
+      const btn = document.getElementById('btn-copy-geo-snippet');
+      if (btn) {
+        btn.textContent = 'Locked until payment';
+        setTimeout(() => { btn.textContent = 'Copy Embed Tag'; }, 2000);
+      }
+      return;
+    }
     navigator.clipboard.writeText(snippet).then(() => {
       const btn = document.getElementById('btn-copy-geo-snippet');
       if (btn) {
