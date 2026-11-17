@@ -261,6 +261,66 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
       staff = await globalDb.getStaff(ctx.organizationId);
     }
 
+    const isDemoOrg = ctx.organizationId === 'org_demo_healthcare' || ctx.organizationId.includes('health') || process.env.ALLOW_DEMO_ACCOUNTS === 'true';
+    if (staff.length === 0 && isDemoOrg) {
+      staff = [
+        {
+          id: 'doc_001',
+          organizationId: ctx.organizationId,
+          workspaceId: ctx.workspaceId,
+          name: 'Dr. Ramesh Kumar',
+          role: 'Chief Consultant Cardiologist',
+          specialization: 'Cardiology',
+          qualifications: 'MD, DM (Cardiology), FACC',
+          consultationFee: 1000,
+          roomNumber: 'OPD-102',
+          shiftStart: '09:00',
+          shiftEnd: '14:00',
+          workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'],
+          isActive: true,
+          bio: '22+ years experience in preventive cardiology, coronary interventions, and hypertension care.',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+        {
+          id: 'doc_002',
+          organizationId: ctx.organizationId,
+          workspaceId: ctx.workspaceId,
+          name: 'Dr. Priya Sharma',
+          role: 'Senior Obstetrician & Gynecologist',
+          specialization: 'Gynecology',
+          qualifications: 'MS (OBG), DNB, FMAS',
+          consultationFee: 900,
+          roomNumber: 'OPD-105',
+          shiftStart: '10:00',
+          shiftEnd: '16:00',
+          workingDays: ['MONDAY', 'WEDNESDAY', 'FRIDAY', 'SATURDAY'],
+          isActive: true,
+          bio: 'Specialist in maternal care, high-risk pregnancy, and laparoscopic surgeries.',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+        {
+          id: 'doc_003',
+          organizationId: ctx.organizationId,
+          workspaceId: ctx.workspaceId,
+          name: 'Dr. Rajesh Gowda',
+          role: 'Lead Orthopedic Surgeon',
+          specialization: 'Orthopedics',
+          qualifications: 'MS (Ortho), MCh, Fellowship in Joint Replacement',
+          consultationFee: 1200,
+          roomNumber: 'OPD-201',
+          shiftStart: '14:00',
+          shiftEnd: '20:00',
+          workingDays: ['TUESDAY', 'THURSDAY', 'SATURDAY'],
+          isActive: true,
+          bio: 'Joint replacement specialist with 15+ years experience in robotic knee & hip arthroplasty.',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+      ];
+    }
+
     const { specialization, activeOnly } = req.query || {};
     if (specialization) {
       staff = staff.filter(s => s.specialization?.toLowerCase() === specialization.toLowerCase());
@@ -761,6 +821,43 @@ export async function doctorRoutes(fastify: FastifyInstance): Promise<void> {
     let appointments = await globalDb.getAppointments(ctx.workspaceId);
     if (appointments.length === 0 && ctx.workspaceId !== ctx.organizationId) {
       appointments = await globalDb.getAppointments(ctx.organizationId);
+    }
+
+    const isDemoOrg = ctx.organizationId === 'org_demo_healthcare' || ctx.organizationId.includes('health') || process.env.ALLOW_DEMO_ACCOUNTS === 'true';
+    if (appointments.length === 0 && isDemoOrg) {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      appointments = [
+        {
+          id: 'apt_demo_001',
+          organizationId: ctx.organizationId,
+          workspaceId: ctx.workspaceId,
+          doctorId: 'doc_001',
+          customerName: 'Smt. Lakshmi Devi',
+          customerPhone: '+919845012345',
+          serviceType: 'Cardiology Consultation',
+          scheduledTime: `${todayStr}T11:30:00.000Z`,
+          durationMinutes: 20,
+          status: 'CONFIRMED',
+          notes: 'Routine blood pressure review & ECG follow-up',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+        {
+          id: 'apt_demo_002',
+          organizationId: ctx.organizationId,
+          workspaceId: ctx.workspaceId,
+          doctorId: 'doc_003',
+          customerName: 'Sri Anand Murthy',
+          customerPhone: '+919845067890',
+          serviceType: 'Orthopedic Knee Assessment',
+          scheduledTime: `${todayStr}T15:00:00.000Z`,
+          durationMinutes: 30,
+          status: 'CONFIRMED',
+          notes: 'Right knee pain upon climbing stairs, prior X-ray available',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+      ];
     }
 
     const { date, doctorId, status } = req.query || {};

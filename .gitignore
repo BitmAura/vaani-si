@@ -42,6 +42,8 @@ coverage/
 .cache/
 .temp/
 .tmp/
+scratch-*.mjs
+scratch-*.js
 
 # Supabase
 .supabase/

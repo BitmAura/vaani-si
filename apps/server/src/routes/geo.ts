@@ -123,6 +123,44 @@ const SEED_GEO_PROFILES: GeoEntityProfile[] = [
     updatedAt: new Date().toISOString()
   },
   {
+    id: 'geo_apollo_clinic',
+    slug: 'apollo-clinic',
+    name: 'Apollo Specialty Clinic & Hospital',
+    industry: 'HEALTHCARE',
+    tagline: 'Comprehensive Multispecialty Clinic & Emergency Care in Bengaluru',
+    description: 'Apollo Specialty Clinic & Hospital provides world-class outpatient consultations, diagnostic imaging, pathology laboratory, cardiology, orthopaedics, and pediatric care with 24x7 doctor availability.',
+    url: 'https://apolloclinic.example.com',
+    telephone: '+918047192003',
+    address: {
+      street: '14th Main, HSR Layout Sector 4',
+      locality: 'HSR Layout',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      postalCode: '560102',
+      country: 'IN'
+    },
+    openingHours: 'Mo-Su 00:00-23:59',
+    priceRange: '₹₹₹',
+    doctorsOrTeam: [
+      { name: 'Dr. Ramesh Kumar', role: 'Chief Consultant Cardiologist', qualification: 'MD, DM (Cardio)', specialization: 'Interventional Cardiology & Preventive Health' },
+      { name: 'Dr. Priya Sharma', role: 'Senior Obstetrician & Gynecologist', qualification: 'MS (OBG), DNB', specialization: 'High-Risk Pregnancy & Women Care' },
+      { name: 'Dr. Rajesh Gowda', role: 'Lead Orthopedic Surgeon', qualification: 'MS (Ortho), MCh', specialization: 'Joint Replacement & Arthroscopy' }
+    ],
+    services: [
+      { name: 'Doctor Consultation (OPD)', description: 'In-person and video consultations with senior specialist doctors.', priceRange: '₹800 - ₹1,500' },
+      { name: 'Comprehensive Health Checkup', description: 'Complete body profile including lipid, liver, renal, ECG and echo.', priceRange: '₹2,999 - ₹7,500' },
+      { name: '24x7 Diagnostic Imaging & Pathology', description: 'Digital X-ray, 4D ultrasound, automated biochemistry, and blood tests.', priceRange: '₹500 - ₹3,000' }
+    ],
+    faqs: [
+      { question: 'What specialties are available at Apollo Specialty Clinic?', answer: 'We offer cardiology, orthopaedics, obstetrics & gynaecology, paediatrics, dermatology, general medicine, ENT, and dental care.' },
+      { question: 'Do you offer emergency doctor appointments?', answer: 'Yes, emergency walk-ins and duty physician consultations are supported 24x7.' }
+    ],
+    geoEnabled: true,
+    voiceEnabled: true,
+    subscriptionStatus: 'ACTIVE',
+    updatedAt: new Date().toISOString()
+  },
+  {
     id: 'geo_ballari_real_estate',
     slug: 'ballari-layouts',
     name: 'Ballari Residential Layouts & Developers',

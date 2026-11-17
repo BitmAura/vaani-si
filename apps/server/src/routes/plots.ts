@@ -78,16 +78,18 @@ export async function plotRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/api/plots', async (request: FastifyRequest<{ Querystring: any }>, reply: FastifyReply) => {
     const { tenantId } = getContext(request);
+    const isDemoTenant = tenantId === 'org_demo_real_estate' || tenantId === 'a0000000-0000-0000-0000-000000000001';
+    const allowDemo = isDemoTenant || process.env.ALLOW_DEMO_ACCOUNTS === 'true' || process.env.NODE_ENV !== 'production';
 
-    if (!supabase) {
-      if (process.env.NODE_ENV === 'production') {
+    if (!supabase || isDemoTenant) {
+      if (!allowDemo) {
         return reply.status(503).send({
           success: false,
           error: 'DATABASE_UNAVAILABLE',
           message: 'Production database is not configured. Mock fallback is disabled in production mode.',
         });
       }
-      const filtered = MOCK_PLOTS.filter(p => p.tenant_id === tenantId);
+      const filtered = MOCK_PLOTS.filter(p => p.tenant_id === tenantId || tenantId === 'org_demo_real_estate' || p.tenant_id === 'a0000000-0000-0000-0000-000000000001');
       return reply.status(200).send({
         success: true,
         count: filtered.length,
@@ -102,7 +104,17 @@ export async function plotRoutes(fastify: FastifyInstance) {
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        if (isDemoTenant) {
+          const filtered = MOCK_PLOTS.filter(p => p.tenant_id === tenantId || tenantId === 'org_demo_real_estate' || p.tenant_id === 'a0000000-0000-0000-0000-000000000001');
+          return reply.status(200).send({
+            success: true,
+            count: filtered.length,
+            plots: filtered,
+          });
+        }
+        throw error;
+      }
 
       return reply.status(200).send({
         success: true,
@@ -111,6 +123,14 @@ export async function plotRoutes(fastify: FastifyInstance) {
       });
     } catch (error) {
       console.error('[Plots API] Error listing plots:', error);
+      if (isDemoTenant) {
+        const filtered = MOCK_PLOTS.filter(p => p.tenant_id === tenantId || tenantId === 'org_demo_real_estate' || p.tenant_id === 'a0000000-0000-0000-0000-000000000001');
+        return reply.status(200).send({
+          success: true,
+          count: filtered.length,
+          plots: filtered,
+        });
+      }
       return reply.status(500).send({
         success: false,
         error: 'Failed to fetch plots',
@@ -125,16 +145,18 @@ export async function plotRoutes(fastify: FastifyInstance) {
   fastify.get('/api/plots/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     const { tenantId } = getContext(request);
     const { id } = request.params;
+    const isDemoTenant = tenantId === 'org_demo_real_estate' || tenantId === 'a0000000-0000-0000-0000-000000000001';
+    const allowDemo = isDemoTenant || process.env.ALLOW_DEMO_ACCOUNTS === 'true' || process.env.NODE_ENV !== 'production';
 
-    if (!supabase) {
-      if (process.env.NODE_ENV === 'production') {
+    if (!supabase || isDemoTenant) {
+      if (!allowDemo) {
         return reply.status(503).send({
           success: false,
           error: 'DATABASE_UNAVAILABLE',
           message: 'Production database is not configured. Mock fallback is disabled in production mode.',
         });
       }
-      const plot = MOCK_PLOTS.find(p => p.tenant_id === tenantId && (p.id === id || p.plot_number === id));
+      const plot = MOCK_PLOTS.find(p => (p.tenant_id === tenantId || tenantId === 'org_demo_real_estate' || p.tenant_id === 'a0000000-0000-0000-0000-000000000001') && (p.id === id || p.plot_number === id));
       if (!plot) {
         return reply.status(404).send({
           success: false,

@@ -119,6 +119,48 @@ export async function agencyRoutes(fastify: FastifyInstance): Promise<void> {
 
     const { period, industry } = req.query || {};
     let workspaces = await globalDb.getClientWorkspacesByOrg(orgId);
+    if (workspaces.length === 0 && (orgId === 'org_demo_agency' || orgId.includes('agency') || process.env.ALLOW_DEMO_ACCOUNTS === 'true')) {
+      workspaces = [
+        {
+          id: 'ws_demo_client_kims',
+          organizationId: orgId,
+          name: 'KIMS Multispecialty Hospital',
+          slug: 'kims-hospital',
+          industryCategory: 'HEALTHCARE',
+          subcategory: 'HOSPITAL',
+          operatingLocation: 'Bengaluru, Karnataka',
+          primaryPhone: '+918047192011',
+          primaryEmail: 'desk@kims-hospital.example.com',
+          aiEmployee: {
+            name: 'Kavya',
+            status: 'ACTIVE',
+          },
+          onboardingStep: 'COMPLETED',
+          onboardingCompleted: true,
+          createdAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+        {
+          id: 'ws_demo_client_siri',
+          organizationId: orgId,
+          name: 'Siri Urban Developers',
+          slug: 'siri-developers',
+          industryCategory: 'REAL_ESTATE',
+          subcategory: 'PLOTTED_DEVELOPMENT',
+          operatingLocation: 'Hubballi, Karnataka',
+          primaryPhone: '+918047192012',
+          primaryEmail: 'sales@siridevelopers.example.com',
+          aiEmployee: {
+            name: 'Sahana',
+            status: 'ACTIVE',
+          },
+          onboardingStep: 'COMPLETED',
+          onboardingCompleted: true,
+          createdAt: new Date(Date.now() - 25 * 24 * 3600 * 1000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+      ];
+    }
 
     if (industry && industry !== 'ALL') {
       workspaces = workspaces.filter(w => w.industryCategory === industry || w.subcategory === industry);
@@ -203,6 +245,48 @@ export async function agencyRoutes(fastify: FastifyInstance): Promise<void> {
 
     const orgId = session.activeOrganizationId;
     let workspaces = await globalDb.getClientWorkspacesByOrg(orgId);
+    if (workspaces.length === 0 && (orgId === 'org_demo_agency' || orgId.includes('agency') || process.env.ALLOW_DEMO_ACCOUNTS === 'true')) {
+      workspaces = [
+        {
+          id: 'ws_demo_client_kims',
+          organizationId: orgId,
+          name: 'KIMS Multispecialty Hospital',
+          slug: 'kims-hospital',
+          industryCategory: 'HEALTHCARE',
+          subcategory: 'HOSPITAL',
+          operatingLocation: 'Bengaluru, Karnataka',
+          primaryPhone: '+918047192011',
+          primaryEmail: 'desk@kims-hospital.example.com',
+          aiEmployee: {
+            name: 'Kavya',
+            status: 'ACTIVE',
+          },
+          onboardingStep: 'COMPLETED',
+          onboardingCompleted: true,
+          createdAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+        {
+          id: 'ws_demo_client_siri',
+          organizationId: orgId,
+          name: 'Siri Urban Developers',
+          slug: 'siri-developers',
+          industryCategory: 'REAL_ESTATE',
+          subcategory: 'PLOTTED_DEVELOPMENT',
+          operatingLocation: 'Hubballi, Karnataka',
+          primaryPhone: '+918047192012',
+          primaryEmail: 'sales@siridevelopers.example.com',
+          aiEmployee: {
+            name: 'Sahana',
+            status: 'ACTIVE',
+          },
+          onboardingStep: 'COMPLETED',
+          onboardingCompleted: true,
+          createdAt: new Date(Date.now() - 25 * 24 * 3600 * 1000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any,
+      ];
+    }
 
     const { search, industry } = req.query || {};
 

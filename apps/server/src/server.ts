@@ -11,6 +11,8 @@ import crypto from 'node:crypto';
 // Robust dotenv resolution: load cwd, local, and monorepo root .env
 dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'vaani-si/apps/server/.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
@@ -440,6 +442,7 @@ export async function buildServer() {
   });
 
   const identityService = new IdentityService();
+  identityService.seedDevAccountsIfEmpty();
   const agentLifecycleService = new AgentLifecycleService(globalDb);
   const agentSimulator = new AgentSimulationHarness(globalDb);
   const conversationOrchestrator = new ConversationOrchestrator(globalDb);
