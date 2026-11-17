@@ -661,6 +661,17 @@ export class IdentityService {
     const now = new Date().toISOString();
     const demoConfigs = [
       {
+        userId: 'usr_demo_admin',
+        email: 'admin@vanni.ai',
+        fullName: 'VANNI Administrator',
+        orgId: 'org_demo_agency',
+        orgName: 'Apex Growth Marketing Agency',
+        slug: 'apex-agency',
+        industry: 'AGENCY' as const,
+        role: 'OWNER' as const,
+        password: 'VanniSecure2026!',
+      },
+      {
         userId: 'usr_demo_agency',
         email: 'agency.demo@vanni.ai',
         fullName: 'Aditya Rao (Agency Director)',
@@ -669,6 +680,7 @@ export class IdentityService {
         slug: 'apex-agency',
         industry: 'AGENCY' as const,
         role: 'OWNER' as const,
+        password: 'DemoPassword123!',
       },
       {
         userId: 'usr_demo_real_estate',
@@ -679,6 +691,7 @@ export class IdentityService {
         slug: 'ballari-layouts',
         industry: 'REAL_ESTATE' as const,
         role: 'OWNER' as const,
+        password: 'DemoPassword123!',
       },
       {
         userId: 'usr_demo_healthcare',
@@ -689,12 +702,12 @@ export class IdentityService {
         slug: 'apollo-clinic',
         industry: 'HEALTHCARE_HOSPITAL' as const,
         role: 'OWNER' as const,
+        password: 'DemoPassword123!',
       },
     ];
 
-    const passwordHash = this.hashPassword('DemoPassword123!');
-
     for (const d of demoConfigs) {
+      const passwordHash = this.hashPassword(d.password);
       const user: StoredUser = {
         id: d.userId,
         email: d.email.toLowerCase().trim(),

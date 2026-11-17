@@ -106,15 +106,21 @@ function buildLoginPage() {
       <!-- Quick 1-Click Demo Logins -->
       <div style="background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); padding: 12px; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <span style="font-size: 11px; font-weight: 600; color: var(--vanni-accent); font-family: var(--vanni-font-mono);">DEVELOPMENT ACCESS</span>
+          <span style="font-size: 11px; font-weight: 600; color: var(--vanni-accent); font-family: var(--vanni-font-mono);">DEMO ACCESS</span>
           <span style="font-size: 10px; color: var(--vanni-text-muted);">Seed Credentials</span>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>🏢 Ballari Plots</span>
+          <button type="button" onclick="quickLogin('realestate.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
+            <span>🏢 Ballari Real Estate</span>
+          </button>
+          <button type="button" onclick="quickLogin('healthcare.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
+            <span>🏥 Apollo Clinic</span>
+          </button>
+          <button type="button" onclick="quickLogin('agency.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
+            <span>🚀 Apex Agency</span>
           </button>
           <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>🏥 Apollo Clinic</span>
+            <span>⚡ Master Admin</span>
           </button>
         </div>
       </div>
