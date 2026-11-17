@@ -2597,7 +2597,7 @@ export async function buildServer() {
           next: razorpayLive
             ? 'Homepage Pay → Razorpay → slug reveal is live'
             : razorpay
-              ? 'Keys present but not rzp_live_* — switch to live for real ₹9,999'
+              ? 'Keys present but not rzp_live_* — switch to live for real ₹4,999'
               : 'Set RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET (rzp_live_*) on Vercel and redeploy',
         },
         kavyaDemoCall: {
