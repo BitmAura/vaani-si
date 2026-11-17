@@ -9,6 +9,7 @@ import { Tenant } from '../../../packages/core/src/domain/types';
 import { LLMConversationalService, MessageTurn, CallerDossier } from './llm-service';
 import { HandoffManager, ToolPermissionEvaluator } from '@vanni/conversation-engine';
 import { KannadaFillerEngine, KannadaFiller } from './kannada-fillers';
+import { isMedicalEmergencyIndustry } from './emergency-handler';
 import { globalDb } from '@vanni/database';
 import { AgentRuntimeConfig, ConversationToolCallDTO } from '@vanni/shared';
 
@@ -224,12 +225,13 @@ export class AudioConversationPipeline {
       const emergencySig = this.handoffManager.detectEmergencySignals(userText);
       const isHumanReq = this.handoffManager.detectHumanRequest(userText);
       const frustration = this.handoffManager.detectFrustrationOrComplaint(userText);
+      const isHealthcareEscalation = isMedicalEmergencyIndustry(this.tenant.industry);
 
       let agentReplyText: string;
       const llmStart = Date.now();
 
-      if (emergencySig.isEmergency) {
-        agentReplyText = 'Sir, idhu emergency aaguththe! Dayavittu immediately 108 ambulance call madi athva casualty emergency ward ge rush madi sir. Casualty duty doctor 24/7 ready irthare!';
+      if (isHealthcareEscalation && emergencySig.isEmergency) {
+        agentReplyText = 'Sir, idhu medical emergency. Dayavittu immediately 108 ambulance call madi athva nearest hospital casualty ge rush madi. Namma team ge alert kalisiddini — duty staff nimge call back madthare.';
         if (events.onEscalation) {
           events.onEscalation({
             triggered: true,
@@ -239,7 +241,7 @@ export class AudioConversationPipeline {
           });
         }
       } else if (isHumanReq) {
-        agentReplyText = 'Khanditha sir, ondu second hold madi, nanu eegale namma human manager ge call transfer maadtha iddini. Dayavittu line nalli iri sir.';
+        agentReplyText = 'Khanditha sir, nanu eegale namma team ge notify maadiddini. Live transfer eega ready illa — manager nimge call back madthare.';
         if (events.onEscalation) {
           events.onEscalation({
             triggered: true,
@@ -249,7 +251,7 @@ export class AudioConversationPipeline {
           });
         }
       } else if (frustration.isFrustrated) {
-        agentReplyText = 'Kshamisee sir, nimma problem understand aaythu. Dayavittu kopa madkobedi, nanu eegale senior manager attention ge thagond resolve maadistheeni.';
+        agentReplyText = 'Kshamisee sir, nimma problem understand aaythu. Dayavittu kopa madkobedi — nanu eegale senior manager ge notify maadiddini, avaru nimge call back madthare.';
         if (events.onEscalation) {
           events.onEscalation({
             triggered: true,

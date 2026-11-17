@@ -4,6 +4,22 @@
  * Detects emergency keywords and triggers immediate human escalation
  */
 
+const MEDICAL_EMERGENCY_INDUSTRIES = new Set([
+  'HEALTHCARE',
+  'HEALTHCARE_HOSPITAL',
+  'HEALTHCARE_DENTAL',
+  'DENTAL',
+  'IVF',
+  'IVF_FERTILITY',
+]);
+
+/** Medical 108 / casualty escalation applies only to healthcare verticals (not real estate or agency). */
+export function isMedicalEmergencyIndustry(industry?: string, tenantDemoKey?: string): boolean {
+  if (tenantDemoKey === 'hospital' || tenantDemoKey === 'dental') return true;
+  if (!industry) return false;
+  return MEDICAL_EMERGENCY_INDUSTRIES.has(industry);
+}
+
 export interface EmergencyDetectionResult {
   isEmergency: boolean;
   emergencyType: 'CRITICAL' | 'URGENT' | 'MODERATE' | 'NONE';
@@ -60,7 +76,7 @@ export class EmergencyHandler {
         emergencyType: 'CRITICAL',
         recommendedAction: 'TRANSFER_IMMEDIATE',
         detectedKeywords,
-        escalationMessage: 'Sir/Madam, this sounds like a medical emergency. Please call 108 ambulance immediately or rush to the nearest hospital. Do not wait. I am transferring you to our emergency doctor right now.',
+        escalationMessage: 'Sir/Madam, this sounds like a medical emergency. Please call 108 ambulance immediately or rush to the nearest hospital casualty. Do not wait. Our duty staff are being alerted now.',
         transferNumber: this.emergencyContactNumber,
       };
     }
@@ -86,7 +102,7 @@ export class EmergencyHandler {
         emergencyType: 'URGENT',
         recommendedAction: 'ALERT_DOCTOR',
         detectedKeywords,
-        escalationMessage: 'Sir/Madam, this requires immediate medical attention. I am alerting our on-call doctor right now. Please stay on the line. Doctor will speak with you shortly.',
+        escalationMessage: 'Sir/Madam, this requires immediate medical attention. Our on-call team is being alerted. Live transfer is not available — staff will call you back.',
         transferNumber: this.onCallDoctorNumber,
       };
     }
@@ -134,11 +150,11 @@ export class EmergencyHandler {
     detectedKeywords: string[]
   ): string {
     if (emergencyType === 'CRITICAL') {
-      return 'Sir/Madam, ಇದು ತುರ್ತು ಪರಿಸ್ಥಿತಿ ಇದೆ. Please immediately 108 ambulance call madi or nearest hospital ge rush madi. Waiting ಮಾಡಬೇಡಿ. Main emergency doctor line ge transfer madthini. Please hold.';
+      return 'Sir/Madam, idhu medical emergency. Dayavittu immediately 108 ambulance call madi athva nearest hospital casualty ge rush madi. Waiting madbedi. Namma duty staff ge alert kalisiddini — avaru nimge call back madthare.';
     }
 
     if (emergencyType === 'URGENT') {
-      return 'Sir/Madam, ನಿಮ್ಮ symptoms urgent medical attention ನೀಡುತ್ತವೆ. On-call doctor alert madthini. Please line hold ಮಾಡಿ. Doctorರು ಕೂಡಲೇ talk ಮಾಡುತ್ತಾರೆ.';
+      return 'Sir/Madam, nimma symptoms urgent medical attention beku. Namma on-call team ge alert kalisiddini — live transfer eega ready illa, staff nimge call back madthare.';
     }
 
     return 'Sir/Madam, ನಿಮ್ಮ health concern important ಆಗಿದೆ. Doctor consultation schedule ಮಾಡೋಣ.';

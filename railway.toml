@@ -1,0 +1,17 @@
+# VANNI voice-gateway on Railway
+# From repo root after `railway login` + `railway link`:
+#   railway up -y
+#
+# Required service variables: SARVAM_API_KEY, GEMINI_API_KEY,
+# EXOTEL_ACCOUNT_SID, EXOTEL_API_KEY, EXOTEL_API_TOKEN, EXOTEL_CALLER_ID,
+# VOICE_WS_URL, COOKIE_SECRET / voice token secret as used by gateway.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/voice-gateway/Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

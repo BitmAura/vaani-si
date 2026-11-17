@@ -1,0 +1,12 @@
+# Deploy from monorepo root: railway up --service voice-gateway
+# Dockerfile context is the repo root (copies packages/ + apps/voice-gateway/).
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/voice-gateway/Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

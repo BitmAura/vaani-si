@@ -134,7 +134,7 @@ export async function plotRoutes(fastify: FastifyInstance) {
           message: 'Production database is not configured. Mock fallback is disabled in production mode.',
         });
       }
-      const plot = MOCK_PLOTS.find(p => p.id === id || p.plot_number === id);
+      const plot = MOCK_PLOTS.find(p => p.tenant_id === tenantId && (p.id === id || p.plot_number === id));
       if (!plot) {
         return reply.status(404).send({
           success: false,

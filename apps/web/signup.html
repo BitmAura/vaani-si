@@ -32,7 +32,8 @@
   <style>
     @media (max-width: 860px) {
       .vanni-desktop-nav { display: none !important; }
-      .vanni-mobile-menu-btn { display: inline-flex !important; }
+      .vanni-nav-desktop-cta { display: none !important; }
+      .vanni-mobile-menu-btn { display: inline-flex !important; align-items: center; justify-content: center; min-width: 40px; color: var(--vanni-text-primary); }
       .vanni-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
       .vanni-comparison-grid { grid-template-columns: 1fr !important; }
       .vanni-steps-grid { grid-template-columns: 1fr !important; }
@@ -74,12 +75,12 @@
 
       <!-- Desktop Action CTAs -->
       <div style="display: flex; align-items: center; gap: 12px;">
-        <a href="/login" class="vanni-button vanni-button-ghost" style="font-size: 13px;">Sign In</a>
-        <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary" style="font-size: 13px;">
+        <a href="/login" class="vanni-button vanni-button-ghost vanni-nav-desktop-cta" style="font-size: 13px;">Sign In</a>
+        <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary vanni-nav-desktop-cta" style="font-size: 13px;">
           <span>Talk to VANNI</span>
         </button>
         <!-- Mobile Nav Toggle -->
-        <button type="button" class="vanni-mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle Mobile Menu" style="display: none; background: transparent; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 10px; font-size: 16px; cursor: pointer;">
+        <button type="button" class="vanni-mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open menu" aria-expanded="false" aria-controls="vanni-mobile-nav" style="display: none; background: #FFFFFF; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 10px; font-size: 16px; cursor: pointer; color: var(--vanni-text-primary);">
           &#9776;
         </button>
       </div>
@@ -87,7 +88,8 @@
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <div id="vanni-mobile-nav" style="display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); padding: 16px 24px; box-shadow: var(--vanni-shadow-md); flex-direction: column; gap: 12px;">
+    <div id="vanni-mobile-nav" style="display: none; position: absolute; top: 64px; left: 0; right: 0; background: #FFFFFF; border-bottom: 1px solid var(--vanni-border); padding: 16px 24px; box-shadow: var(--vanni-shadow-md); flex-direction: column; gap: 12px; z-index: 60;">
+      <button type="button" onclick="toggleMobileNav()" aria-label="Close menu" style="align-self: flex-end; background: #FFFFFF; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--vanni-text-primary); cursor: pointer;">Close</button>
       <a href="/features" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Product Features</a>
       <a href="/how-it-works" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">How It Works</a>
       <a href="/industries" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Industry Solutions</a>
@@ -232,8 +234,14 @@
     
     function toggleMobileNav() {
       const nav = document.getElementById('vanni-mobile-nav');
-      if (nav) {
-        nav.style.display = (nav.style.display === 'flex' ? 'none' : 'flex');
+      const btn = document.querySelector('.vanni-mobile-menu-btn');
+      if (!nav) return;
+      const open = nav.style.display !== 'flex';
+      nav.style.display = open ? 'flex' : 'none';
+      if (btn) {
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        btn.textContent = open ? '×' : '☰';
       }
     }
 

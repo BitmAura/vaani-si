@@ -99,17 +99,21 @@ export class TelephonyRouter {
     const formattedPhone = validation.normalized.replace('+', ''); // Exotel accepts standard 12-digit Indian number (91XXXXXXXXXX)
 
     if (!this.apiKey || !this.accountSid || process.env.NODE_ENV === 'test') {
-      if (process.env.NODE_ENV === 'production' && !this.apiKey) {
+      // In test/CI environments return a simulated success so whitelist enforcement tests
+      // (Prompt 11 test 18) can verify the TESTING-mode whitelist path end-to-end.
+      // A real Exotel call is never placed without real credentials.
+      if (process.env.NODE_ENV === 'test') {
         return {
-          success: false,
-          message: 'Telephony provider is unconfigured in production. EXOTEL_ACCOUNT_SID and EXOTEL_API_KEY are required.',
+          success: true,
+          callSid: `SIMULATED_${Date.now()}`,
+          message: 'Simulated outbound call (test environment — no real Exotel call placed).',
         };
       }
-      const simSid = `MOCK_EXO_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       return {
-        success: true,
-        callSid: simSid,
-        message: `Simulated cellular call dispatched to ${validation.normalized}. When answered, Sahana will converse in Kannada.`,
+        success: false,
+        callSid: undefined,
+        message:
+          'Exotel is not configured. No call was placed. Set EXOTEL_ACCOUNT_SID, EXOTEL_API_KEY, EXOTEL_API_TOKEN, and EXOTEL_CALLER_ID.',
       };
     }
 

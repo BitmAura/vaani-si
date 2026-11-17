@@ -9,12 +9,18 @@
  * - GET    /api/geo/:slug/status    - Entitlements, embed snippet, and AI readiness score
  * - POST   /api/geo/:slug/toggle    - Independent toggle for geoEnabled vs voiceEnabled (Kill-Switch)
  * - GET    /api/geo/demos           - List of pre-seeded industry demo entities (Punarvaas, etc.)
+ * - POST   /api/geo/:slug/checkout  - Create Razorpay order for ₹9,999 GEO Shield (or lead-capture if unconfigured)
+ * - POST   /api/geo/:slug/activate  - Verify Razorpay HMAC and reveal embed slug
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import crypto from 'node:crypto';
 import { globalDb } from '@vanni/database';
 import { getSessionFromRequest } from '../http-auth.js';
+
+/** Product catalog (AGENTS.md §4). Never invent alternate GEO prices. */
+export const GEO_SHIELD_MONTHLY_INR = 9999;
+export const GEO_SHIELD_AMOUNT_PAISE = GEO_SHIELD_MONTHLY_INR * 100;
 
 export interface GeoDoctorOrTeamMember {
   name: string;
@@ -60,6 +66,14 @@ export interface GeoEntityProfile {
   voiceEnabled: boolean;
   subscriptionStatus: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' | 'TRIAL' | 'PENDING_PAYMENT';
   updatedAt: string;
+  pendingCheckout?: {
+    orderId: string;
+    amountPaise: number;
+    createdAt: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
 }
 
 // In-memory + persistent fallback registry for GEO profiles
@@ -699,9 +713,28 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
   });
 
   // 5. Entitlement Toggle (The Co-Founder Kill-Switch)
+  // Auth: signed session OR x-vanni-kill-switch header. Never accepts subscriptionStatus (paywall).
   fastify.post('/api/geo/:slug/toggle', async (req: FastifyRequest, reply: FastifyReply) => {
     const { slug } = req.params as { slug: string };
     const body = req.body as any;
+    const session = getSessionFromRequest(req);
+    const killSecret = process.env.GEO_KILL_SWITCH_SECRET || '';
+    const provided = String(req.headers['x-vanni-kill-switch'] || body?.killSwitchSecret || '');
+    let killOk = false;
+    if (killSecret && provided && killSecret.length === provided.length) {
+      try {
+        killOk = crypto.timingSafeEqual(Buffer.from(killSecret), Buffer.from(provided));
+      } catch {
+        killOk = false;
+      }
+    }
+    if (!session?.userId && !killOk) {
+      return reply.status(401).send({
+        error: 'UNAUTHORIZED',
+        message: 'GEO kill-switch requires a signed session or x-vanni-kill-switch secret.',
+      });
+    }
+
     const profile = GEO_PROFILES.get(slug);
 
     if (!profile) {
@@ -714,9 +747,7 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     if (typeof body.voiceEnabled === 'boolean') {
       profile.voiceEnabled = body.voiceEnabled;
     }
-    if (body.subscriptionStatus) {
-      profile.subscriptionStatus = body.subscriptionStatus;
-    }
+    // subscriptionStatus is payment-gated via /activate only — ignore body attempts
 
     profile.updatedAt = new Date().toISOString();
     GEO_PROFILES.set(slug, profile);
@@ -810,10 +841,11 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
       profile.doctorsOrTeam.length > 0 ? 20 : 10
     ].reduce((a, b) => a + b, 0);
 
+    const paidAudit = profile.geoEnabled && profile.subscriptionStatus === 'ACTIVE';
     const audit = {
       entity: {
         name: profile.name,
-        slug: profile.slug,
+        slug: paidAudit ? profile.slug : undefined,
         industry: profile.industry,
         city: profile.address.city,
         url: profile.url,
@@ -846,12 +878,22 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
         aiVisibilityRanking: profile.geoEnabled ? 'Top 3 (Verified Recommend)' : 'Below Fold / Uncited',
         citationRisk: profile.geoEnabled ? 'Low (Protected Entity)' : 'Severe (Competitors stealing AI recommendations)',
       },
-      embedCode: `<script src="${origin}/api/geo/${profile.slug}/loader.js" async></script>`,
-      downloadUrls: {
-        loaderJs: `${origin}/api/geo/${profile.slug}/loader.js`,
-        llmsTxt: `${origin}/api/geo/${profile.slug}/llms.txt`,
-        schemaJson: `${origin}/api/geo/${profile.slug}/schema.json`,
-      },
+      paymentRequired: !paidAudit,
+      // Paywall: never reveal embed slug / CDN URLs before ACTIVE payment
+      ...(paidAudit
+        ? {
+            embedCode: `<script src="${origin}/api/geo/${profile.slug}/loader.js" async></script>`,
+            downloadUrls: {
+              loaderJs: `${origin}/api/geo/${profile.slug}/loader.js`,
+              llmsTxt: `${origin}/api/geo/${profile.slug}/llms.txt`,
+              schemaJson: `${origin}/api/geo/${profile.slug}/schema.json`,
+            },
+          }
+        : {
+            embedCode: undefined,
+            downloadUrls: undefined,
+            message: `Complete ₹${GEO_SHIELD_MONTHLY_INR.toLocaleString('en-IN')} payment to unlock your dedicated embed slug.`,
+          }),
     };
 
     return reply.status(200).send(audit);
@@ -987,7 +1029,126 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     });
   });
 
-  // 10. Activate Entity after ₹9,999 Payment Confirmation
+  // 10. Create Razorpay order for GEO Shield (public claim flow — no login required)
+  fastify.post('/api/geo/:slug/checkout', async (req: FastifyRequest, reply: FastifyReply) => {
+    const { slug } = req.params as { slug: string };
+    const body = (req.body || {}) as { name?: string; email?: string; phone?: string };
+    const profile = GEO_PROFILES.get(slug);
+
+    if (!profile) {
+      return reply.status(404).send({
+        error: 'ENTITY_NOT_FOUND',
+        message: 'Run /api/geo/extract first to create a PENDING_PAYMENT profile.',
+      });
+    }
+
+    if (profile.geoEnabled && profile.subscriptionStatus === 'ACTIVE') {
+      const host = req.headers.host || 'localhost:4000';
+      const protocol = req.headers['x-forwarded-proto'] || 'http';
+      const origin = `${protocol}://${host}`;
+      return reply.status(200).send({
+        success: true,
+        alreadyActive: true,
+        slug: profile.slug,
+        embedSnippet: `<script src="${origin}/api/geo/${profile.slug}/loader.js" async></script>`,
+      });
+    }
+
+    const keyId = process.env.RAZORPAY_KEY_ID || '';
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+    const configured = Boolean(keyId && keySecret);
+
+    // Persist lead contact even when gateway is offline — never fake a paid slug.
+    profile.pendingCheckout = {
+      orderId: profile.pendingCheckout?.orderId || `lead_${slug}_${Date.now()}`,
+      amountPaise: GEO_SHIELD_AMOUNT_PAISE,
+      createdAt: new Date().toISOString(),
+      name: body.name?.trim() || profile.pendingCheckout?.name,
+      email: body.email?.trim() || profile.pendingCheckout?.email,
+      phone: body.phone?.trim() || profile.pendingCheckout?.phone || profile.telephone,
+    };
+    profile.updatedAt = new Date().toISOString();
+    GEO_PROFILES.set(slug, profile);
+
+    if (!configured) {
+      fastify.log.info(
+        { slug, phone: profile.pendingCheckout.phone, email: profile.pendingCheckout.email },
+        '[GEO Checkout] Lead captured — Razorpay not configured'
+      );
+      return reply.status(200).send({
+        success: true,
+        configured: false,
+        paymentRequired: true,
+        amountInr: GEO_SHIELD_MONTHLY_INR,
+        message:
+          `Request received. Razorpay live keys are not on this server yet — we will WhatsApp a ₹${GEO_SHIELD_MONTHLY_INR.toLocaleString('en-IN')} payment link. Embed slug stays locked until payment verifies.`,
+      });
+    }
+
+    try {
+      const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+      const orderRes = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: GEO_SHIELD_AMOUNT_PAISE,
+          currency: 'INR',
+          receipt: `geo_${slug}`.slice(0, 40),
+          notes: {
+            product: 'GEO_SHIELD',
+            slug,
+            amountInr: String(GEO_SHIELD_MONTHLY_INR),
+          },
+        }),
+      });
+
+      if (!orderRes.ok) {
+        const errText = await orderRes.text();
+        fastify.log.error({ status: orderRes.status, errText }, '[GEO Checkout] Razorpay order failed');
+        return reply.status(502).send({
+          error: 'RAZORPAY_ORDER_FAILED',
+          message: 'Could not create Razorpay order. Try again or contact support.',
+        });
+      }
+
+      const order = (await orderRes.json()) as { id: string; amount: number; currency: string };
+      profile.pendingCheckout = {
+        orderId: order.id,
+        amountPaise: order.amount || GEO_SHIELD_AMOUNT_PAISE,
+        createdAt: new Date().toISOString(),
+        name: body.name?.trim(),
+        email: body.email?.trim(),
+        phone: body.phone?.trim() || profile.telephone,
+      };
+      profile.updatedAt = new Date().toISOString();
+      GEO_PROFILES.set(slug, profile);
+
+      return reply.status(200).send({
+        success: true,
+        configured: true,
+        paymentRequired: true,
+        keyId,
+        orderId: order.id,
+        amount: order.amount,
+        amountInr: GEO_SHIELD_MONTHLY_INR,
+        currency: order.currency || 'INR',
+        name: profile.name,
+        prefill: {
+          name: body.name?.trim() || '',
+          email: body.email?.trim() || '',
+          contact: body.phone?.trim() || profile.telephone || '',
+        },
+      });
+    } catch (err: any) {
+      fastify.log.error({ err }, '[GEO Checkout] Unexpected error');
+      return reply.status(500).send({ error: 'CHECKOUT_FAILED', message: err?.message || 'Checkout failed' });
+    }
+  });
+
+  // 11. Activate Entity after verified ₹9,999 Razorpay payment
   fastify.post('/api/geo/:slug/activate', async (req: FastifyRequest, reply: FastifyReply) => {
     const { slug } = req.params as { slug: string };
     const body = (req.body || {}) as {
@@ -1004,9 +1165,19 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     }
 
     const secret = process.env.RAZORPAY_KEY_SECRET || '';
-    const paymentId = body.razorpay_payment_id || '';
-    const orderId = body.razorpay_order_id || '';
+    const paymentId = body.razorpay_payment_id || body.paymentId || '';
+    const orderId = body.razorpay_order_id || body.orderId || '';
     const signature = body.razorpay_signature || '';
+
+    // Must match the Razorpay order this slug's checkout issued. Lead-only ids cannot activate.
+    const issuedOrder = profile.pendingCheckout?.orderId || '';
+    if (!issuedOrder.startsWith('order_') || orderId !== issuedOrder) {
+      return reply.status(402).send({
+        error: 'PAYMENT_REQUIRED',
+        message: `GEO Shield activates only after a verified Razorpay payment of ₹${GEO_SHIELD_MONTHLY_INR.toLocaleString('en-IN')}.`,
+      });
+    }
+
     const expected = secret && paymentId && orderId
       ? crypto.createHmac('sha256', secret).update(`${orderId}|${paymentId}`).digest('hex')
       : '';
@@ -1016,12 +1187,13 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     if (!paid) {
       return reply.status(402).send({
         error: 'PAYMENT_REQUIRED',
-        message: 'GEO Shield activates only after a verified Razorpay payment of ₹9,999.',
+        message: `GEO Shield activates only after a verified Razorpay payment of ₹${GEO_SHIELD_MONTHLY_INR.toLocaleString('en-IN')}.`,
       });
     }
 
     profile.geoEnabled = true;
     profile.subscriptionStatus = 'ACTIVE';
+    profile.pendingCheckout = undefined;
     profile.updatedAt = new Date().toISOString();
     GEO_PROFILES.set(slug, profile);
 

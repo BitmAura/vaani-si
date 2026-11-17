@@ -264,103 +264,36 @@
       if (errEl) errEl.style.display = 'none';
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<div class="spinner"></div><span>Verifying with Supabase Auth...</span>';
+        btn.innerHTML = '<div class="spinner"></div><span>Signing in...</span>';
       }
 
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
 
-      const SUPABASE_URL = 'https://qwmxgqpmcbuvkhrsbibz.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_DRuRSnMq009Fw96ND4sNAQ_6OpM0fkm';
-
       try {
-        let authUser = null;
-        let accessToken = null;
-
-        // Step 1: Real Supabase Auth verification
-        const supaRes = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+        const apiRes = await fetch('/api/auth/login', {
           method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({ email, password })
         });
-
-        const supaData = await supaRes.json().catch(() => null);
-
-        if (supaRes.ok && supaData && supaData.access_token) {
-          authUser = supaData.user;
-          accessToken = supaData.access_token;
-          const cookieRes = await fetch('/api/auth/supabase', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify({ accessToken })
-          });
-          if (!cookieRes.ok) {
-            throw new Error('Signed in, but the console session could not be started.');
-          }
-        } else {
-          // If Supabase rejects or user is not found, attempt server /api/auth/login
-          let serverSuccess = false;
-          try {
-            const apiRes = await fetch('/api/auth/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'same-origin',
-              body: JSON.stringify({ email, password })
-            });
-            if (apiRes.ok) {
-              const apiData = await apiRes.json();
-              if (apiData && apiData.session) {
-                authUser = {
-                  id: apiData.session.userId,
-                  email: apiData.session.email,
-                  user_metadata: {
-                    fullName: apiData.session.fullName,
-                    company: apiData.session.organization?.name || 'AuraDigital',
-                    industry: apiData.session.organization?.industry || 'AGENCY'
-                  }
-                };
-                accessToken = 'jwt_' + Math.random().toString(36).substring(2, 12);
-                serverSuccess = true;
-              }
-            }
-          } catch (e) {}
-
-          if (!serverSuccess) {
-            const errorMsg = (supaData && supaData.error_description) || (supaData && supaData.msg) || 'Invalid email or password. Please verify your credentials or create a new account.';
-            throw new Error(errorMsg);
-          }
+        const apiData = await apiRes.json().catch(() => null);
+        if (!apiRes.ok || !apiData || !apiData.session) {
+          const errorMsg = (apiData && (apiData.error || apiData.message)) || 'Invalid email or password.';
+          throw new Error(errorMsg);
         }
 
-        // Construct verified session
-        const meta = (authUser && authUser.user_metadata) || {};
-        const fullName = meta.fullName || meta.name || email.split('@')[0];
-        const orgName = meta.company || meta.organizationName || 'AuraDigital';
-        const industry = meta.industry || 'AGENCY';
-        const orgId = 'org_' + (authUser.id ? authUser.id.substring(0, 8) : 'aura');
-
-        const session = {
-          userId: authUser.id,
-          accessToken: accessToken,
-          fullName: fullName,
-          email: email,
-          activeOrganizationId: orgId,
-          activeRole: 'OWNER',
-          organization: { id: orgId, name: orgName, industry: industry },
-          memberships: [
-            { organizationId: orgId, organizationName: orgName, role: 'OWNER', industry: industry },
-            { organizationId: 'org_punarvaas', organizationName: 'Punarvaas Rehabilitation Hospital', role: 'ADMIN', industry: 'HEALTHCARE' }
-          ]
-        };
+        const session = apiData.session;
+        const membership = (session.memberships && session.memberships[0]) || {};
+        const orgName = membership.organizationName || '';
+        const fullName = session.fullName || email.split('@')[0];
+        const industry = membership.industry || '';
 
         localStorage.setItem('vanni_session', JSON.stringify(session));
-        localStorage.setItem('vanni_org_name', orgName);
+        if (orgName) localStorage.setItem('vanni_org_name', orgName);
         localStorage.setItem('vanni_user_name', fullName);
-        localStorage.setItem('vanni_industry', industry);
-        localStorage.setItem('vanni_access_token', accessToken);
+        if (industry) localStorage.setItem('vanni_industry', industry);
+        localStorage.removeItem('vanni_access_token');
 
         if (btn) btn.innerHTML = '<span>Authenticated! Entering workspace...</span>';
 

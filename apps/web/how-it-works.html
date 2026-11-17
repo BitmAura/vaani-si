@@ -30,12 +30,19 @@
   <link rel="stylesheet" href="/assets/vanni.css">
 
   <style>
+    .vanni-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .vanni-hero-proof { flex-wrap: wrap; }
+    @media (max-width: 1100px) {
+      .vanni-steps-grid { grid-template-columns: 1fr 1fr !important; }
+    }
     @media (max-width: 860px) {
       .vanni-desktop-nav { display: none !important; }
-      .vanni-mobile-menu-btn { display: inline-flex !important; }
+      .vanni-nav-desktop-cta { display: none !important; }
+      .vanni-mobile-menu-btn { display: inline-flex !important; align-items: center; justify-content: center; min-width: 40px; min-height: 36px; color: var(--vanni-text-primary); }
       .vanni-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
       .vanni-comparison-grid { grid-template-columns: 1fr !important; }
       .vanni-steps-grid { grid-template-columns: 1fr !important; }
+      .vanni-page-cta { flex-wrap: wrap; }
     }
     
     @keyframes vanniFadeUp {
@@ -74,16 +81,16 @@
 
       <!-- Desktop Action CTAs -->
       <div style="display: flex; align-items: center; gap: 10px;" id="vanni-nav-ctas">
-        <a href="/login" id="nav-btn-signin" class="vanni-button vanni-button-ghost" style="font-size: 13px; font-weight: 500;">Sign In</a>
-        <a href="/signup" id="nav-btn-signup" class="vanni-button vanni-button-secondary" style="font-size: 13px; font-weight: 600;">Start Free</a>
-        <a href="/app/dashboard" id="nav-btn-dashboard" class="vanni-button vanni-button-primary" style="font-size: 13px; display: none;">
+        <a href="/login" id="nav-btn-signin" class="vanni-button vanni-button-ghost vanni-nav-desktop-cta" style="font-size: 13px; font-weight: 500;">Sign In</a>
+        <a href="/signup" id="nav-btn-signup" class="vanni-button vanni-button-secondary vanni-nav-desktop-cta" style="font-size: 13px; font-weight: 600;">Create account</a>
+        <a href="/app/dashboard" id="nav-btn-dashboard" class="vanni-button vanni-button-primary vanni-nav-desktop-cta" style="font-size: 13px; display: none;">
           <span>Dashboard &rarr;</span>
         </a>
-        <button type="button" id="nav-btn-demo" onclick="openDemoModal()" class="vanni-button vanni-button-primary" style="font-size: 13px;">
+        <button type="button" id="nav-btn-demo" onclick="openDemoModal()" class="vanni-button vanni-button-primary vanni-nav-desktop-cta" style="font-size: 13px;">
           <span>Talk to VANNI</span>
         </button>
         <!-- Mobile Nav Toggle -->
-        <button type="button" class="vanni-mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle Mobile Menu" style="display: none; background: transparent; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 10px; font-size: 16px; cursor: pointer;">
+        <button type="button" class="vanni-mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open menu" aria-expanded="false" aria-controls="vanni-mobile-nav" style="display: none; background: #FFFFFF; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 10px; font-size: 16px; cursor: pointer; color: var(--vanni-text-primary);">
           &#9776;
         </button>
       </div>
@@ -108,7 +115,8 @@
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <div id="vanni-mobile-nav" style="display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border); padding: 16px 24px; box-shadow: var(--vanni-shadow-md); flex-direction: column; gap: 12px;">
+    <div id="vanni-mobile-nav" style="display: none; position: absolute; top: 64px; left: 0; right: 0; background: #FFFFFF; border-bottom: 1px solid var(--vanni-border); padding: 16px 24px; box-shadow: var(--vanni-shadow-md); flex-direction: column; gap: 12px; z-index: 60;">
+      <button type="button" onclick="toggleMobileNav()" aria-label="Close menu" style="align-self: flex-end; background: #FFFFFF; border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-sm); padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--vanni-text-primary); cursor: pointer;">Close</button>
       <a href="/features" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Product Features</a>
       <a href="/how-it-works" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">How It Works</a>
       <a href="/industries" style="text-decoration: none; font-size: 14px; font-weight: 500; color: var(--vanni-text-primary); padding: 8px 0;">Industry Solutions</a>
@@ -125,7 +133,7 @@
   <!-- Page Header -->
   <section style="padding: 64px 24px 48px 24px; background: var(--vanni-surface); border-bottom: 1px solid var(--vanni-border);">
     <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
-      <h1 style="font-size: 36px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 16px 0; color: var(--vanni-text-primary);">How VANNI Works Behind the Scenes</h1>
+      <h1 style="font-size: clamp(28px, 4vw, 36px); font-weight: 800; letter-spacing: -0.02em; margin: 0 0 16px 0; color: var(--vanni-text-primary);">How VANNI Works Behind the Scenes</h1>
       <p style="font-size: 16px; color: var(--vanni-text-secondary); max-width: 640px; margin: 0 auto; line-height: 1.6;">A transparent look at how autonomous regional voice AI operates without robotic scripts or hallucinated answers.</p>
     </div>
   </section>
@@ -184,7 +192,7 @@
     <div style="max-width: 640px; margin: 0 auto;">
       <h2 style="font-size: 28px; font-weight: 700; margin: 0 0 12px 0;">Ready to evaluate VANNI for your organization?</h2>
       <p style="font-size: 14px; color: var(--vanni-text-secondary); margin: 0 0 24px 0;">Request a live phone demonstration or sign in to your enterprise console.</p>
-      <div style="display: flex; justify-content: center; gap: 12px;">
+      <div class="vanni-page-cta" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
         <button type="button" onclick="openDemoModal()" class="vanni-button vanni-button-primary">Talk to VANNI</button>
         <a href="/login" class="vanni-button vanni-button-secondary">Access Console</a>
       </div>
@@ -253,9 +261,9 @@
         &copy; 2026 VANNI Technologies Inc. All rights reserved.
       </div>
       <div style="display: flex; gap: 20px;">
-        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Privacy & Data Isolation</a>
-        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Terms of Service</a>
-        <a href="/security" style="color: var(--vanni-text-muted); text-decoration: none;">Telemetry Policies</a>
+        <a href="/security#privacy" style="color: var(--vanni-text-muted); text-decoration: none;">Privacy</a>
+        <a href="/security#terms" style="color: var(--vanni-text-muted); text-decoration: none;">Terms of Service</a>
+        <a href="/security#telemetry" style="color: var(--vanni-text-muted); text-decoration: none;">Telemetry</a>
       </div>
     </div>
   </footer>
@@ -336,8 +344,14 @@
   <script>
     function toggleMobileNav() {
       const nav = document.getElementById('vanni-mobile-nav');
-      if (nav) {
-        nav.style.display = nav.style.display === 'none' || !nav.style.display ? 'flex' : 'none';
+      const btn = document.querySelector('.vanni-mobile-menu-btn');
+      if (!nav) return;
+      const open = nav.style.display !== 'flex';
+      nav.style.display = open ? 'flex' : 'none';
+      if (btn) {
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        btn.textContent = open ? '×' : '☰';
       }
     }
 
@@ -368,30 +382,49 @@
       const btn = document.getElementById('btn-submit-demo');
       if (btn) {
         btn.disabled = true;
-        btn.textContent = 'Connecting...';
+        btn.textContent = 'Sending request...';
       }
 
       const phone = document.getElementById('demo-phone').value;
       const name = document.getElementById('demo-name').value;
       const industry = document.getElementById('demo-industry').value;
+      let called = false;
 
       try {
-        await fetch('/api/calls/outbound-inception', {
+        const res = await fetch('/api/calls/outbound-inception', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({
             targetPhone: phone,
             businessName: name,
             industry: industry === 'healthcare' || industry === 'dental' ? 'HEALTHCARE_HOSPITAL' : 'REAL_ESTATE',
             directorName: name
           })
-        }).catch(() => null);
+        });
+        called = res.ok;
       } catch (err) {
-        // Fallback gracefully
+        called = false;
       }
 
       document.getElementById('demo-modal-form-content').style.display = 'none';
-      document.getElementById('demo-modal-success-content').style.display = 'block';
+      const success = document.getElementById('demo-modal-success-content');
+      if (success) {
+        success.style.display = 'block';
+        const title = success.querySelector('h4');
+        const body = success.querySelector('p');
+        if (called) {
+          if (title) title.textContent = 'Demo call queued';
+          if (body) body.textContent = 'VANNI is placing a call to your number now. Keep the phone nearby.';
+        } else {
+          if (title) title.textContent = 'Request received';
+          if (body) body.textContent = 'We saved your number. A founder will call you to run the live Kannada demo. This is not an automatic dial yet.';
+        }
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Request Live Call →';
+      }
     }
   </script>
   

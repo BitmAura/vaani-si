@@ -4,8 +4,10 @@ import { buildServer } from '../server';
 
 describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
   let server: FastifyInstance;
+  const KILL_SWITCH_SECRET = 'test-geo-kill-switch';
 
   beforeAll(async () => {
+    process.env.GEO_KILL_SWITCH_SECRET = KILL_SWITCH_SECRET;
     server = await buildServer();
     await server.ready();
   });
@@ -70,16 +72,29 @@ describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
   });
 
   it('triggers Kill-Switch when geoEnabled is toggled to false', async () => {
-    // 1. Deactivate GEO for Punarvaas
-    const toggleRes = await server.inject({
+    const unauth = await server.inject({
       method: 'POST',
       url: '/api/geo/punarvaas/toggle',
       headers: { 'Content-Type': 'application/json' },
-      payload: { geoEnabled: false },
+      payload: { geoEnabled: false, subscriptionStatus: 'ACTIVE' },
+    });
+    expect(unauth.statusCode).toBe(401);
+
+    // 1. Deactivate GEO for Punarvaas (authorized kill-switch)
+    const toggleRes = await server.inject({
+      method: 'POST',
+      url: '/api/geo/punarvaas/toggle',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-vanni-kill-switch': KILL_SWITCH_SECRET,
+      },
+      payload: { geoEnabled: false, subscriptionStatus: 'CANCELLED' },
     });
     expect(toggleRes.statusCode).toBe(200);
     const toggleData = JSON.parse(toggleRes.payload);
     expect(toggleData.geoEnabled).toBe(false);
+    // Paywall: toggle must not accept subscriptionStatus mutations
+    expect(toggleData.subscriptionStatus).toBe('ACTIVE');
 
     // 2. loader.js now returns suspended notice
     const loaderRes = await server.inject({
@@ -101,7 +116,10 @@ describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
     await server.inject({
       method: 'POST',
       url: '/api/geo/punarvaas/toggle',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-vanni-kill-switch': KILL_SWITCH_SECRET,
+      },
       payload: { geoEnabled: true, voiceEnabled: true },
     });
   });
@@ -179,7 +197,63 @@ describe('Prompt 10: Autonomous GEO & AEO Engine & Entitlements', () => {
     expect(body.entity.name).toContain('Punarvaas');
     expect(body.readinessScore).toBeGreaterThanOrEqual(80);
     expect(body.findings.length).toBeGreaterThanOrEqual(4);
+    expect(body.paymentRequired).toBe(false);
     expect(body.embedCode).toContain('/api/geo/punarvaas/loader.js');
+  });
+
+  it('hides embed slug on unpaid entity audit and checkout without Razorpay keys', async () => {
+    const extractRes = await server.inject({
+      method: 'POST',
+      url: '/api/geo/extract',
+      headers: { 'Content-Type': 'application/json' },
+      payload: {
+        url: 'https://unpaid-ortho-clinic.example',
+        slug: 'unpaid-ortho-clinic',
+        industry: 'HEALTHCARE',
+        name: 'Unpaid Ortho Clinic',
+        telephone: '+918047192088',
+        address: {
+          street: '1 MG Road',
+          city: 'Bengaluru',
+          state: 'Karnataka',
+          postalCode: '560001',
+          country: 'IN',
+        },
+      },
+    });
+    expect(extractRes.statusCode).toBe(200);
+    expect(JSON.parse(extractRes.payload).embedSnippet).toBeUndefined();
+
+    const auditRes = await server.inject({
+      method: 'GET',
+      url: '/api/geo/unpaid-ortho-clinic/audit',
+    });
+    expect(auditRes.statusCode).toBe(200);
+    const audit = JSON.parse(auditRes.payload);
+    expect(audit.paymentRequired).toBe(true);
+    expect(audit.entity.slug).toBeUndefined();
+    expect(audit.embedCode).toBeUndefined();
+    expect(audit.downloadUrls).toBeUndefined();
+
+    const checkoutRes = await server.inject({
+      method: 'POST',
+      url: '/api/geo/unpaid-ortho-clinic/checkout',
+      headers: { 'Content-Type': 'application/json' },
+      payload: { name: 'Dr Test', email: 'test@example.com', phone: '+918047192088' },
+    });
+    expect(checkoutRes.statusCode).toBe(200);
+    const checkout = JSON.parse(checkoutRes.payload);
+    expect(checkout.configured).toBe(false);
+    expect(checkout.paymentRequired).toBe(true);
+    expect(checkout.embedSnippet).toBeUndefined();
+
+    const activateRes = await server.inject({
+      method: 'POST',
+      url: '/api/geo/unpaid-ortho-clinic/activate',
+      headers: { 'Content-Type': 'application/json' },
+      payload: {},
+    });
+    expect(activateRes.statusCode).toBe(402);
   });
 
   it('generates a prospective client audit report for unonboarded prospect', async () => {

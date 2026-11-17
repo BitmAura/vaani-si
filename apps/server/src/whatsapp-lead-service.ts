@@ -57,15 +57,19 @@ _Generated instantly by Dhwani SI Voice Telephony Gateway_`;
   /**
    * Dispatch via WhatsApp Cloud API or simulate locally
    */
-  public async dispatchLead(ownerPhone: string, lead: LeadPayload): Promise<{ success: boolean; messageId?: string }> {
+  public async dispatchLead(
+    ownerPhone: string,
+    lead: LeadPayload
+  ): Promise<{ success: boolean; simulated?: boolean; messageId?: string }> {
     const bodyText = this.formatLeadMessage(lead);
 
+    // No credentials = console-only. Never claim DELIVERED upstream.
     if (!this.apiToken || !this.phoneNumberId) {
       console.log(`\n======================================================`);
       console.log(`[WHATSAPP DISPATCH SIMULATION -> ${ownerPhone}]`);
       console.log(bodyText);
       console.log(`======================================================\n`);
-      return { success: true, messageId: `SIM_WA_${Date.now()}` };
+      return { success: false, simulated: true, messageId: `SIM_WA_${Date.now()}` };
     }
 
     try {

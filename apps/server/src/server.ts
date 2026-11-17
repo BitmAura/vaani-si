@@ -92,7 +92,7 @@ import { TelephonyMediaBridge } from '../../../packages/voice-engine/src/telepho
 import { CallLifecycleManager } from '../../../packages/voice-engine/src/telephony/call-lifecycle';
 import { validateIndianPhoneNumber } from '@vanni/providers';
 import { globalEntitlementEngine } from '@vanni/billing';
-import { EmergencyHandler, EmergencyDetectionResult } from './emergency-handler';
+import { EmergencyHandler, EmergencyDetectionResult, isMedicalEmergencyIndustry } from './emergency-handler';
 import { agencyRoutes } from './routes/agency';
 import { doctorRoutes } from './routes/doctors';
 import { plotRoutes } from './routes/plots';
@@ -346,6 +346,68 @@ export async function buildServer() {
       callDurationSeconds: 65,
     });
     return reply.send(result);
+  });
+
+  // Public sales / contact inquiry — logs + optional WhatsApp to founder; never fakes dial success
+  fastify.post('/api/contact', async (request, reply) => {
+    const body = (request.body || {}) as {
+      name?: string;
+      email?: string;
+      phone?: string;
+      volume?: string;
+      source?: string;
+      message?: string;
+    };
+    const name = (body.name || '').trim();
+    const email = (body.email || '').trim();
+    const phone = (body.phone || '').trim();
+    if (!name || (!email && !phone)) {
+      return reply.status(400).send({
+        success: false,
+        error: 'NAME_AND_CONTACT_REQUIRED',
+        message: 'Provide your name and either email or phone.',
+      });
+    }
+
+    const inquiry = {
+      id: `INQ_${Date.now()}`,
+      name,
+      email: email || null,
+      phone: phone || null,
+      volume: body.volume || null,
+      source: body.source || 'contact_page',
+      message: body.message || null,
+      receivedAt: new Date().toISOString(),
+    };
+    fastify.log.info(inquiry, '[Sales Inquiry]');
+
+    const founderPhone = process.env.FOUNDER_WHATSAPP || process.env.VANNI_FOUNDER_PHONE || '';
+    let notifyStatus: 'DELIVERED' | 'FAILED' | 'PENDING' | 'SKIPPED' = 'SKIPPED';
+    if (founderPhone) {
+      try {
+        const wa = await whatsapp.dispatchLead(founderPhone, {
+          tenantName: 'VANNI Sales Inbox',
+          customerName: name,
+          customerPhone: phone || email,
+          leadRating: 'ENTERPRISE_UPSELL',
+          requirementSummary: `Contact form (${inquiry.source})${body.volume ? ` · Volume: ${body.volume}` : ''}${body.message ? ` · ${body.message}` : ''}`,
+          budgetOrFee: 'Enterprise / sales inquiry',
+          nextAction: 'Founder callback within 1 business day',
+          callDurationSeconds: 0,
+        });
+        notifyStatus = wa.simulated ? 'PENDING' : (wa.success ? 'DELIVERED' : 'FAILED');
+      } catch (err) {
+        notifyStatus = 'FAILED';
+        fastify.log.warn({ err }, '[Sales Inquiry] WhatsApp notify failed');
+      }
+    }
+
+    return reply.send({
+      success: true,
+      inquiryId: inquiry.id,
+      notifyStatus,
+      message: 'Request received. A VANNI founder will follow up — this is not an automatic dial.',
+    });
   });
 
   const identityService = new IdentityService();
@@ -705,9 +767,10 @@ export async function buildServer() {
         directorName: name,
       }, callbackUrl);
 
-      const callSid = outboundResult.callSid || `CALL_META_${Date.now()}`;
+      const callPlaced = Boolean(outboundResult.success && outboundResult.callSid);
+      const callSid = outboundResult.callSid || `LEAD_META_${Date.now()}`;
 
-      // 4. Save call record to CallDatabaseService
+      // 4. Save call record — never claim dial success when Exotel is offline
       const callRecord: any = {
         id: callSid,
         tenantId: tenant.id,
@@ -718,19 +781,45 @@ export async function buildServer() {
         city: 'Ballari',
         direction: 'OUTBOUND',
         source: 'META_ADS_SPEED_TO_LEAD',
-        duration: '0:35',
-        durationSec: 35,
-        costInr: 1.5,
+        duration: callPlaced ? '0:35' : '0:00',
+        durationSec: callPlaced ? 35 : 0,
+        costInr: callPlaced ? 1.5 : 0,
         status: 'HOT_LEAD',
         intent: 'Meta Lead Ad Enquiry (Speed-to-Lead < 5s)',
         budget: tenantKey === 'real_estate' ? '₹18 Lakhs - 35 Lakhs' : 'Standard',
-        outcome: 'Instant Outbound Call Dispatched (< 5s)',
-        whatsappStatus: 'DELIVERED',
-        transcript: [
-          { speaker: (tenant.knowledge as any)?.agentName || 'Sahana', time: '00:02', text: 'Namaskara! Neevu namma Facebook ad nalli enquiry maadidri alva? Details bagge helthini.' },
-          { speaker: 'Customer', time: '00:10', text: 'Haudu madam, details heli.' },
-        ],
+        outcome: callPlaced
+          ? 'Instant Outbound Call Dispatched (< 5s)'
+          : `Lead saved — dial skipped (${outboundResult.message || 'Exotel not configured'})`,
+        whatsappStatus: 'PENDING' as 'DELIVERED' | 'FAILED' | 'PENDING',
+        transcript: callPlaced
+          ? [
+              { speaker: (tenant.knowledge as any)?.agentName || 'Sahana', time: '00:02', text: 'Namaskara! Neevu namma Facebook ad nalli enquiry maadidri alva? Details bagge helthini.' },
+              { speaker: 'Customer', time: '00:10', text: 'Haudu madam, details heli.' },
+            ]
+          : [
+              { speaker: 'System', time: '00:00', text: outboundResult.message || 'Outbound dial not placed — telephony unconfigured.' },
+            ],
       };
+
+      // Instant WhatsApp alert — status must reflect real Meta API outcome (sim = PENDING)
+      const ownerWhatsApp = tenant.ownerWhatsAppNumber || '+919845012345';
+      try {
+        const waMeta = await whatsapp.dispatchLead(ownerWhatsApp, {
+          tenantName: tenant.name,
+          customerName: name,
+          customerPhone: phone,
+          leadRating: 'HOT',
+          requirementSummary: `Meta Lead Ad Instant Ingestion (${leadIndustry})`,
+          budgetOrFee: callRecord.budget,
+          nextAction: `Speed-to-lead autodial placed (< 5s). Call SID: ${callSid}`,
+          callDurationSeconds: 35,
+        });
+        callRecord.whatsappStatus = waMeta.simulated ? 'PENDING' : (waMeta.success ? 'DELIVERED' : 'FAILED');
+      } catch (err) {
+        callRecord.whatsappStatus = 'FAILED';
+        fastify.log.warn({ err }, '[WhatsApp Speed-to-Lead Dispatch Warning]');
+      }
+
       db.saveCall(callRecord);
 
       // 5. Sync the lead via openSourceCRM.syncLeadAcrossStack()
@@ -748,24 +837,7 @@ export async function buildServer() {
         durationSeconds: 35,
       });
 
-      
-
-      // Instant WhatsApp alert to business owner on Speed-to-Lead lead ingestion
-      const ownerWhatsApp = tenant.ownerWhatsAppNumber || '+919845012345';
-      whatsapp.dispatchLead(ownerWhatsApp, {
-        tenantName: tenant.name,
-        customerName: name,
-        customerPhone: phone,
-        leadRating: 'HOT',
-        requirementSummary: `Meta Lead Ad Instant Ingestion (${leadIndustry})`,
-        budgetOrFee: callRecord.budget,
-        nextAction: `Speed-to-lead autodial placed (< 5s). Call SID: ${callSid}`,
-        callDurationSeconds: 35,
-      }).catch(err => {
-        fastify.log.warn({ err }, '[WhatsApp Speed-to-Lead Dispatch Warning]');
-      });
-
-fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Dispatched & Synced]');
+      fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Dispatched & Synced]');
       return reply.send({
         success: true,
         queued: true,
@@ -956,19 +1028,15 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     // The client-supplied x-organization-id header is no longer trusted.
     const session = requireUser(getSessionFromRequest(request));
     const orgId = session.activeOrganizationId;
+    const membership = session.memberships?.find((m) => m.organizationId === orgId);
     const org = await globalDb.getOrganizationById(orgId) || {
       id: orgId,
-      name: 'Ballari Residential Layouts',
-      slug: 'ballari-plots',
-      industry: 'REAL_ESTATE',
-      city: 'Ballari',
-      state: 'Karnataka',
-      phone: '+91 80 4719 2001',
-      language: 'kn',
-      agentName: 'Sahana',
+      name: membership?.organizationName || 'Your business',
+      slug: membership?.organizationSlug || orgId,
+      industry: membership?.industry || 'HEALTHCARE',
       status: 'ACTIVE',
-      billingTier: 'GROWTH',
-      createdAt: '2026-01-15T09:00:00.000Z',
+      billingTier: 'FREE',
+      createdAt: new Date().toISOString(),
     };
     return reply.send({ success: true, organization: org });
   });
@@ -2334,7 +2402,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       budget: body?.budget || 'Standard',
       outcome: canonicalStatus === 'COMPLETED' ? 'Call Completed Successfully' : `Ended: ${canonicalStatus}`,
       audioRecordingUrl: body?.RecordingUrl,
-      whatsappStatus: 'DELIVERED' as const,
+      whatsappStatus: 'PENDING' as const,
       transcript: body?.transcript || [],
       callStatus: canonicalStatus,
       startedAt: transitionRes.session?.initiatedAt,
@@ -2470,6 +2538,61 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     return reply.type('text/xml').send(twiml);
   });
 
+  // Founder launch readiness — boolean gates for cash + Kavya call (no secrets leaked)
+  fastify.get('/api/launch/readiness', async (_request, reply) => {
+    const razorpay = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+    const razorpayLive = String(process.env.RAZORPAY_KEY_ID || '').startsWith('rzp_live_');
+    const sarvam = !!process.env.SARVAM_API_KEY;
+    const exotel = !!(
+      process.env.EXOTEL_ACCOUNT_SID &&
+      process.env.EXOTEL_API_KEY &&
+      process.env.EXOTEL_API_TOKEN &&
+      process.env.EXOTEL_CALLER_ID
+    );
+    const gemini = !!process.env.GEMINI_API_KEY;
+    const whatsapp = !!(process.env.WHATSAPP_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID);
+    const killSwitch = !!process.env.GEO_KILL_SWITCH_SECRET;
+    const founderWa = !!(process.env.FOUNDER_WHATSAPP || process.env.VANNI_FOUNDER_PHONE);
+
+    const geoCashReady = razorpay;
+    const kavyaCallReady = sarvam && exotel && gemini;
+
+    return reply.send({
+      success: true,
+      generatedAt: new Date().toISOString(),
+      gates: {
+        geoCashCollection: {
+          ready: geoCashReady,
+          razorpayConfigured: razorpay,
+          razorpayLiveMode: razorpayLive,
+          next: razorpayLive
+            ? 'Homepage Pay → Razorpay → slug reveal is live'
+            : razorpay
+              ? 'Keys present but not rzp_live_* — switch to live for real ₹9,999'
+              : 'Set RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET (rzp_live_*) on Vercel and redeploy',
+        },
+        kavyaDemoCall: {
+          ready: kavyaCallReady,
+          sarvamConfigured: sarvam,
+          exotelConfigured: exotel,
+          geminiConfigured: gemini,
+          next: kavyaCallReady
+            ? 'Use console Test Voice or authenticated outbound-inception'
+            : 'Missing: ' +
+              [!sarvam && 'SARVAM_API_KEY', !exotel && 'EXOTEL_*', !gemini && 'GEMINI_API_KEY']
+                .filter(Boolean)
+                .join(', '),
+        },
+        extras: {
+          whatsappConfigured: whatsapp,
+          geoKillSwitchSecret: killSwitch,
+          founderWhatsappNotify: founderWa,
+        },
+      },
+      launchOrder: ['geoCashCollection', 'kavyaDemoCall', 'bundleSell'],
+    });
+  });
+
   // 2.3.3 Telephony & Voice Pipeline Diagnostics
   fastify.get('/api/telephony/diagnostics', async (request, reply) => {
     const exotelConfigured = !!(process.env.EXOTEL_ACCOUNT_SID && process.env.EXOTEL_API_KEY);
@@ -2477,7 +2600,9 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
     const azureConfigured = !!process.env.AZURE_SPEECH_KEY;
     const geminiConfigured = !!process.env.GEMINI_API_KEY;
 
-    const allCalls = await globalDb.getCalls();
+    const session = getSessionFromRequest(request);
+    const orgId = session?.activeOrganizationId;
+    const allCalls = orgId ? await globalDb.getCalls(orgId) : [];
     const recent = allCalls.slice(0, 10);
 
     return reply.send({
@@ -2779,6 +2904,13 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       callbackUrl
     );
 
+    if (!dispatchRes.success) {
+      return reply.status(503).send({
+        error: 'TELEPHONY_UNCONFIGURED',
+        ...dispatchRes,
+      });
+    }
+
     return reply.send(dispatchRes);
   });
 
@@ -2950,6 +3082,8 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
   // 2.7 Two-Way Duplex Conversational Voice Turn API (Powered by Business Brain & Hybrid RAG)
   fastify.post('/api/voice/turn', async (request, reply) => {
     const tStart = Date.now();
+    // Auth first: unauthenticated turns were used to spoof org + owner WhatsApp.
+    const session = requireUser(getSessionFromRequest(request));
     const body = request.body as {
       targetLanguageCode: string;
       text: string;
@@ -2977,7 +3111,11 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
     // Resolve tenant based on tenantKey or organizationId
     let resolvedTenantKey = body.tenantKey || (body as any).tenant;
-    let resolvedOrgId = body.organizationId;
+    let resolvedOrgId = body.organizationId || session.activeOrganizationId;
+    if (!resolvedOrgId) {
+      return reply.status(400).send({ error: 'organizationId required' });
+    }
+    requireOrganizationMember(session, resolvedOrgId);
     if (!resolvedTenantKey && resolvedOrgId) {
       if (resolvedOrgId === 'a0000000-0000-0000-0000-000000000002') resolvedTenantKey = 'hospital';
       else if (resolvedOrgId === 'a0000000-0000-0000-0000-000000000003') resolvedTenantKey = 'agency';
@@ -3159,17 +3297,17 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
       content: h.content,
     }));
 
-    // Check for medical emergencies, human requests & angry caller escalations across ALL industries
+    // Escalation: medical emergency (healthcare verticals only), human request, or complaint
     let emergencyResult: EmergencyDetectionResult | null = null;
     let emergencyAlert: { success: boolean; alertId: string } | null = null;
-    const isHealthcare = resolvedTenantKey === 'hospital' || tenant.industry === 'HEALTHCARE_HOSPITAL';
+    const isHealthcare = isMedicalEmergencyIndustry(tenant.industry, resolvedTenantKey);
 
     const emergencySig = handoffManager.detectEmergencySignals(body.text);
     if (isHealthcare) {
       emergencyResult = emergencyHandler.detectEmergency(body.text);
     }
 
-    const isEmergencyEscalation = Boolean(emergencySig.isEmergency || emergencyResult?.isEmergency);
+    const isEmergencyEscalation = isHealthcare && Boolean(emergencySig.isEmergency || emergencyResult?.isEmergency);
     const isHumanRequestEscalation = !isEmergencyEscalation && handoffManager.detectHumanRequest(body.text);
     const complaintCheck = !isEmergencyEscalation && !isHumanRequestEscalation
       ? handoffManager.detectFrustrationOrComplaint(body.text)
@@ -3197,11 +3335,11 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
             emergencyResult.emergencyType as ('CRITICAL' | 'URGENT'),
             emergencyResult.detectedKeywords
           )
-        : 'Sir, idhu emergency aaguththe! Dayavittu immediately 108 ambulance call madi athva casualty emergency ward ge rush madi sir. Casualty duty doctor 24/7 ready irthare!';
+        : 'Sir, idhu medical emergency. Dayavittu immediately 108 ambulance call madi athva nearest hospital casualty ge rush madi. Namma duty staff ge alert kalisiddini — avaru nimge call back madthare.';
     } else if (isHumanRequestEscalation) {
-      replyText = 'Khanditha sir, ondu nimisha hold madi, nanu eegale namma human manager ge call transfer maadtha iddini. Dayavittu line nalli iri sir.';
+      replyText = 'Khanditha sir, nanu eegale namma team ge notify maadiddini. Live transfer eega ready illa — senior manager nimge call back madthare. Dayavittu nimma number line nalli irli sir.';
     } else if (isComplaintEscalation) {
-      replyText = 'Kshamisee sir, nimma concern 100% understand aaythu. Dayavittu kshame irli. Nanu eegale idanna senior management attention ge thagond solve maadistheeni. Call transfer maadla sir?';
+      replyText = 'Kshamisee sir, nimma concern 100% understand aaythu. Dayavittu kshame irli. Nanu eegale idanna senior management ge notify maadiddini — avaru nimge call back madthare.';
     } else {
       replyText = await llmService.generateTurn(systemPrompt, history, body.text, ragContext, callerDossier);
     }
@@ -3263,14 +3401,36 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         fastify.log.warn({ err }, '[Voice Turn] saveConversationHandoff error');
       }
 
+      // Instantly notify business owner via WhatsApp on caller escalation
+      const ownerWhatsAppEsc = tenant.ownerWhatsAppNumber || '+919845012345';
+      const escalationName = callerDossier?.name || body.callerName || 'Verified Caller';
+      const escalationPhone = callerPhone || '+91 98450 12345';
+      let escalationWhatsappStatus: 'DELIVERED' | 'FAILED' | 'PENDING' = 'PENDING';
+      try {
+        const waEsc = await whatsapp.dispatchLead(ownerWhatsAppEsc, {
+          tenantName: tenant.name,
+          customerName: escalationName,
+          customerPhone: escalationPhone,
+          leadRating: isEmergencyEscalation ? 'HOT' : (isComplaintEscalation ? 'DISQUALIFIED' : 'WARM'),
+          requirementSummary: `🚨 ESCALATION: ${reason} (Keyword: ${triggerWord})`,
+          budgetOrFee: `Priority: ${priority}`,
+          nextAction: `Immediate Human Handoff -> ${destinationDepartment}`,
+          callDurationSeconds: 45,
+        });
+        escalationWhatsappStatus = waEsc.simulated ? 'PENDING' : (waEsc.success ? 'DELIVERED' : 'FAILED');
+      } catch (err) {
+        escalationWhatsappStatus = 'FAILED';
+        fastify.log.warn({ err }, '[WhatsApp Escalation Dispatch Warning]');
+      }
+
       // Save to Stored Call Records
       db.saveCall({
         id: `CALL-${handoff.id}`,
         tenantId: tenant.id,
         time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
         timestampMs: Date.now(),
-        caller: callerDossier?.name || body.callerName || 'Verified Caller (Voice Turn)',
-        phone: callerPhone || '+91 98450 12345',
+        caller: escalationName,
+        phone: escalationPhone,
         city: resolvedTenantKey === 'hospital' ? 'Bengaluru' : (resolvedTenantKey === 'agency' ? 'Hubli' : 'Ballari'),
         direction: 'INBOUND',
         source: 'Two-Way Live Voice Telephony',
@@ -3280,8 +3440,8 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         status: isEmergencyEscalation ? 'HOT_LEAD' : (isComplaintEscalation ? 'DISQUALIFIED' : 'WARM'),
         intent: `Escalation: ${reason} (${triggerWord})`,
         budget: reason,
-        outcome: isEmergencyEscalation ? 'EMERGENCY_108_TRANSFER' : 'ESCALATED_TO_HUMAN',
-        whatsappStatus: 'DELIVERED',
+        outcome: isEmergencyEscalation ? 'EMERGENCY_108_STAFF_ALERTED' : 'ESCALATED_TO_HUMAN',
+        whatsappStatus: escalationWhatsappStatus,
         transcript: [
           ...history.map((h, i) => ({
             speaker: h.role === 'model' ? 'Sahana' : 'Caller',
@@ -3304,22 +3464,6 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         detectedKeywords: emergencyResult?.detectedKeywords?.length ? emergencyResult.detectedKeywords : [triggerWord],
       };
 
-      // Instantly notify business owner via WhatsApp on caller escalation
-      const ownerWhatsAppEsc = tenant.ownerWhatsAppNumber || '+919845012345';
-      const escalationName = callerDossier?.name || body.callerName || 'Verified Caller';
-      const escalationPhone = callerPhone || '+91 98450 12345';
-      whatsapp.dispatchLead(ownerWhatsAppEsc, {
-        tenantName: tenant.name,
-        customerName: escalationName,
-        customerPhone: escalationPhone,
-        leadRating: isEmergencyEscalation ? 'HOT' : (isComplaintEscalation ? 'DISQUALIFIED' : 'WARM'),
-        requirementSummary: `🚨 ESCALATION: ${reason} (Keyword: ${triggerWord})`,
-        budgetOrFee: `Priority: ${priority}`,
-        nextAction: `Immediate Human Handoff -> ${destinationDepartment}`,
-        callDurationSeconds: 45,
-      }).catch(err => {
-        fastify.log.warn({ err }, '[WhatsApp Escalation Dispatch Warning]');
-      });
     }
 
 
@@ -3436,7 +3580,26 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         fastify.log.warn({ err }, '[Voice Turn] globalDb appointment save warning');
       }
 
-      // 2. Save as Stored Call Record in Call Database
+      // 2. Notify owner via WhatsApp, then persist call with honest delivery status
+      const ownerWhatsAppBook = tenant.ownerWhatsAppNumber || '+919845012345';
+      let bookingWhatsappStatus: 'DELIVERED' | 'FAILED' | 'PENDING' = 'PENDING';
+      try {
+        const waBook = await whatsapp.dispatchLead(ownerWhatsAppBook, {
+          tenantName: tenant.name,
+          customerName: bookingRecord.customerName,
+          customerPhone: bookingRecord.customerPhone,
+          leadRating: 'HOT',
+          requirementSummary: `${bookingRecord.serviceType} | Scheduled: ${bookingRecord.scheduledTime}`,
+          budgetOrFee,
+          nextAction: `Confirmed Appointment (Token: ${tokenNum}) - Direct Cab/Clinic Reserved`,
+          callDurationSeconds: 75,
+        });
+        bookingWhatsappStatus = waBook.simulated ? 'PENDING' : (waBook.success ? 'DELIVERED' : 'FAILED');
+      } catch (err) {
+        bookingWhatsappStatus = 'FAILED';
+        fastify.log.warn({ err }, '[WhatsApp Booking Dispatch Warning]');
+      }
+
       db.saveCall({
         id: `CALL-${bId}`,
         tenantId: tenant.id,
@@ -3454,7 +3617,7 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         intent: bookingRecord.serviceType,
         budget: budgetOrFee,
         outcome: `Confirmed ${bookingRecord.serviceType} (Token: ${tokenNum})`,
-        whatsappStatus: 'DELIVERED',
+        whatsappStatus: bookingWhatsappStatus,
         transcript: [
           ...history.map((h, i) => ({
             speaker: h.role === 'model' ? 'Sahana' : 'Caller',
@@ -3480,21 +3643,6 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
         transcript: [{ speaker: 'Caller', time: '00:45', text: body.text }, { speaker: 'Sahana', time: '00:58', text: replyText }],
         durationSeconds: 75,
       }).catch(e => console.warn('[CRM Sync]', e));
-
-      // 4. Instantly notify business owner via WhatsApp Lead Dossier
-      const ownerWhatsAppBook = tenant.ownerWhatsAppNumber || '+919845012345';
-      whatsapp.dispatchLead(ownerWhatsAppBook, {
-        tenantName: tenant.name,
-        customerName: bookingRecord.customerName,
-        customerPhone: bookingRecord.customerPhone,
-        leadRating: 'HOT',
-        requirementSummary: `${bookingRecord.serviceType} | Scheduled: ${bookingRecord.scheduledTime}`,
-        budgetOrFee,
-        nextAction: `Confirmed Appointment (Token: ${tokenNum}) - Direct Cab/Clinic Reserved`,
-        callDurationSeconds: 75,
-      }).catch(err => {
-        fastify.log.warn({ err }, '[WhatsApp Booking Dispatch Warning]');
-      });
     }
 
 
@@ -3582,10 +3730,13 @@ fastify.log.info({ phone, tenantName: tenant.name, callSid }, '[Speed-to-Lead Di
 
   // 2.9 Get Active Handoffs & Escalation Queue
   fastify.get('/api/handoffs', async (request, reply) => {
+    const session = requireUser(getSessionFromRequest(request));
+    const { organizationId, tenant } = request.query as { organizationId?: string; tenant?: string };
+    const orgId = organizationId || tenant || session.activeOrganizationId;
+
+    requireOrganizationMember(session, orgId);
+
     try {
-      const { organizationId, tenant } = request.query as { organizationId?: string; tenant?: string };
-      const session = getSessionFromRequest(request);
-      const orgId = organizationId || tenant || session?.activeOrganizationId;
       const handoffs = await globalDb.getConversationHandoffs(orgId);
       return reply.send({ success: true, handoffs });
     } catch (err: any) {
