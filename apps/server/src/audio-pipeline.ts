@@ -5,7 +5,8 @@
 
 import { SarvamVoiceAdapter } from '../../../packages/voice-engine/src/sarvam-adapter';
 import { PromptEngine } from '../../../packages/core/src/conversation/prompt-engine';
-import { Tenant } from '../../../packages/core/src/domain/types';
+import { Tenant, RegionalDialect } from '../../../packages/core/src/domain/types';
+import { VernacularDialectClassifier } from '../../../packages/core/src/conversation/vernacular-classifier';
 import { LLMConversationalService, MessageTurn, CallerDossier } from './llm-service';
 import { HandoffManager, ToolPermissionEvaluator } from '@vanni/conversation-engine';
 import { KannadaFillerEngine, KannadaFiller } from './kannada-fillers';
@@ -45,6 +46,7 @@ export class AudioConversationPipeline {
   private organizationId: string;
   private isDestroyed = false;
   private executedToolKeys = new Set<string>();
+  private activeDialect: RegionalDialect;
 
   constructor(
     tenant: Tenant,
@@ -58,10 +60,19 @@ export class AudioConversationPipeline {
     this.callerDossier = callerDossier;
     this.callId = callId || `call_${Date.now()}`;
     this.organizationId = organizationId || tenant.id || 'default_org';
+    this.activeDialect = tenant.dialect || 'KANNADA_STANDARD_POLITE';
     this.sarvam = new SarvamVoiceAdapter();
     this.llm = new LLMConversationalService();
     this.handoffManager = new HandoffManager();
     this.toolEvaluator = new ToolPermissionEvaluator();
+  }
+
+  public getActiveDialect(): RegionalDialect {
+    return this.activeDialect;
+  }
+
+  public setActiveDialect(dialect: RegionalDialect): void {
+    this.activeDialect = dialect;
   }
 
   /**
@@ -155,10 +166,17 @@ export class AudioConversationPipeline {
       let userText = rawTextOverride || '';
 
       // If text override provided immediately, emit filler instantly!
-      if (userText && events.onFiller) {
-        const filler = KannadaFillerEngine.selectFiller(userText);
-        const cachedWav = KannadaFillerEngine.getCachedAudio(filler.id);
-        events.onFiller(filler.kanglishText, cachedWav);
+      if (userText) {
+        const classification = VernacularDialectClassifier.classifyDialect(userText, this.activeDialect);
+        if (classification.confidence >= 0.65 && classification.dialect !== this.activeDialect) {
+          this.activeDialect = classification.dialect;
+        }
+
+        if (events.onFiller) {
+          const filler = KannadaFillerEngine.selectFiller(userText, this.activeDialect);
+          const cachedWav = KannadaFillerEngine.getCachedAudio(filler.id);
+          events.onFiller(filler.kanglishText, cachedWav);
+        }
       }
 
       // 1. Transcribe Audio (if audio buffer exists)
@@ -179,10 +197,17 @@ export class AudioConversationPipeline {
         sttMs = Date.now() - sttStart;
 
         // Emit filler immediately after transcript arrives if speech was detected!
-        if (events.onFiller && userText) {
-          const filler = KannadaFillerEngine.selectFiller(userText);
-          const cachedWav = KannadaFillerEngine.getCachedAudio(filler.id);
-          events.onFiller(filler.kanglishText, cachedWav);
+        if (userText) {
+          const classification = VernacularDialectClassifier.classifyDialect(userText, this.activeDialect);
+          if (classification.confidence >= 0.65 && classification.dialect !== this.activeDialect) {
+            this.activeDialect = classification.dialect;
+          }
+
+          if (events.onFiller) {
+            const filler = KannadaFillerEngine.selectFiller(userText, this.activeDialect);
+            const cachedWav = KannadaFillerEngine.getCachedAudio(filler.id);
+            events.onFiller(filler.kanglishText, cachedWav);
+          }
         }
 
         // Truthful Empty / Failed Transcript Recovery
@@ -191,10 +216,14 @@ export class AudioConversationPipeline {
             this.isProcessingTurn = false;
             return;
           }
-          const isStandardKannada = this.tenant.dialect === 'KANNADA_STANDARD_POLITE' || this.tenant.dialect === 'KANGLISH_BUSINESS';
-          const recoveryPrompt = isStandardKannada
-            ? 'Kshamisee sir, nimma dhwani spashtavaagi kelisallilla. Dayavittu innomme heltheera?'
-            : 'Pardon me, I could not hear you clearly. Could you please repeat that?';
+          let recoveryPrompt = 'Kshamisee sir, nimma dhwani spashtavaagi kelisallilla. Dayavittu innomme heltheera?';
+          if (this.activeDialect === 'KANNADA_NORTH') {
+            recoveryPrompt = 'Kshamsree, nim dhwani spashtavaag kelislilla ri. Dayavittu innomm heltheerri?';
+          } else if (this.activeDialect === 'HINDI_HINGLISH') {
+            recoveryPrompt = 'Maaf kijiye bhaiya, aapki aawaz theek se sunai nahi di. Kya aap dobara bol sakte hain?';
+          } else if (this.activeDialect === 'INDIAN_ENGLISH') {
+            recoveryPrompt = 'Pardon me, I could not hear you clearly. Could you please repeat that?';
+          }
 
           events.onTranscript('AGENT', recoveryPrompt);
           this.history.push({ role: 'model', content: recoveryPrompt });
@@ -399,6 +428,7 @@ export class AudioConversationPipeline {
           const systemPrompt = PromptEngine.buildSystemPrompt({
             tenant: this.tenant,
             isSelfSellingInception: this.isInceptionMode,
+            activeDialect: this.activeDialect,
           });
 
           // Pass episodic caller dossier and authoritative tool result

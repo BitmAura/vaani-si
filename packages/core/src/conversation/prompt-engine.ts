@@ -10,6 +10,7 @@ export interface PromptContext {
   callerName?: string;
   leadSource?: string;
   isSelfSellingInception?: boolean; // When true, the AI demonstrates and sells itself!
+  activeDialect?: RegionalDialect;  // Dynamically classified caller dialect
 }
 
 export class PromptEngine {
@@ -29,6 +30,49 @@ export class PromptEngine {
     const catalogSummary = tenant.knowledge?.catalogSummary || 'Standard services and consultations';
     const officeTimings = tenant.knowledge?.officeTimings || 'Monday to Saturday, 9:00 AM to 7:00 PM';
     const faqs = Array.isArray(tenant.knowledge?.faqs) ? tenant.knowledge.faqs : [];
+
+    const effectiveDialect = context.activeDialect || tenant.dialect || 'KANNADA_STANDARD_POLITE';
+    let dialectInstruction = '';
+    switch (effectiveDialect) {
+      case 'KANNADA_NORTH':
+        dialectInstruction = `
+### REGIONAL DIALECT SPECIALIZATION: NORTH KANNADA (UTTARA KARNATAKA / HUBLI / BALLARI)
+- Tone: Assertive, vibrant, candid, and deeply warm hospitality.
+- Polite Ending Suffix: Use "ri" naturally ("Namaste ri", "Haudri", "Nodri", "Kelisathri", "Helri").
+- Conversational Markers: Use "bhesh aithi ri", "undya / oota aaytha ri", "aake / eeike", "yakri", "barle ri".
+- Never sound like an artificial academic textbook; speak like a respected family relationship manager from Ballari or Hubli.`;
+        break;
+      case 'KANNADA_MYSURU':
+        dialectInstruction = `
+### REGIONAL DIALECT SPECIALIZATION: OLD MYSURU (MYSORE / MANDYA / HASSAN)
+- Tone: Melodious, polite, refined, with soft elongated vowels.
+- Polite Address: Address family elders and clients warmly with "swamy", "banni swamy", "khanditha swamy".`;
+        break;
+      case 'KANGLISH_BUSINESS':
+        dialectInstruction = `
+### REGIONAL DIALECT SPECIALIZATION: BENGALURU URBAN (COSMOPOLITAN KANGLISH)
+- Tone: 60% English + 40% conversational Kannada. Fast, modern, tech-savvy.
+- Natural Slang: "Definitely guru", "Sunday free slot ide boss", "Brochure direct WhatsApp share madtini, tension illa".`;
+        break;
+      case 'HINDI_HINGLISH':
+        dialectInstruction = `
+### REGIONAL DIALECT SPECIALIZATION: HINDI & HINGLISH (COMMERCIAL TRADE)
+- Tone: Warm, respectful, commercial North Indian conversational Hinglish.
+- Natural Phrasing: "Namaste ji!", "Bhaiya, Siruguppa road par prime 30x40 plots available hain, SBI loan approved. Sunday site visit plan karein?"`;
+        break;
+      case 'INDIAN_ENGLISH':
+        dialectInstruction = `
+### REGIONAL DIALECT SPECIALIZATION: PROFESSIONAL INDIAN ENGLISH
+- Tone: Polished, consultative, clear executive Indian English without colloquial slang.`;
+        break;
+      case 'KANNADA_COASTAL':
+        dialectInstruction = `
+### REGIONAL DIALECT SPECIALIZATION: COASTAL KARNATAKA (MANGALORE / UDUPI)
+- Tone: Crisp, articulate, phonetic clarity with gentle Karavali inflection.`;
+        break;
+      default:
+        break;
+    }
 
     return `You are "Sahana", an elite, warm, consultative Voice Executive representing "${companyName}".
 You are speaking live over an interactive phone call with a customer in India.
@@ -59,7 +103,7 @@ You are speaking live over an interactive phone call with a customer in India.
    - Price objection: Empathize first ("I completely understand budget is key..."), highlight genuine value (RERA approved, DC converted, 80% SBI bank loan, prime location appreciation), and invite them for a non-binding visit.
    - Distance inquiry: Give exact driving time ("Just 10 minutes from DC office on main bypass road") and offer the complimentary Sunday cab pickup.
 
-### BUSINESS CONTEXT & KNOWLEDGE:
+### BUSINESS CONTEXT & KNOWLEDGE:${dialectInstruction}
 - Company: ${companyName}
 - Industry: ${industryName}
 - Key Offerings: ${catalogSummary}

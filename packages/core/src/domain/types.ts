@@ -16,10 +16,13 @@ export type IndustryType =
 
 export type RegionalDialect =
   | 'KANNADA_STANDARD_POLITE' // Universal clean conversational Karnataka
-  | 'KANNADA_NORTH'           // Hubli, Dharwad, Belgaum, Raichur, Ballari
-  | 'KANNADA_COASTAL'         // Mangalore, Udupi
+  | 'KANNADA_NORTH'           // Hubli, Dharwad, Belgaum, Raichur, Ballari (Uttara Karnataka)
+  | 'KANNADA_MYSURU'          // Old Mysuru, Mandya, Hassan (Melodic, formal, high respect)
+  | 'KANNADA_COASTAL'         // Mangalore, Udupi (Karavali / Tulu-inflected)
+  | 'KANGLISH_BUSINESS'       // Bengaluru Urban (Cosmopolitan, tech-savvy loanwords)
   | 'TELUGU_STANDARD'         // Andhra & Telangana border
-  | 'KANGLISH_BUSINESS';      // Mixed Kannada + English loanwords
+  | 'HINDI_HINGLISH'          // Commercial traders & North Indian migrants
+  | 'INDIAN_ENGLISH';         // Corporate, NRI investors & clinical English
 
 export type CallDirection = 'INBOUND' | 'OUTBOUND';
 

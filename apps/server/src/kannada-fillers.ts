@@ -55,10 +55,11 @@ export class KannadaFillerEngine {
   private static isPrecached = false;
 
   /**
-   * Intelligently selects the most natural Kannada conversational filler based on caller's input.
+   * Intelligently selects the most natural Kannada conversational filler based on caller's input and active dialect.
    */
-  public static selectFiller(callerTranscript: string): KannadaFiller {
+  public static selectFiller(callerTranscript: string, dialect?: string): KannadaFiller {
     const text = callerTranscript.toLowerCase();
+    let selected: KannadaFiller;
 
     // 1. Price / Cost / Discount / Budget
     if (
@@ -69,13 +70,13 @@ export class KannadaFillerEngine {
       text.includes('kammi') ||
       text.includes('discount') ||
       text.includes('budget') ||
-      text.includes('eshtu')
+      text.includes('eshtu') ||
+      text.includes('kitna')
     ) {
-      return KANNADA_FILLERS.find(f => f.id === 'f_price_check')!;
+      selected = KANNADA_FILLERS.find(f => f.id === 'f_price_check')!;
     }
-
     // 2. Booking / Visit / Appointment / Slot
-    if (
+    else if (
       text.includes('book') ||
       text.includes('visit') ||
       text.includes('appointment') ||
@@ -83,37 +84,86 @@ export class KannadaFillerEngine {
       text.includes('cab') ||
       text.includes('time') ||
       text.includes('naale') ||
-      text.includes('slot')
+      text.includes('slot') ||
+      text.includes('milna')
     ) {
-      return KANNADA_FILLERS.find(f => f.id === 'f_booking_affirm')!;
+      selected = KANNADA_FILLERS.find(f => f.id === 'f_booking_affirm')!;
     }
-
     // 3. Location / Distance / Route / Landmark
-    if (
+    else if (
       text.includes('doora') ||
       text.includes('elli') ||
       text.includes('where') ||
       text.includes('distance') ||
       text.includes('bypass') ||
       text.includes('station') ||
-      text.includes('route')
+      text.includes('route') ||
+      text.includes('kahan')
     ) {
-      return KANNADA_FILLERS.find(f => f.id === 'f_location_info')!;
+      selected = KANNADA_FILLERS.find(f => f.id === 'f_location_info')!;
     }
-
     // 4. Frustration / Doubt / Complaint
-    if (
+    else if (
       text.includes('problem') ||
       text.includes('waste') ||
       text.includes('kopa') ||
       text.includes('worst') ||
-      text.includes('doubt')
+      text.includes('doubt') ||
+      text.includes('gussa')
     ) {
-      return KANNADA_FILLERS.find(f => f.id === 'f_empathy_care')!;
+      selected = KANNADA_FILLERS.find(f => f.id === 'f_empathy_care')!;
+    }
+    // 5. Default natural backchannel
+    else {
+      selected = KANNADA_FILLERS.find(f => f.id === 'f_general_ack')!;
     }
 
-    // 5. Default natural backchannel
-    return KANNADA_FILLERS.find(f => f.id === 'f_general_ack')!;
+    // Dialect adaptation for spoken filler text
+    if (dialect === 'KANNADA_NORTH') {
+      const northMap: Record<string, string> = {
+        f_price_check: 'Haudri, ond nimsha nodri...',
+        f_booking_affirm: 'Khanditha ri, nodri...',
+        f_location_info: 'Oh sari ri, heltini kelri...',
+        f_empathy_care: 'Khanditha understand aaythu ri...',
+        f_general_ack: 'Haudri, details heltini kelri...',
+      };
+      return { ...selected, kanglishText: northMap[selected.id] || selected.kanglishText };
+    }
+
+    if (dialect === 'HINDI_HINGLISH') {
+      const hindiMap: Record<string, string> = {
+        f_price_check: 'Ji bilkul, ek minute bhaiya...',
+        f_booking_affirm: 'Haanji, bilkul dekh raha hoon...',
+        f_location_info: 'Ji bilkul, batata hoon...',
+        f_empathy_care: 'Ji main samajh sakta hoon...',
+        f_general_ack: 'Ji bilkul, main batata hoon...',
+      };
+      return { ...selected, kanglishText: hindiMap[selected.id] || selected.kanglishText };
+    }
+
+    if (dialect === 'INDIAN_ENGLISH') {
+      const englishMap: Record<string, string> = {
+        f_price_check: 'Sure thing, checking that right away...',
+        f_booking_affirm: 'Certainly, let me check the schedule...',
+        f_location_info: 'Sure, let me share the directions...',
+        f_empathy_care: 'I completely understand your point...',
+        f_general_ack: 'Sure thing, let me help you with that...',
+      };
+      return { ...selected, kanglishText: englishMap[selected.id] || selected.kanglishText };
+    }
+
+    if (dialect === 'KANGLISH_BUSINESS') {
+      const kanglishMap: Record<string, string> = {
+        f_price_check: 'Sure guru, one second...',
+        f_booking_affirm: 'Definitely boss, check madona...',
+        f_location_info: 'Oh sari boss, share madtini...',
+        f_empathy_care: 'Definitely understand aaythu guru...',
+        f_general_ack: 'Haudu guru, details share madtini...',
+      };
+      return { ...selected, kanglishText: kanglishMap[selected.id] || selected.kanglishText };
+    }
+
+    return selected;
   }
 
   /**
