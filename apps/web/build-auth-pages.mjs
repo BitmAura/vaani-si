@@ -19,47 +19,92 @@ function renderAuthHead(title, description, canonicalPath = '/login') {
   <link rel="canonical" href="https://vanni.ai${canonicalPath}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/vanni.css">
   <style>
     body {
       margin: 0;
-      background: var(--vanni-bg);
+      background: #F8FAFC;
       color: var(--vanni-text-primary);
       font-family: var(--vanni-font-sans);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
-    .auth-card {
+    .auth-split-layout {
+      display: flex;
+      min-height: 100vh;
       width: 100%;
-      max-width: 440px;
-      background: var(--vanni-surface);
-      border: 1px solid var(--vanni-border);
-      border-radius: var(--vanni-radius-lg);
-      padding: 36px;
-      box-shadow: var(--vanni-shadow-md);
+    }
+    .auth-showcase-pane {
+      flex: 1;
+      background: linear-gradient(145deg, #0B132B 0%, #1C2541 100%);
+      color: #F8FAFC;
+      padding: 64px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      border-right: 1px solid #1E293B;
+    }
+    .auth-form-pane {
+      flex: 1.1;
+      background: #FFFFFF;
+      padding: 48px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       box-sizing: border-box;
     }
-    .auth-alert-error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #EF4444;
-      padding: 10px 14px;
-      border-radius: var(--vanni-radius-md);
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
+    .auth-card-inner {
+      width: 100%;
+      max-width: 480px;
     }
-    .auth-alert-success {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #10B981;
-      padding: 10px 14px;
+    @media (max-width: 960px) {
+      .auth-split-layout {
+        flex-direction: column;
+      }
+      .auth-showcase-pane {
+        padding: 32px 24px;
+        border-right: none;
+        border-bottom: 1px solid #1E293B;
+      }
+      .auth-form-pane {
+        padding: 36px 20px;
+      }
+    }
+    .auth-alert-error {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      color: #B91C1C;
+      padding: 12px 16px;
       border-radius: var(--vanni-radius-md);
       font-size: 13px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       display: none;
+      font-weight: 500;
+    }
+    .password-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-toggle-btn {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--vanni-text-muted);
+      font-size: 14px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .password-toggle-btn:hover {
+      color: var(--vanni-text-primary);
     }
   </style>
   `;
@@ -79,14 +124,14 @@ function renderAuthHeader() {
     </a>
     <div style="display: flex; align-items: center; gap: 16px; font-size: 13px;">
       <a href="/pricing" style="color: var(--vanni-text-secondary); text-decoration: none;">Pricing</a>
-      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Security</a>
+      <a href="/security" style="color: var(--vanni-text-secondary); text-decoration: none;">Trust Center</a>
     </div>
   </header>
   `;
 }
 
 // ==============================================================================
-// 1. LOGIN PAGE
+// 1. LOGIN PAGE (Split-Screen High-Converting Design)
 // ==============================================================================
 function buildLoginPage() {
   return `<!DOCTYPE html>
@@ -95,64 +140,154 @@ function buildLoginPage() {
   ${renderAuthHead('Sign In', 'Sign in to your VANNI organization tenant.')}
 </head>
 <body>
-  ${renderAuthHeader()}
-  <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
-    <div class="auth-card">
-      <div style="margin-bottom: 24px;">
-        <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 6px 0;">Sign in to VANNI</h1>
-        <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Access your organization dashboard and AI voice telemetry.</p>
-      </div>
-
-      <!-- Quick 1-Click Demo Logins -->
-      <div style="background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); padding: 12px; margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <span style="font-size: 11px; font-weight: 600; color: var(--vanni-accent); font-family: var(--vanni-font-mono);">DEMO ACCESS</span>
-          <span style="font-size: 10px; color: var(--vanni-text-muted);">Seed Credentials</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <button type="button" onclick="quickLogin('realestate.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>🏢 Ballari Real Estate</span>
-          </button>
-          <button type="button" onclick="quickLogin('healthcare.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>🏥 Apollo Clinic</span>
-          </button>
-          <button type="button" onclick="quickLogin('agency.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>🚀 Apex Agency</span>
-          </button>
-          <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11px; justify-content: flex-start; padding: 6px 10px;">
-            <span>⚡ Master Admin</span>
-          </button>
-        </div>
-      </div>
-
-      <div id="login-error" class="auth-alert-error"></div>
-
-      <form id="login-form" onsubmit="handleLoginSubmit(event)">
-        <div class="vanni-form-group">
-          <label for="login-email" class="vanni-label">Work Email</label>
-          <input type="email" id="login-email" name="email" placeholder="name@company.com" required class="vanni-input" autofocus />
-        </div>
-
-        <div class="vanni-form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label for="login-password" class="vanni-label" style="margin-bottom: 0;">Password</label>
-            <a href="/forgot-password" style="font-size: 12px; color: var(--vanni-accent); text-decoration: none;">Forgot password?</a>
+  <div class="auth-split-layout">
+    
+    <!-- Left Showcase Pane (Social Proof & Live Call Demo) -->
+    <div class="auth-showcase-pane">
+      <div>
+        <!-- Brand Header -->
+        <a href="/" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF; margin-bottom: 48px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #2563EB; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 18px; font-family: var(--vanni-font-mono); box-shadow: 0 4px 12px rgba(37,99,235,0.4);">
+            V
           </div>
-          <input type="password" id="login-password" name="password" placeholder="••••••••••••" required class="vanni-input" />
+          <div>
+            <div style="font-weight: 800; font-size: 18px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+            <div style="font-size: 11px; color: #94A3B8; font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+          </div>
+        </a>
+
+        <!-- Main Pitch -->
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #60A5FA; margin-bottom: 20px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #60A5FA; box-shadow: 0 0 8px #60A5FA;"></span>
+          <span>Karnataka-First Telephony OS</span>
         </div>
 
-        <button type="submit" id="login-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 8px;">
-          <span>Sign In to Console</span>
-        </button>
-      </form>
+        <h2 style="font-size: clamp(24px, 3vw, 34px); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; color: #FFFFFF; margin: 0 0 16px 0;">
+          Your next employee answers every call in fluent Kannada &amp; Kanglish.
+        </h2>
 
-      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--vanni-border-subdued); text-align: center; font-size: 13px; color: var(--vanni-text-muted);">
-        Don't have an organization? <a href="/signup" style="color: var(--vanni-accent); font-weight: 600; text-decoration: none;">Create an account</a>
+        <p style="font-size: 14.5px; line-height: 1.6; color: #94A3B8; margin: 0 0 32px 0; max-width: 440px;">
+          Handle patient inquiries, qualify high-intent real estate buyers, and lock calendar appointments autonomously in under 500ms.
+        </p>
+
+        <!-- Live Simulated Call Box -->
+        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 12px; padding: 20px; margin-bottom: 32px; backdrop-filter: blur(8px);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid rgba(51,65,85,0.6); padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-family: var(--vanni-font-mono); color: #34D399; font-weight: 600;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #34D399;"></span>
+              <span>INBOUND &bull; HUBLI CALLER</span>
+            </div>
+            <span style="font-size: 10px; color: #94A3B8; font-family: var(--vanni-font-mono);">Dialect: KANNADA_NORTH</span>
+          </div>
+          <div style="font-size: 12.5px; line-height: 1.6; space-y: 8px;">
+            <div style="color: #CBD5E1; margin-bottom: 6px;">
+              <strong style="color: #F8FAFC;">Caller:</strong> "Doctor avaru beligge sigthara ri? Knee pain check madbekittu."
+            </div>
+            <div style="color: #93C5FD;">
+              <strong style="color: #60A5FA;">VANNI:</strong> "Haudri swamy! Dr. Ramesh avaru beligge 10:30 inda 1:00 varege OPD nalli irthaare. Slot book madla?"
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust Badges Footer -->
+      <div style="border-top: 1px solid rgba(51, 65, 85, 0.6); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 12px; color: #94A3B8;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span>⚡</span>
+          <span>&lt;470ms Dual-Stream</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span>🛡️</span>
+          <span>Zero LLM Training</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span>🇮🇳</span>
+          <span>MeitY Indian PoPs</span>
+        </div>
       </div>
     </div>
-  </main>
+
+    <!-- Right Form Pane (Clean High-Velocity Form) -->
+    <div class="auth-form-pane">
+      <div class="auth-card-inner">
+        
+        <div style="margin-bottom: 24px;">
+          <h1 style="font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 6px 0; color: var(--vanni-text-primary);">
+            Sign in to Console
+          </h1>
+          <p style="font-size: 13.5px; color: var(--vanni-text-muted); margin: 0;">
+            Manage your AI voice tele-employees and live call operations.
+          </p>
+        </div>
+
+        <!-- Quick 1-Click Demo Accounts -->
+        <div style="background: var(--vanni-surface-subdued); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-md); padding: 14px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-size: 11px; font-weight: 700; color: #2563EB; font-family: var(--vanni-font-mono); text-transform: uppercase; letter-spacing: 0.05em;">Quick Demo Access</span>
+            <span style="font-size: 10.5px; color: var(--vanni-text-muted);">1-Click Sign In</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button type="button" onclick="quickLogin('realestate.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11.5px; justify-content: flex-start; padding: 7px 10px;">
+              <span>🏡 Ballari Real Estate</span>
+            </button>
+            <button type="button" onclick="quickLogin('healthcare.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11.5px; justify-content: flex-start; padding: 7px 10px;">
+              <span>🏥 Apollo Clinic</span>
+            </button>
+            <button type="button" onclick="quickLogin('agency.demo@vanni.ai', 'DemoPassword123!')" class="vanni-button vanni-button-secondary" style="font-size: 11.5px; justify-content: flex-start; padding: 7px 10px;">
+              <span>🚀 Apex Agency</span>
+            </button>
+            <button type="button" onclick="quickLogin('admin@vanni.ai', 'VanniSecure2026!')" class="vanni-button vanni-button-secondary" style="font-size: 11.5px; justify-content: flex-start; padding: 7px 10px;">
+              <span>⚡ Master Admin</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-error" class="auth-alert-error"></div>
+
+        <form id="login-form" onsubmit="handleLoginSubmit(event)">
+          <div class="vanni-form-group">
+            <label for="login-email" class="vanni-label">Work Email</label>
+            <input type="email" id="login-email" name="email" placeholder="name@company.com" required class="vanni-input" autofocus />
+          </div>
+
+          <div class="vanni-form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="login-password" class="vanni-label" style="margin-bottom: 0;">Password</label>
+              <a href="/forgot-password" style="font-size: 12px; color: #2563EB; text-decoration: none; font-weight: 500;">Forgot password?</a>
+            </div>
+            <div class="password-wrap">
+              <input type="password" id="login-password" name="password" placeholder="••••••••••••" required class="vanni-input" style="padding-right: 40px;" />
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('login-password')" aria-label="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; font-size: 12.5px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--vanni-text-secondary);">
+              <input type="checkbox" id="remember-me" checked style="border-radius: 4px; border: 1px solid var(--vanni-border);" />
+              <span>Keep me signed in</span>
+            </label>
+          </div>
+
+          <button type="submit" id="login-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; font-weight: 700; height: 46px;">
+            <span>Sign In to Console &rarr;</span>
+          </button>
+        </form>
+
+        <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--vanni-border-subdued); text-align: center; font-size: 13px; color: var(--vanni-text-muted);">
+          Don't have an organization workspace? <a href="/signup" style="color: #2563EB; font-weight: 700; text-decoration: none;">Create an account</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <script>
+    function togglePasswordVisibility(fieldId) {
+      const el = document.getElementById(fieldId);
+      if (!el) return;
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
     async function quickLogin(email, password) {
       document.getElementById('login-email').value = email;
       document.getElementById('login-password').value = password;
@@ -182,6 +317,11 @@ function buildLoginPage() {
           throw new Error(data.error || data.message || 'Invalid email or password.');
         }
 
+        // Store session for nav sync
+        if (data.session) {
+          localStorage.setItem('vanni_session', JSON.stringify(data.session));
+        }
+
         // Check redirect param
         const params = new URLSearchParams(window.location.search);
         const redirectUrl = params.get('redirect') || '/app/dashboard';
@@ -190,7 +330,7 @@ function buildLoginPage() {
         errEl.innerText = err.message;
         errEl.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = '<span>Sign In to Console</span>';
+        btn.innerHTML = '<span>Sign In to Console &rarr;</span>';
       }
     }
   </script>
@@ -199,7 +339,7 @@ function buildLoginPage() {
 }
 
 // ==============================================================================
-// 2. SIGNUP PAGE
+// 2. SIGNUP PAGE (Split-Screen High-Converting Design)
 // ==============================================================================
 function buildSignupPage() {
   return `<!DOCTYPE html>
@@ -208,69 +348,158 @@ function buildSignupPage() {
   ${renderAuthHead('Create Organization Account', 'Create your organization tenant and deploy your first AI employee.', '/signup')}
 </head>
 <body>
-  ${renderAuthHeader()}
-  <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
-    <div class="auth-card">
-      <div style="margin-bottom: 24px;">
-        <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 6px 0;">Create Organization Account</h1>
-        <p style="font-size: 13px; color: var(--vanni-text-muted); margin: 0;">Deploy your first autonomous voice agent in Kannada or Kanglish.</p>
+  <div class="auth-split-layout">
+    
+    <!-- Left Showcase Pane -->
+    <div class="auth-showcase-pane">
+      <div>
+        <!-- Brand Header -->
+        <a href="/" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF; margin-bottom: 48px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #2563EB; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800; font-size: 18px; font-family: var(--vanni-font-mono); box-shadow: 0 4px 12px rgba(37,99,235,0.4);">
+            V
+          </div>
+          <div>
+            <div style="font-weight: 800; font-size: 18px; letter-spacing: -0.02em; line-height: 1;">VANNI</div>
+            <div style="font-size: 11px; color: #94A3B8; font-weight: 500; margin-top: 2px;">AI Employee Platform</div>
+          </div>
+        </a>
+
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #34D399; margin-bottom: 20px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #34D399; box-shadow: 0 0 8px #34D399;"></span>
+          <span>Instant Tenant Activation</span>
+        </div>
+
+        <h2 style="font-size: clamp(24px, 3vw, 34px); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; color: #FFFFFF; margin: 0 0 16px 0;">
+          Deploy your first regional AI voice employee in under 10 minutes.
+        </h2>
+
+        <p style="font-size: 14.5px; line-height: 1.6; color: #94A3B8; margin: 0 0 32px 0; max-width: 440px;">
+          Bind a virtual +91 80 phone number, upload your doctor schedule or real estate plot pricing, and start answering customer calls immediately.
+        </p>
+
+        <!-- What You Get Card -->
+        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 12px; padding: 20px; margin-bottom: 32px; backdrop-filter: blur(8px);">
+          <div style="font-size: 11px; font-family: var(--vanni-font-mono); color: #60A5FA; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+            Included on Day 1
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: #CBD5E1;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: #34D399; font-weight: bold;">✓</span>
+              <span><strong>600 Free Voice Minutes</strong> with sub-500ms regional latency</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: #34D399; font-weight: bold;">✓</span>
+              <span><strong>Dedicated Business Brain</strong> with zero model training guarantee</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: #34D399; font-weight: bold;">✓</span>
+              <span><strong>Instant WhatsApp Lead Dossiers</strong> dispatched in &lt;3s</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="color: #34D399; font-weight: bold;">✓</span>
+              <span><strong>No credit card required</strong> to configure and test</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div id="signup-error" class="auth-alert-error"></div>
-
-      <form id="signup-form" onsubmit="handleSignupSubmit(event)">
-        <div class="vanni-form-group">
-          <label for="signup-name" class="vanni-label">Your Full Name *</label>
-          <input type="text" id="signup-name" name="fullName" placeholder="e.g. Ramesh Patil" required class="vanni-input" />
-        </div>
-
-        <div class="vanni-form-group">
-          <label for="signup-email" class="vanni-label">Work Email *</label>
-          <input type="email" id="signup-email" name="email" placeholder="ramesh@company.com" required class="vanni-input" />
-        </div>
-
-        <div class="vanni-form-group">
-          <label for="signup-pass" class="vanni-label">Password * (Min 8 characters)</label>
-          <input type="password" id="signup-pass" name="password" minlength="8" placeholder="Create a strong password" required class="vanni-input" />
-        </div>
-
-        <div class="vanni-form-group">
-          <label for="signup-org" class="vanni-label">Company / Practice Name *</label>
-          <input type="text" id="signup-org" name="organizationName" placeholder="e.g. Patil Multi-Specialty Clinic" required class="vanni-input" />
-        </div>
-
-        <div class="vanni-form-group">
-          <label for="signup-industry" class="vanni-label">Primary Industry</label>
-          <select id="signup-industry" name="industry" class="vanni-select">
-            <option value="DENTAL">Dental / Specialty Clinic</option>
-            <option value="HEALTHCARE_HOSPITAL">Hospital / Multi-Specialty Healthcare</option>
-            <option value="IVF_FERTILITY">IVF & Fertility Clinic</option>
-            <option value="REAL_ESTATE" selected>Real Estate & Plotted Layouts</option>
-            <option value="HOSPITALITY_RESORT">Hospitality, Resorts & Dining</option>
-            <option value="DIGITAL_AGENCY">Digital Marketing Agency</option>
-            <option value="COMMERCIAL_OTHER">Other Commercial Business</option>
-          </select>
-        </div>
-
-        <button type="submit" id="signup-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; margin-top: 12px;">
-          <span>Create Workspace & Start Onboarding</span>
-        </button>
-      </form>
-
-      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--vanni-border-subdued); text-align: center; font-size: 13px; color: var(--vanni-text-muted);">
-        Already have an organization? <a href="/login" style="color: var(--vanni-accent); font-weight: 600; text-decoration: none;">Sign in here</a>
+      <!-- Footer Trust Notes -->
+      <div style="border-top: 1px solid rgba(51, 65, 85, 0.6); padding-top: 24px; font-size: 12px; color: #94A3B8;">
+        Trusted by multi-specialty clinics and real estate developers across Bengaluru, Hubli, Dharwad &amp; Belagavi.
       </div>
     </div>
-  </main>
+
+    <!-- Right Form Pane -->
+    <div class="auth-form-pane">
+      <div class="auth-card-inner">
+        
+        <div style="margin-bottom: 24px;">
+          <h1 style="font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 6px 0; color: var(--vanni-text-primary);">
+            Create Organization Workspace
+          </h1>
+          <p style="font-size: 13.5px; color: var(--vanni-text-muted); margin: 0;">
+            Set up your organization tenant to begin AI telephony onboarding.
+          </p>
+        </div>
+
+        <div id="signup-error" class="auth-alert-error"></div>
+
+        <form id="signup-form" onsubmit="handleSignupSubmit(event)">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="vanni-form-group">
+              <label for="signup-name" class="vanni-label">Your Full Name *</label>
+              <input type="text" id="signup-name" name="fullName" placeholder="e.g. Ramesh Patil" required class="vanni-input" autofocus />
+            </div>
+
+            <div class="vanni-form-group">
+              <label for="signup-email" class="vanni-label">Work Email *</label>
+              <input type="email" id="signup-email" name="email" placeholder="name@company.com" required class="vanni-input" />
+            </div>
+          </div>
+
+          <div class="vanni-form-group">
+            <label for="signup-pass" class="vanni-label">Password * (Min 8 characters)</label>
+            <div class="password-wrap">
+              <input type="password" id="signup-pass" name="password" minlength="8" placeholder="Create a strong password" required class="vanni-input" style="padding-right: 40px;" />
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('signup-pass')" aria-label="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+
+          <div class="vanni-form-group">
+            <label for="signup-org" class="vanni-label">Organization / Practice Name *</label>
+            <input type="text" id="signup-org" name="organizationName" oninput="updateSlugPreview(this.value)" placeholder="e.g. Ballari Residential Layouts" required class="vanni-input" />
+            <div style="font-size: 11px; color: var(--vanni-text-muted); font-family: var(--vanni-font-mono); margin-top: 4px;">
+              Workspace slug: <span id="slug-preview" style="color: #2563EB;">vanni.ai/console/...</span>
+            </div>
+          </div>
+
+          <div class="vanni-form-group">
+            <label for="signup-industry" class="vanni-label">Primary Industry</label>
+            <select id="signup-industry" name="industry" class="vanni-select">
+              <option value="REAL_ESTATE" selected>🏡 Real Estate &amp; Plotted Layouts</option>
+              <option value="HEALTHCARE_HOSPITAL">🏥 Hospital &amp; Multi-Specialty Healthcare</option>
+              <option value="DENTAL">🦷 Dental &amp; Specialty Clinic</option>
+              <option value="IVF_FERTILITY">👶 IVF &amp; Fertility Center</option>
+              <option value="DIGITAL_AGENCY">🚀 Digital Marketing Agency</option>
+              <option value="HOSPITALITY_RESORT">🏨 Hospitality &amp; Resorts</option>
+              <option value="COMMERCIAL_OTHER">🏢 Other Commercial Business</option>
+            </select>
+          </div>
+
+          <button type="submit" id="signup-submit-btn" class="vanni-button vanni-button-primary vanni-button-lg" style="width: 100%; font-weight: 700; height: 46px; margin-top: 8px;">
+            <span>Create Workspace &amp; Start Onboarding &rarr;</span>
+          </button>
+        </form>
+
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--vanni-border-subdued); text-align: center; font-size: 13px; color: var(--vanni-text-muted);">
+          Already have an account? <a href="/login" style="color: #2563EB; font-weight: 700; text-decoration: none;">Sign in here</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <script>
+    function togglePasswordVisibility(fieldId) {
+      const el = document.getElementById(fieldId);
+      if (!el) return;
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
+    function updateSlugPreview(val) {
+      const slugEl = document.getElementById('slug-preview');
+      if (!slugEl) return;
+      const clean = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || '...';
+      slugEl.innerText = 'vanni.ai/console/' + clean;
+    }
+
     async function handleSignupSubmit(e) {
       e.preventDefault();
       const errEl = document.getElementById('signup-error');
       const btn = document.getElementById('signup-submit-btn');
       errEl.style.display = 'none';
       btn.disabled = true;
-      btn.innerHTML = '<span>Creating tenant workspace...</span>';
+      btn.innerHTML = '<span>Provisioning tenant workspace...</span>';
 
       const payload = {
         fullName: document.getElementById('signup-name').value,
@@ -293,12 +522,16 @@ function buildSignupPage() {
           throw new Error(data.error || data.message || 'Signup failed.');
         }
 
+        if (data.session) {
+          localStorage.setItem('vanni_session', JSON.stringify(data.session));
+        }
+
         window.location.href = '/app/onboarding';
       } catch (err) {
         errEl.innerText = err.message;
         errEl.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = '<span>Create Workspace & Start Onboarding</span>';
+        btn.innerHTML = '<span>Create Workspace &amp; Start Onboarding &rarr;</span>';
       }
     }
   </script>
