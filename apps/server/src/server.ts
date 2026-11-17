@@ -160,6 +160,35 @@ const DEMO_TENANTS: Record<string, Tenant> = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  dental: {
+    id: 'a0000000-0000-0000-0000-000000000004',
+    name: 'Dr. Prashant Dental & Implant Center',
+    industry: 'HEALTHCARE_HOSPITAL',
+    virtualPhoneNumber: '+918047192004',
+    ownerWhatsAppNumber: '+919845012345',
+    dialect: 'KANGLISH_BUSINESS',
+    knowledge: {
+      companyName: 'Dr. Prashant Dental & Implant Center',
+      industry: 'HEALTHCARE_HOSPITAL',
+      primaryDialect: 'KANGLISH_BUSINESS',
+      officeTimings: '10:00 AM - 1:30 PM, 5:00 PM - 8:30 PM',
+      catalogSummary: 'Advanced dental clinic specializing in painless Root Canal Treatment (RCT), Zirconia crowns, dental implants, teeth cleaning, and emergency dental care.',
+      faqs: [
+        { question: 'Root canal charges estu?', answer: 'Root Canal Treatment ₹3,500 inda start aaguththe sir, painless single-sitting option ide.' },
+        { question: 'Severe tooth pain ide emergency appointment siguththe alva?', answer: 'Haudu sir! Pain idre emergency priority slot kotte Dr. Prashant nodthaare. Direct clinic ge barabahudu.' },
+        { question: 'Doctor timing estu?', answer: 'Beligge 10 AM inda 1:30 PM, mathu sanje 5 PM inda 8:30 PM varagu Dr. Prashant available irthaare.' },
+      ],
+      appointmentRules: {
+        slotDurationMinutes: 30,
+        availableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      },
+    },
+    monthlyMinuteLimit: 6000,
+    minutesUsedCurrentMonth: 120,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
   agency: {
     id: 'a0000000-0000-0000-0000-000000000003',
     name: 'Apex Growth Marketing Agency',
@@ -3753,17 +3782,18 @@ export async function buildServer() {
       session = deserializeSession(token);
     }
 
-    // Enforce authentication in production mode
-    if (process.env.NODE_ENV === 'production' && !session) {
-      fastify.log.warn('[WebSocket Auth Rejected] Missing or invalid authentication token in production');
-      socket.close(1008, 'Unauthorized: Valid session or token required');
-      return;
-    }
-
     const rawTenant = url.searchParams.get('tenant') || url.searchParams.get('workspaceId');
     const tenantKey = rawTenant !== null && rawTenant !== undefined ? rawTenant : (process.env.NODE_ENV !== 'production' ? 'real_estate' : '');
     const isInception = tenantKey === 'inception';
     let resolvedTenant = tenantKey ? DEMO_TENANTS[tenantKey] : undefined;
+    const isPublicDemo = Boolean(resolvedTenant);
+
+    // Enforce authentication in production mode for custom/private workspace tenants
+    if (process.env.NODE_ENV === 'production' && !session && !isPublicDemo) {
+      fastify.log.warn('[WebSocket Auth Rejected] Missing or invalid authentication token in production');
+      socket.close(1008, 'Unauthorized: Valid session or token required');
+      return;
+    }
 
     if (!resolvedTenant && tenantKey) {
       try {
