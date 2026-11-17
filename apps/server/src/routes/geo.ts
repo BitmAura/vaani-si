@@ -9,7 +9,7 @@
  * - GET    /api/geo/:slug/status    - Entitlements, embed snippet, and AI readiness score
  * - POST   /api/geo/:slug/toggle    - Independent toggle for geoEnabled vs voiceEnabled (Kill-Switch)
  * - GET    /api/geo/demos           - List of pre-seeded industry demo entities (Punarvaas, etc.)
- * - POST   /api/geo/:slug/checkout  - Create Razorpay order for ₹9,999 GEO Shield (or lead-capture if unconfigured)
+ * - POST   /api/geo/:slug/checkout  - Create Razorpay order for ₹4,999 GEO Shield (or lead-capture if unconfigured)
  * - POST   /api/geo/:slug/activate  - Verify Razorpay HMAC and reveal embed slug
  */
 
@@ -18,8 +18,8 @@ import crypto from 'node:crypto';
 import { globalDb } from '@vanni/database';
 import { getSessionFromRequest } from '../http-auth.js';
 
-/** Product catalog (AGENTS.md §4). Never invent alternate GEO prices. */
-export const GEO_SHIELD_MONTHLY_INR = 9999;
+/** Product catalog (AGENTS.md §4). Founder launch rate for AEO/GEO Shield. */
+export const GEO_SHIELD_MONTHLY_INR = 4999;
 export const GEO_SHIELD_AMOUNT_PAISE = GEO_SHIELD_MONTHLY_INR * 100;
 
 export interface GeoDoctorOrTeamMember {
@@ -636,7 +636,7 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     if (!profile.geoEnabled || profile.subscriptionStatus !== 'ACTIVE') {
       return reply.type('application/javascript').send(`
 /* [VAANI GEO] Service Suspended or Deactivated for '${slug}'. */
-/* An active monthly retainer of ₹9,999 is required to activate live AI search ranking. */
+/* An active monthly retainer of ₹4,999 is required to activate live AI search ranking. */
 /* Visit https://vanni.ai to complete checkout and unlock your live AI Knowledge feed. */
 `);
     }
@@ -679,7 +679,7 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
 
     // KILL SWITCH & PAYMENT GATE: If unpaid or disabled, refuse service
     if (!profile.geoEnabled || profile.subscriptionStatus !== 'ACTIVE') {
-      return reply.status(403).send('# 403 Forbidden\n\nVAANI Generative Engine Optimization requires an active monthly retainer of ₹9,999 for this entity.');
+      return reply.status(403).send('# 403 Forbidden\n\nVAANI Generative Engine Optimization requires an active monthly retainer of ₹4,999 for this entity.');
     }
 
     const host = req.headers.host || 'localhost:4000';
@@ -701,7 +701,7 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     }
 
     if (!profile.geoEnabled || profile.subscriptionStatus !== 'ACTIVE') {
-      return reply.status(403).send({ error: 'GEO subscription inactive', message: 'Active monthly retainer of ₹9,999 required.' });
+      return reply.status(403).send({ error: 'GEO subscription inactive', message: 'Active monthly retainer of ₹4,999 required.' });
     }
 
     const host = req.headers.host || 'localhost:4000';
@@ -719,7 +719,9 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     const body = req.body as any;
     const session = getSessionFromRequest(req);
     const killSecret = process.env.GEO_KILL_SWITCH_SECRET || '';
-    const provided = String(req.headers['x-vanni-kill-switch'] || body?.killSwitchSecret || '');
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const provided = String(req.headers['x-vanni-kill-switch'] || bearerToken || body?.killSwitchSecret || '');
     let killOk = false;
     if (killSecret && provided && killSecret.length === provided.length) {
       try {
@@ -1148,7 +1150,7 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // 11. Activate Entity after verified ₹9,999 Razorpay payment
+  // 11. Activate Entity after verified ₹4,999 Razorpay payment
   fastify.post('/api/geo/:slug/activate', async (req: FastifyRequest, reply: FastifyReply) => {
     const { slug } = req.params as { slug: string };
     const body = (req.body || {}) as {
@@ -1203,7 +1205,7 @@ export async function registerGeoRoutes(fastify: FastifyInstance) {
 
     return reply.status(200).send({
       success: true,
-      message: 'Payment of ₹9,999 confirmed. AI Search Shield activated successfully.',
+      message: 'Payment of ₹4,999 confirmed. AI Search Shield activated successfully.',
       slug: profile.slug,
       embedSnippet: `<script src="${origin}/api/geo/${profile.slug}/loader.js" async></script>`,
       urls: {

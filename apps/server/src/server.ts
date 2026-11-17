@@ -692,15 +692,31 @@ export async function buildServer() {
     }
   });
 
-  // Serve static assets from apps/web/assets
+  // Serve static assets from apps/web/assets with strict path traversal protection
   fastify.get('/assets/*', async (req, reply) => {
     const wildcard = (req.params as any)['*'];
-    const filePath = path.resolve(process.cwd(), 'apps/web/assets', wildcard);
-    const altPath = path.resolve(__dirname, '../../web/assets', wildcard);
+    if (!wildcard || typeof wildcard !== 'string' || wildcard.includes('..') || wildcard.includes('\0')) {
+      return reply.status(403).send('Access denied');
+    }
+
+    const primaryDir = path.resolve(process.cwd(), 'apps/web/assets');
+    const altDir = path.resolve(__dirname, '../../web/assets');
+    const filePath = path.resolve(primaryDir, wildcard);
+    const altPath = path.resolve(altDir, wildcard);
+
+    // Strict jail check: resolved target path MUST start within the allowed assets directory
+    const isJailed = filePath.startsWith(primaryDir) || altPath.startsWith(altDir);
+    if (!isJailed) {
+      return reply.status(403).send('Access denied');
+    }
+
     const target = fs.existsSync(filePath) ? filePath : altPath;
     if (fs.existsSync(target) && fs.statSync(target).isFile()) {
       if (target.endsWith('.js')) reply.type('application/javascript');
       else if (target.endsWith('.css')) reply.type('text/css');
+      else if (target.endsWith('.png')) reply.type('image/png');
+      else if (target.endsWith('.jpg') || target.endsWith('.jpeg')) reply.type('image/jpeg');
+      else if (target.endsWith('.svg')) reply.type('image/svg+xml');
       return reply.send(fs.readFileSync(target));
     }
     return reply.status(404).send('Asset not found');
@@ -3786,9 +3802,9 @@ export async function buildServer() {
     const tenantKey = rawTenant !== null && rawTenant !== undefined ? rawTenant : (process.env.NODE_ENV !== 'production' ? 'real_estate' : '');
     const isInception = tenantKey === 'inception';
     let resolvedTenant = tenantKey ? DEMO_TENANTS[tenantKey] : undefined;
-    const isPublicDemo = Boolean(resolvedTenant);
+    const isPublicDemo = Boolean(resolvedTenant) && (url.searchParams.get('demo') === 'true' || url.searchParams.get('playground') === 'true' || isInception);
 
-    // Enforce authentication in production mode for custom/private workspace tenants
+    // Enforce authentication in production mode
     if (process.env.NODE_ENV === 'production' && !session && !isPublicDemo) {
       fastify.log.warn('[WebSocket Auth Rejected] Missing or invalid authentication token in production');
       socket.close(1008, 'Unauthorized: Valid session or token required');

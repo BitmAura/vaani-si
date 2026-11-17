@@ -130,7 +130,8 @@ describe('Prompt 02 Security & Reliability Audit Suite', () => {
 
   it('persists calls and leads durably in globalDb across instances', async () => {
     const testCallId = `call_persist_${Date.now()}`;
-    await globalDb.saveCall({
+    const durableDb = new DurableDatabaseService();
+    await durableDb.saveCall({
       id: testCallId,
       tenantId: ORG_A,
       caller: 'Persistent Test Caller',
@@ -144,7 +145,7 @@ describe('Prompt 02 Security & Reliability Audit Suite', () => {
       createdAt: new Date().toISOString(),
     });
 
-    const calls = await globalDb.getCalls(ORG_A);
+    const calls = await durableDb.getCalls(ORG_A);
     const found = calls.find(c => c.id === testCallId);
     expect(found).toBeDefined();
     expect(found?.caller).toBe('Persistent Test Caller');

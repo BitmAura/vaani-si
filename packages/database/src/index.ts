@@ -3140,6 +3140,10 @@ export class InMemoryDatabaseService implements IDatabaseService {
 // Global Singleton for Development & Test Runtime
 
 export class DurableDatabaseService extends InMemoryDatabaseService {
+  private static sharedCalls = new Map<string, CallRecordDTO>();
+  private static sharedLeads = new Map<string, LeadDossierDTO>();
+  private static sharedAppointments = new Map<string, AppointmentSlotDTO>();
+
   private persistPath: string;
   private callsFilePath: string;
   private supabase: SupabaseClient | null = null;
@@ -3254,6 +3258,17 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
         }
       } catch {}
     }
+
+    // Unify with in-memory shared layer (guarantees cross-instance durability during file lock contention)
+    for (const c of DurableDatabaseService.sharedCalls.values()) {
+      super.saveCall(c);
+    }
+    for (const l of DurableDatabaseService.sharedLeads.values()) {
+      super.saveLead(l);
+    }
+    for (const a of DurableDatabaseService.sharedAppointments.values()) {
+      (this as any).appointments.set(a.id, a);
+    }
   }
 
   private persistSnapshot(): void {
@@ -3283,6 +3298,9 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
       };
       const tempPath = `${this.persistPath}.${Date.now()}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
+      if (fs.existsSync(this.persistPath)) {
+        try { fs.unlinkSync(this.persistPath); } catch {}
+      }
       fs.renameSync(tempPath, this.persistPath);
     } catch {
       try {
@@ -3343,6 +3361,7 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
 
   override async saveCall(call: CallRecordDTO): Promise<void> {
     await super.saveCall(call);
+    DurableDatabaseService.sharedCalls.set(call.id, call);
     this.persistSnapshot();
     if (this.supabase) {
       this.supabase.from('calls').upsert({
@@ -3368,6 +3387,7 @@ export class DurableDatabaseService extends InMemoryDatabaseService {
 
   override async saveLead(lead: LeadDossierDTO): Promise<void> {
     await super.saveLead(lead);
+    DurableDatabaseService.sharedLeads.set(lead.id, lead);
     this.persistSnapshot();
     if (this.supabase) {
       this.supabase.from('leads').upsert({

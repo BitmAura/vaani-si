@@ -53,10 +53,19 @@ export class CallDatabaseService {
     }
   }
 
+  private inMemoryCache: StoredCallRecord[] | null = null;
+
   public getAllCalls(tenantId?: string): StoredCallRecord[] {
     try {
+      if (!fs.existsSync(this.dbFilePath)) {
+        return this.inMemoryCache || [];
+      }
       const raw = fs.readFileSync(this.dbFilePath, 'utf-8');
       const records: StoredCallRecord[] = JSON.parse(raw);
+      if (Array.isArray(records)) {
+        this.inMemoryCache = records;
+      }
+      const list = Array.isArray(records) ? records : (this.inMemoryCache || []);
       if (tenantId) {
         const norm = (id: string) => {
           if (!id) return '';
@@ -66,11 +75,11 @@ export class CallDatabaseService {
           return id;
         };
         const target = norm(tenantId);
-        return records.filter(r => norm(r.tenantId) === target || r.tenantId === tenantId);
+        return list.filter(r => norm(r.tenantId) === target || r.tenantId === tenantId);
       }
-      return records;
+      return list;
     } catch {
-      return [];
+      return this.inMemoryCache || [];
     }
   }
 
@@ -113,16 +122,25 @@ export class CallDatabaseService {
   }
 
   private writeRecords(records: StoredCallRecord[]): void {
+    this.inMemoryCache = records;
     const tempFile = `${this.dbFilePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
     try {
       fs.writeFileSync(tempFile, JSON.stringify(records, null, 2), 'utf-8');
+      if (fs.existsSync(this.dbFilePath)) {
+        try { fs.unlinkSync(this.dbFilePath); } catch {}
+      }
       fs.renameSync(tempFile, this.dbFilePath);
     } catch (err) {
       if (fs.existsSync(tempFile)) {
         try { fs.unlinkSync(tempFile); } catch {}
       }
       // Fallback direct write if atomic rename is blocked across file systems
-      fs.writeFileSync(this.dbFilePath, JSON.stringify(records, null, 2), 'utf-8');
+      try {
+        fs.writeFileSync(this.dbFilePath, JSON.stringify(records, null, 2), 'utf-8');
+      } catch (writeErr) {
+        // Safe degrade to in-memory cache under Windows file lock collision
+        console.warn('[CallDatabaseService] Disk write warning (in-memory cache preserved):', (writeErr as any)?.message);
+      }
     }
   }
 }

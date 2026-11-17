@@ -78,7 +78,7 @@ describe('Real Estate Vertical Configuration & Site Visit Operations (Prompt 06)
   let workspaceId: string;
   let propertyId: string;
   let siteVisitId: string;
-  const visitDate = '2026-11-' + String(10 + Math.floor(Math.random() * 15)).padStart(2, '0');
+  const visitDate = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
   const idempotencyKey = 'sitevisit_booking_' + Date.now();
   const webhookKey = 'portal_enquiry_' + Date.now();
 

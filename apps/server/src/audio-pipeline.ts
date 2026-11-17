@@ -113,13 +113,18 @@ export class AudioConversationPipeline {
       return;
     }
 
-    // Bounded buffer check: prevent memory leak under network stall
-    const currentSize = this.audioBuffer.reduce((sum, b) => sum + b.length, 0);
-    if (currentSize + chunk.length > AudioConversationPipeline.MAX_BUFFER_BYTES) {
-      this.audioBuffer.shift(); // Drop oldest audio frame
+    // Bounded buffer check: prevent heap memory exhaustion under high-throughput audio stream
+    const effectiveChunk = chunk.length > AudioConversationPipeline.MAX_BUFFER_BYTES
+      ? chunk.subarray(chunk.length - AudioConversationPipeline.MAX_BUFFER_BYTES)
+      : chunk;
+
+    let currentSize = this.audioBuffer.reduce((sum, b) => sum + b.length, 0);
+    while (this.audioBuffer.length > 0 && currentSize + effectiveChunk.length > AudioConversationPipeline.MAX_BUFFER_BYTES) {
+      const dropped = this.audioBuffer.shift();
+      if (dropped) currentSize -= dropped.length;
     }
 
-    this.audioBuffer.push(chunk);
+    this.audioBuffer.push(effectiveChunk);
     this.lastChunkAt = Date.now();
 
     // Reset silence detector
@@ -227,7 +232,7 @@ export class AudioConversationPipeline {
       const frustration = this.handoffManager.detectFrustrationOrComplaint(userText);
       const isHealthcareEscalation = isMedicalEmergencyIndustry(this.tenant.industry);
 
-      let agentReplyText: string;
+      let agentReplyText = '';
       const llmStart = Date.now();
 
       if (isHealthcareEscalation && emergencySig.isEmergency) {
@@ -272,7 +277,7 @@ export class AudioConversationPipeline {
         const hasClinicalAdviceRequest = isHealthcareTenant && clinicalKeywords.some(kw => lower.includes(kw));
 
         if (hasClinicalAdviceRequest) {
-          agentReplyText = 'Kshamisee sir, nanu administrative voice assistant aagiddini. Medical prescription athva diagnosis koododhu nanna scope alli illa. Dayavittu namma specialist doctor avara consultation slot book madi, avara direct advice thagoli sir.';
+          agentReplyText = 'Kshamisee sir, nanu administrative voice assistant aagiddini. Nanu medicine prescribe madalla mathu medical prescription athva diagnosis koododhu nanna scope alli illa. Dayavittu namma specialist doctor avara consultation slot book madi, avara direct advice thagoli sir.';
         }
         // Check for appointment / slot lookup (Healthcare tenants only)
         else if (isHealthcareTenant && (lower.includes('appointment') || lower.includes('slot') || lower.includes('doctor') || lower.includes('timing') || lower.includes('booking'))) {
@@ -390,19 +395,21 @@ export class AudioConversationPipeline {
           }
         }
 
-        const systemPrompt = PromptEngine.buildSystemPrompt({
-          tenant: this.tenant,
-          isSelfSellingInception: this.isInceptionMode,
-        });
+        if (!hasClinicalAdviceRequest) {
+          const systemPrompt = PromptEngine.buildSystemPrompt({
+            tenant: this.tenant,
+            isSelfSellingInception: this.isInceptionMode,
+          });
 
-        // Pass episodic caller dossier and authoritative tool result
-        agentReplyText = await this.llm.generateTurn(
-          systemPrompt,
-          this.history,
-          userText,
-          toolExecutionSummary,
-          this.callerDossier
-        );
+          // Pass episodic caller dossier and authoritative tool result
+          agentReplyText = await this.llm.generateTurn(
+            systemPrompt,
+            this.history,
+            userText,
+            toolExecutionSummary,
+            this.callerDossier
+          );
+        }
       }
       llmMs = Date.now() - llmStart;
 

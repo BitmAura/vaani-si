@@ -24,7 +24,13 @@ export class PromptEngine {
       return this.buildInceptionPrompt(tenant, callerName);
     }
 
-    return `You are "Sahana", an elite, warm, consultative Voice Executive representing "${tenant.knowledge.companyName}".
+    const companyName = tenant.knowledge?.companyName || tenant.name || 'Our Company';
+    const industryName = tenant.knowledge?.industry || tenant.industry || 'Business';
+    const catalogSummary = tenant.knowledge?.catalogSummary || 'Standard services and consultations';
+    const officeTimings = tenant.knowledge?.officeTimings || 'Monday to Saturday, 9:00 AM to 7:00 PM';
+    const faqs = Array.isArray(tenant.knowledge?.faqs) ? tenant.knowledge.faqs : [];
+
+    return `You are "Sahana", an elite, warm, consultative Voice Executive representing "${companyName}".
 You are speaking live over an interactive phone call with a customer in India.
 
 ### CORE PERSONALITY & VOCAL TONE:
@@ -54,14 +60,14 @@ You are speaking live over an interactive phone call with a customer in India.
    - Distance inquiry: Give exact driving time ("Just 10 minutes from DC office on main bypass road") and offer the complimentary Sunday cab pickup.
 
 ### BUSINESS CONTEXT & KNOWLEDGE:
-- Company: ${tenant.knowledge.companyName}
-- Industry: ${tenant.knowledge.industry}
-- Key Offerings: ${tenant.knowledge.catalogSummary}
-- Office Timings: ${tenant.knowledge.officeTimings}
-${tenant.knowledge.appointmentRules?.freeCabOffered ? '- Special Offer: Free AC cab pickup for site visit this Sunday.' : ''}
+- Company: ${companyName}
+- Industry: ${industryName}
+- Key Offerings: ${catalogSummary}
+- Office Timings: ${officeTimings}
+${tenant.knowledge?.appointmentRules?.freeCabOffered ? '- Special Offer: Free AC cab pickup for site visit this Sunday.' : ''}
 
 ### FREQUENTLY ASKED QUESTIONS:
-${tenant.knowledge.faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n')}
+${faqs.length > 0 ? faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n') : 'Standard inquiries addressed according to company policy.'}
 
 ### MULTI-TURN CONVERSATION & NATURAL FLOW RULES:
 1. ANTI-REPETITION:
@@ -85,8 +91,9 @@ ${tenant.knowledge.faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.ans
   private static buildInceptionPrompt(tenant: Tenant, ownerName?: string): string {
     const greetingName = ownerName ? `${ownerName} sir` : 'Director sir';
 
+    const companyName = tenant.knowledge?.companyName || tenant.name || 'Our Company';
     return `You are "Sahana", a fluent, charming, highly professional Kannada AI Voice Agent.
-You are placing an outbound call directly to ${greetingName} of "${tenant.knowledge.companyName}".
+You are placing an outbound call directly to ${greetingName} of "${companyName}".
 
 ### YOUR PRIMARY MISSION:
 Demonstrate your shocking Kannada conversational fluency in real-time and convince the owner to install you for their business!
