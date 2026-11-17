@@ -139,7 +139,16 @@
   </section>
 
   <!-- Main Content -->
-  <main style="max-width: 1100px; margin: 0 auto; padding: 64px 24px;">
+  <main style="max-width: 1100px; margin: 0 auto; padding: 48px 24px;">
+    
+    <!-- Live Browser Voice AI Studio -->
+    <div style="margin-bottom: 40px;">
+      <div id="demo-voice-orb-mount"></div>
+    </div>
+
+    <div style="text-align: center; margin: 36px 0 28px 0; font-size: 12px; font-weight: 700; color: var(--vanni-text-muted); text-transform: uppercase; letter-spacing: 0.06em;">
+      — OR RECEIVE A REAL CALL ON YOUR ACTUAL MOBILE PHONE VIA EXOTEL —
+    </div>
     
   <div style="max-width: 540px; margin: 0 auto; background: var(--vanni-surface); border: 1px solid var(--vanni-border); border-radius: var(--vanni-radius-lg); padding: 36px; box-shadow: var(--vanni-shadow-sm);">
     <form onsubmit="handleDemoSubmit(event)">
@@ -415,5 +424,21 @@
     }
   </script>
   
+  <!-- Live Duplex Voice AI Studio Engine -->
+  <script type="module">
+    import { VanniVoiceClient } from '/assets/vanni-voice-client.js';
+    import { VanniVoiceOrb } from '/assets/vanni-voice-orb.js';
+
+    window.VanniVoiceClient = VanniVoiceClient;
+    window.VanniVoiceOrb = VanniVoiceOrb;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const mount = document.getElementById('demo-voice-orb-mount');
+      if (mount) {
+        new VanniVoiceOrb(mount, { defaultTenant: 'real_estate' });
+      }
+    });
+  </script>
+
 </body>
 </html>

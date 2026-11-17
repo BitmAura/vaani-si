@@ -2989,39 +2989,34 @@
 </aside>
 
 <!-- ========================================================================= -->
-<!-- 4. DUPLEX VOICE TEST MODAL -->
+<!-- 4. DUPLEX VOICE TEST MODAL & LIVE PLAYGROUND -->
 <!-- ========================================================================= -->
 <div id="voice-modal" class="modal-backdrop">
-  <div class="modal-box">
-    <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
-      <div style="font-weight: 700; font-size: 13.5px; color: var(--text-primary);">Test Kannada AI Voice Turn</div>
-      <button onclick="toggleVoiceModal()" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted);">✕</button>
+  <div class="modal-box" style="max-width: 720px; width: 90%; background: #0F172A; color: #FFF; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; overflow: hidden;">
+    <div style="padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; background: rgba(15,23,42,0.9);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">🎙️</span>
+        <div style="font-weight: 700; font-size: 14px; color: #F8FAFC;">Live Duplex Voice Studio &amp; Telephony Simulator</div>
+      </div>
+      <button onclick="toggleVoiceModal()" style="background: transparent; border: none; cursor: pointer; color: #94A3B8; font-size: 18px; padding: 4px;">✕</button>
     </div>
-    <div style="padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-      <p style="font-size: 12px; color: var(--text-muted);">Speak or type a customer inquiry in Kannada or Kanglish to test real-time tool calling and Sarvam Bulbul v3 voice synthesis.</p>
-      
-      <div>
-        <label for="voice-test-input" style="display: block; font-size: 11.5px; font-weight: 600; margin-bottom: 4px;">Caller Message</label>
-        <input type="text" id="voice-test-input" placeholder="e.g. 30x40 site visit ideya? or Dr. Ramesh appointment bekithu" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; outline: none;">
-      </div>
+    
+    <div style="padding: 20px;">
+      <!-- Mount Voice Orb Component -->
+      <div id="console-voice-orb-mount"></div>
 
-      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-        <button onclick="setTestUtterance('30x40 site visit ideya? Sunday cab siguththe alva?')" class="btn-secondary" style="font-size: 11px; padding: 4px 8px;">🏡 Real Estate Site Visit</button>
-        <button onclick="setTestUtterance('Dr. Ramesh Patil cardiology consultation naale beligge ideya?')" class="btn-secondary" style="font-size: 11px; padding: 4px 8px;">🏥 Healthcare Doctor OPD</button>
-        <button onclick="setTestUtterance('Namma real estate business ge lead generation package details heli')" class="btn-secondary" style="font-size: 11px; padding: 4px 8px;">🚀 Agency Growth Call</button>
-      </div>
-
-      <div id="voice-test-result" style="display: none; background: #FAFBFD; border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px;">
-        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;" id="voice-reply-speaker">Sahana (Voice OS):</div>
-        <div id="voice-reply-text" style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px;"></div>
-        <div id="voice-reply-metrics" style="font-size: 10.5px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);"></div>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
-        <button onclick="toggleVoiceModal()" class="btn-secondary">Close</button>
-        <button id="voice-submit-btn" onclick="submitVoiceTurn()" class="btn-primary">
-          <span>🎙️ Send Voice Turn</span>
-        </button>
+      <!-- Quick Text Testing Fallback -->
+      <div style="margin-top: 16px; padding: 14px; background: rgba(30,41,59,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #94A3B8; margin-bottom: 6px;">Or Test Via Text Utterance</div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="voice-test-input" placeholder="Type in Kannada or English (e.g. 30x40 plot rate estu? or Dr. Ramesh appointment bekithu)" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(15,23,42,0.8); color: #FFF; font-size: 12px; outline: none;">
+          <button id="voice-submit-btn" onclick="submitVoiceTurnText()" style="background: #6366F1; color: #FFF; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer;">Send</button>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+          <button onclick="setTestUtterance('30x40 site visit ideya? Sunday cab siguththe alva?')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 6px; font-size: 11px; padding: 3px 8px; cursor: pointer;">🏡 Real Estate Site Visit</button>
+          <button onclick="setTestUtterance('Dr. Ramesh Patil cardiology consultation naale beligge ideya?')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 6px; font-size: 11px; padding: 3px 8px; cursor: pointer;">🏥 Doctor Appointment</button>
+          <button onclick="setTestUtterance('Namma clinic ge AI voice receptionist install maadbeku details heli')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 6px; font-size: 11px; padding: 3px 8px; cursor: pointer;">🚀 Pricing &amp; Setup</button>
+        </div>
       </div>
     </div>
   </div>
@@ -6811,6 +6806,43 @@
     });
   }
 
+  // Voice Studio Bridge
+  let consoleOrbInstance = null;
+  function submitVoiceTurnText() {
+    const input = document.getElementById('voice-test-input');
+    if (input && input.value.trim() && consoleOrbInstance && consoleOrbInstance.client) {
+      consoleOrbInstance.client.sendTextUtterance(input.value.trim());
+      input.value = '';
+    } else if (input && input.value.trim()) {
+      if (consoleOrbInstance) {
+        consoleOrbInstance.startCall().then(() => {
+          setTimeout(() => {
+            if (consoleOrbInstance.client) {
+              consoleOrbInstance.client.sendTextUtterance(input.value.trim());
+              input.value = '';
+            }
+          }, 800);
+        });
+      }
+    }
+  }
+
+</script>
+
+<!-- Live Duplex Voice AI Studio Engine -->
+<script type="module">
+  import { VanniVoiceClient } from '/assets/vanni-voice-client.js';
+  import { VanniVoiceOrb } from '/assets/vanni-voice-orb.js';
+
+  window.VanniVoiceClient = VanniVoiceClient;
+  window.VanniVoiceOrb = VanniVoiceOrb;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const mount = document.getElementById('console-voice-orb-mount');
+    if (mount) {
+      consoleOrbInstance = new VanniVoiceOrb(mount, { defaultTenant: 'real_estate' });
+    }
+  });
 </script>
 </body>
 </html>
